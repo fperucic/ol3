@@ -12,6 +12,8 @@ goog.require('ol.Map');
 goog.require('ol.MapBrowserEvent');
 goog.require('ol.MapBrowserEvent.EventType');
 goog.require('ol.Object');
+goog.require('ol.SnapEvent');
+goog.require('ol.SnapEventType');
 goog.require('ol.events.condition');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.geom.LineString');
@@ -252,7 +254,7 @@ ol.interaction.Draw.handleEvent = function(mapBrowserEvent) {
   }
   var pass = true;
   if (mapBrowserEvent.type === ol.MapBrowserEvent.EventType.POINTERMOVE) {
-    pass = this.handlePointerMove_(mapBrowserEvent);
+    pass = !!this.handlePointerMove_(mapBrowserEvent);
   } else if (mapBrowserEvent.type === ol.MapBrowserEvent.EventType.DBLCLICK) {
     pass = false;
   }
@@ -288,16 +290,16 @@ ol.interaction.Draw.handleUpEvent_ = function(event) {
   var dx = downPx[0] - clickPx[0];
   var dy = downPx[1] - clickPx[1];
   var squaredDistance = dx * dx + dy * dy;
-  var pass = true;
+  var pass = true, snap;
   if (squaredDistance <= this.squaredClickTolerance_) {
-    this.handlePointerMove_(event);
+    snap = this.handlePointerMove_(event);
     if (goog.isNull(this.finishCoordinate_)) {
-      this.startDrawing_(event);
+      this.startDrawing_(snap);
     } else if (this.mode_ === ol.interaction.DrawMode.POINT ||
-        this.atFinish_(event)) {
+        this.atFinish_(snap)) {
       this.finishDrawing();
     } else {
-      this.addToDrawing_(event);
+      this.addToDrawing_(snap);
     }
     pass = false;
   }
@@ -308,25 +310,28 @@ ol.interaction.Draw.handleUpEvent_ = function(event) {
 /**
  * Handle move events.
  * @param {ol.MapBrowserEvent} event A move event.
- * @return {boolean} Pass the event to other interactions.
+ * @return {ol.SnapEvent} Pass the event to other.
  * @private
  */
 ol.interaction.Draw.prototype.handlePointerMove_ = function(event) {
+  var snapEvent = new ol.SnapEvent(ol.SnapEventType.SNAPME,
+      event.coordinate, event.pixel, event.map);
+  this.dispatchEvent(snapEvent);
   if (this.mode_ === ol.interaction.DrawMode.POINT &&
       goog.isNull(this.finishCoordinate_)) {
-    this.startDrawing_(event);
+    this.startDrawing_(snapEvent);
   } else if (!goog.isNull(this.finishCoordinate_)) {
-    this.modifyDrawing_(event);
+    this.modifyDrawing_(snapEvent);
   } else {
-    this.createOrUpdateSketchPoint_(event);
+    this.createOrUpdateSketchPoint_(snapEvent);
   }
-  return true;
+  return snapEvent;
 };
 
 
 /**
  * Determine if an event is within the snapping tolerance of the start coord.
- * @param {ol.MapBrowserEvent} event Event.
+ * @param {ol.SnapEvent} event Event.
  * @return {boolean} The event is within the snapping tolerance of the start.
  * @private
  */
@@ -351,7 +356,8 @@ ol.interaction.Draw.prototype.atFinish_ = function(event) {
       for (var i = 0, ii = potentiallyFinishCoordinates.length; i < ii; i++) {
         var finishCoordinate = potentiallyFinishCoordinates[i];
         var finishPixel = map.getPixelFromCoordinate(finishCoordinate);
-        var pixel = event.pixel;
+        var pixel = event.snapped ? map.getPixelFromCoordinate(
+            event.snappedCoordinate) : event.pixel;
         var dx = pixel[0] - finishPixel[0];
         var dy = pixel[1] - finishPixel[1];
         at = Math.sqrt(dx * dx + dy * dy) <= this.snapTolerance_;
@@ -367,11 +373,11 @@ ol.interaction.Draw.prototype.atFinish_ = function(event) {
 
 
 /**
- * @param {ol.MapBrowserEvent} event Event.
+ * @param {ol.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.createOrUpdateSketchPoint_ = function(event) {
-  var coordinates = event.coordinate.slice();
+  var coordinates = event.snappedCoordinate.slice();
   if (goog.isNull(this.sketchPoint_)) {
     this.sketchPoint_ = new ol.Feature(new ol.geom.Point(coordinates));
     this.updateSketchFeatures_();
@@ -385,11 +391,11 @@ ol.interaction.Draw.prototype.createOrUpdateSketchPoint_ = function(event) {
 
 /**
  * Start the drawing.
- * @param {ol.MapBrowserEvent} event Event.
+ * @param {ol.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.startDrawing_ = function(event) {
-  var start = event.coordinate;
+  var start = event.snappedCoordinate;
   this.finishCoordinate_ = start;
   var geometry;
   if (this.mode_ === ol.interaction.DrawMode.POINT) {
@@ -418,11 +424,11 @@ ol.interaction.Draw.prototype.startDrawing_ = function(event) {
 
 /**
  * Modify the drawing.
- * @param {ol.MapBrowserEvent} event Event.
+ * @param {ol.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.modifyDrawing_ = function(event) {
-  var coordinate = event.coordinate;
+  var coordinate = event.snappedCoordinate;
   var geometry = this.sketchFeature_.getGeometry();
   var coordinates, last;
   if (this.mode_ === ol.interaction.DrawMode.POINT) {
@@ -466,11 +472,11 @@ ol.interaction.Draw.prototype.modifyDrawing_ = function(event) {
 
 /**
  * Add a new coordinate to the drawing.
- * @param {ol.MapBrowserEvent} event Event.
+ * @param {ol.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.addToDrawing_ = function(event) {
-  var coordinate = event.coordinate;
+  var coordinate = event.snappedCoordinate;
   var geometry = this.sketchFeature_.getGeometry();
   var coordinates;
   if (this.mode_ === ol.interaction.DrawMode.LINE_STRING) {

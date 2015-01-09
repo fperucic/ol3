@@ -48,7 +48,6 @@ oli.DrawEvent = function() {};
 oli.DrawEvent.prototype.feature;
 
 
-
 /**
  * @interface
  */
@@ -197,6 +196,16 @@ oli.render.Event.prototype.glContext;
  */
 oli.render.Event.prototype.vectorContext;
 
+/**
+ * @interface
+ */
+oli.SnapEvent = function() {};
+
+
+/**
+ * @type {ol.Coordinate}
+ */
+oli.SnapEvent.prototype.snappedCoordinate;
 
 /**
  * @type {Object}

@@ -90,6 +90,21 @@ describe('ol.format.WFS', function() {
   });
 
   describe('when parsing FeatureCollection', function() {
+    var xml;
+    before(function(done) {
+      afterLoadText('spec/ol/format/wfs/EmptyFeatureCollection.xml',
+          function(_xml) {
+            xml = _xml;
+            done();
+          });
+    });
+    it('returns an empty array of features when none exist', function() {
+      var result = new ol.format.WFS().readFeatures(xml);
+      expect(result).to.have.length(0);
+    });
+  });
+
+  describe('when parsing FeatureCollection', function() {
     var response;
     before(function(done) {
       afterLoadText('spec/ol/format/wfs/NumberOfFeatures.xml',
@@ -429,6 +444,49 @@ describe('ol.format.WFS', function() {
       expect(feature.getId()).to.equal(fid);
       expect(feature.get('titel')).to.equal('Arnstadt');
       expect(feature.getGeometry()).to.be.an(ol.geom.Polygon);
+    });
+
+  });
+
+  describe('when parsing multiple feature types', function() {
+
+    var features;
+    before(function(done) {
+      afterLoadText('spec/ol/format/gml/multiple-typenames.xml', function(xml) {
+        try {
+          features = new ol.format.WFS({
+            featureNS: 'http://localhost:8080/official',
+            featureType: ['planet_osm_polygon', 'planet_osm_line']
+          }).readFeatures(xml);
+        } catch (e) {
+          done(e);
+        }
+        done();
+      });
+    });
+
+    it('reads all features', function() {
+      expect(features.length).to.be(12);
+    });
+
+  });
+
+  describe('when parsing multiple feature types', function() {
+
+    var features;
+    before(function(done) {
+      afterLoadText('spec/ol/format/gml/multiple-typenames.xml', function(xml) {
+        try {
+          features = new ol.format.WFS().readFeatures(xml);
+        } catch (e) {
+          done(e);
+        }
+        done();
+      });
+    });
+
+    it('reads all features with autoconfigure', function() {
+      expect(features.length).to.be(12);
     });
 
   });

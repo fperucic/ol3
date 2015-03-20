@@ -502,22 +502,6 @@ ol.format.GPX.prototype.readProjection;
 
 
 /**
- * @inheritDoc
- */
-ol.format.GPX.prototype.readProjectionFromDocument = function(doc) {
-  return this.defaultDataProjection;
-};
-
-
-/**
- * @inheritDoc
- */
-ol.format.GPX.prototype.readProjectionFromNode = function(node) {
-  return this.defaultDataProjection;
-};
-
-
-/**
  * @param {Node} node Node.
  * @param {string} value Value for the link's `href` attribute.
  * @param {Array.<*>} objectStack Node stack.
@@ -754,10 +738,7 @@ ol.format.GPX.TRK_SERIALIZERS_ = ol.xml.makeStructureNS(
 
 /**
  * @const
- * @param {*} value Value.
- * @param {Array.<*>} objectStack Object stack.
- * @param {string=} opt_nodeName Node name.
- * @return {Node|undefined} Node.
+ * @type {function(*, Array.<*>, string=): (Node|undefined)}
  * @private
  */
 ol.format.GPX.TRKSEG_NODE_FACTORY_ = ol.xml.makeSimpleNodeFactory('trkpt');

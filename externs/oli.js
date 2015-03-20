@@ -91,6 +91,12 @@ oli.MapBrowserEvent.prototype.originalEvent;
 oli.MapBrowserEvent.prototype.pixel;
 
 
+/**
+ * @type {boolean}
+ */
+oli.MapBrowserEvent.prototype.dragging;
+
+
 
 /**
  * @interface
@@ -108,6 +114,25 @@ oli.MapEvent.prototype.map;
  * @type {olx.FrameState}
  */
 oli.MapEvent.prototype.frameState;
+
+
+/**
+ * @interface
+ */
+ oli.SelectEvent = function() {};
+
+
+ /**
+  * @type {Array.<ol.Feature>}
+  */
+oli.SelectEvent.prototype.deselected;
+
+
+ /**
+  * @type {Array.<ol.Feature>}
+  */
+oli.SelectEvent.prototype.selected;
+
 
 
 /**
@@ -212,6 +237,29 @@ oli.SnapEvent.prototype.snappedCoordinate;
  */
 oli.source;
 
+
+/**
+ * @interface
+ */
+oli.source.ImageEvent = function() {};
+
+
+/**
+ * @type {ol.Image}
+ */
+oli.source.ImageEvent.prototype.image;
+
+
+/**
+ * @interface
+ */
+oli.source.TileEvent = function() {};
+
+
+/**
+ * @type {ol.Tile}
+ */
+oli.source.TileEvent.prototype.tile;
 
 
 /**

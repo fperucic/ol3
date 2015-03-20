@@ -3,6 +3,8 @@
 goog.provide('ol.source.ImageWMS');
 
 goog.require('goog.asserts');
+goog.require('goog.events');
+goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('goog.string');
 goog.require('goog.uri.utils');
@@ -22,6 +24,7 @@ goog.require('ol.source.wms.ServerType');
  * Source for WMS servers providing single, untiled images.
  *
  * @constructor
+ * @fires ol.source.ImageEvent
  * @extends {ol.source.Image}
  * @param {olx.source.ImageWMSOptions=} opt_options Options.
  * @api stable
@@ -247,8 +250,20 @@ ol.source.ImageWMS.prototype.getImage =
 
   this.renderedRevision_ = this.getRevision();
 
+  goog.events.listen(this.image_, goog.events.EventType.CHANGE,
+      this.handleImageChange, false, this);
+
   return this.image_;
 
+};
+
+
+/**
+ * @return {ol.ImageLoadFunctionType} The image load function.
+ * @api
+ */
+ol.source.ImageWMS.prototype.getImageLoadFunction = function() {
+  return this.imageLoadFunction_;
 };
 
 
@@ -316,6 +331,18 @@ ol.source.ImageWMS.prototype.getRequestUrl_ =
  */
 ol.source.ImageWMS.prototype.getUrl = function() {
   return this.url_;
+};
+
+
+/**
+ * @param {ol.ImageLoadFunctionType} imageLoadFunction Image load function.
+ * @api
+ */
+ol.source.ImageWMS.prototype.setImageLoadFunction = function(
+    imageLoadFunction) {
+  this.image_ = null;
+  this.imageLoadFunction_ = imageLoadFunction;
+  this.changed();
 };
 
 

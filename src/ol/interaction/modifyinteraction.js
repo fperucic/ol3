@@ -9,8 +9,6 @@ goog.require('ol.CollectionEventType');
 goog.require('ol.Feature');
 goog.require('ol.FeatureOverlay');
 goog.require('ol.MapBrowserEvent.EventType');
-goog.require('ol.SnapEvent');
-goog.require('ol.SnapEventType');
 goog.require('ol.ViewHint');
 goog.require('ol.coordinate');
 goog.require('ol.events.condition');
@@ -23,6 +21,8 @@ goog.require('ol.geom.MultiPolygon');
 goog.require('ol.geom.Point');
 goog.require('ol.geom.Polygon');
 goog.require('ol.interaction.Pointer');
+goog.require('ol.interaction.SnapEvent');
+goog.require('ol.interaction.SnapEventType');
 goog.require('ol.structs.RBush');
 goog.require('ol.style.Style');
 
@@ -467,7 +467,8 @@ ol.interaction.Modify.handleDownEvent_ = function(evt) {
  * @private
  */
 ol.interaction.Modify.handleDragEvent_ = function(evt) {
-  var snapEvent = new ol.SnapEvent(ol.SnapEventType.SNAPME,
+  var snapEvent = new ol.interaction.SnapEvent(
+      ol.interaction.SnapEventType.SNAPME,
       evt.coordinate, evt.pixel, evt.map);
   this.dispatchEvent(snapEvent);
   var vertex = snapEvent.snappedCoordinate;

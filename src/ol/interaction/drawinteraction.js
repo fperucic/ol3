@@ -12,8 +12,6 @@ goog.require('ol.FeatureOverlay');
 goog.require('ol.MapBrowserEvent');
 goog.require('ol.MapBrowserEvent.EventType');
 goog.require('ol.Object');
-goog.require('ol.SnapEvent');
-goog.require('ol.SnapEventType');
 goog.require('ol.events.condition');
 goog.require('ol.geom.Circle');
 goog.require('ol.geom.GeometryType');
@@ -25,6 +23,8 @@ goog.require('ol.geom.Point');
 goog.require('ol.geom.Polygon');
 goog.require('ol.interaction.InteractionProperty');
 goog.require('ol.interaction.Pointer');
+goog.require('ol.interaction.SnapEvent');
+goog.require('ol.interaction.SnapEventType');
 goog.require('ol.source.Vector');
 goog.require('ol.style.Style');
 
@@ -309,11 +309,12 @@ ol.interaction.Draw.handleUpEvent_ = function(event) {
 /**
  * Handle move events.
  * @param {ol.MapBrowserEvent} event A move event.
- * @return {ol.SnapEvent} Pass the event to other.
+ * @return {ol.interaction.SnapEvent} Pass the event to other.
  * @private
  */
 ol.interaction.Draw.prototype.handlePointerMove_ = function(event) {
-  var snapEvent = new ol.SnapEvent(ol.SnapEventType.SNAPME,
+  var snapEvent = new ol.interaction.SnapEvent(
+      ol.interaction.SnapEventType.SNAPME,
       event.coordinate, event.pixel, event.map);
   this.dispatchEvent(snapEvent);
   if (this.mode_ === ol.interaction.DrawMode.POINT &&
@@ -330,7 +331,7 @@ ol.interaction.Draw.prototype.handlePointerMove_ = function(event) {
 
 /**
  * Determine if an event is within the snapping tolerance of the start coord.
- * @param {ol.SnapEvent} event Event.
+ * @param {ol.interaction.SnapEvent} event Event.
  * @return {boolean} The event is within the snapping tolerance of the start.
  * @private
  */
@@ -372,7 +373,7 @@ ol.interaction.Draw.prototype.atFinish_ = function(event) {
 
 
 /**
- * @param {ol.SnapEvent} event Event.
+ * @param {ol.interaction.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.createOrUpdateSketchPoint_ = function(event) {
@@ -390,7 +391,7 @@ ol.interaction.Draw.prototype.createOrUpdateSketchPoint_ = function(event) {
 
 /**
  * Start the drawing.
- * @param {ol.SnapEvent} event Event.
+ * @param {ol.interaction.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.startDrawing_ = function(event) {
@@ -427,7 +428,7 @@ ol.interaction.Draw.prototype.startDrawing_ = function(event) {
 
 /**
  * Modify the drawing.
- * @param {ol.SnapEvent} event Event.
+ * @param {ol.interaction.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.modifyDrawing_ = function(event) {
@@ -484,7 +485,7 @@ ol.interaction.Draw.prototype.modifyDrawing_ = function(event) {
 
 /**
  * Add a new coordinate to the drawing.
- * @param {ol.SnapEvent} event Event.
+ * @param {ol.interaction.SnapEvent} event Event.
  * @private
  */
 ol.interaction.Draw.prototype.addToDrawing_ = function(event) {

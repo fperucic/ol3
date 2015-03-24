@@ -1,11 +1,11 @@
 goog.require('ol.FeatureOverlay');
 goog.require('ol.Map');
-goog.require('ol.Snap');
 goog.require('ol.View');
 goog.require('ol.interaction');
 goog.require('ol.interaction.Draw');
 goog.require('ol.interaction.Modify');
 goog.require('ol.interaction.Select');
+goog.require('ol.interaction.Snap');
 goog.require('ol.layer.Tile');
 goog.require('ol.source.MapQuest');
 goog.require('ol.style.Circle');
@@ -125,13 +125,14 @@ var Draw = {
 // snap duplicates the geometries so it can create a index.
 // when a gemetry is modified, index needs to be rebuild for that
 // geometry by removeing the old and adding the new
-var snap = new ol.Snap({
+var snap = new ol.interaction.Snap({
   features: featureOverlay.getFeatures(),
   interactions: [
     Draw.Point, Draw.LineString, Draw.Polygon, Modify.modify
   ],
   snapping: true
 });
+map.addInteraction(snap);
 
 
 var optionsForm = document.getElementById('options-form');

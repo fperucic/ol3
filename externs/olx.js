@@ -2662,6 +2662,60 @@ olx.interaction.SelectOptions.prototype.multi;
 
 
 /**
+ * Options for snap
+ * @typedef {{
+ *     features: (Array.<ol.Feature>|ol.Collection.<ol.Feature>|undefined),
+ *     interactions: (Array.<ol.interaction.Pointer>),
+ *     pixelTolerance: (number|undefined),
+ *     snapping: (boolean|undefined),
+ *     source: (ol.source.Vector|undefined)
+ * }}
+ * @api
+ */
+olx.interaction.SnapOptions;
+
+
+/**
+ * Snap to this features
+ * @type {Array.<ol.Feature>|ol.Collection.<ol.Feature>|undefined}
+ * @api
+ */
+olx.interaction.SnapOptions.prototype.features;
+
+
+/**
+ * Interactions that are trying to be snapped
+ * @type {Array.<ol.interaction.Interaction>}
+ * @api
+ */
+olx.interaction.SnapOptions.prototype.interactions;
+
+
+/**
+ * Pixel tolerance for considering the pointer close enough to a segment or
+ * vertex for editing. Default is `10` pixels.
+ * @type {number|undefined}
+ * @api
+ */
+olx.interaction.SnapOptions.prototype.pixelTolerance;
+
+
+/**
+ * Listen for SNAPME events on intractions. Default is false
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.interaction.SnapOptions.prototype.snapping;
+
+
+/**
+ * Snap to features from this source
+ * @type {ol.source.Vector|undefined}
+ */
+olx.interaction.SnapOptions.prototype.source;
+
+
+/**
  * Namespace.
  * @type {Object}
  */
@@ -3481,58 +3535,6 @@ olx.FeatureOverlayOptions.prototype.map;
  * @api
  */
 olx.FeatureOverlayOptions.prototype.style;
-
-
-/**
- * Options for snap
- * @typedef {{source: (ol.source.Vector|undefined),
- *		features: (Array.<ol.Feature>|ol.Collection.<ol.Feature>|undefined),
- *		interactions: (Array.<ol.interaction.Pointer>),
- *		pixelTolerance: (number|undefined),
- *		snapping: (boolean|undefined)}}
- * @api
- */
-olx.SnapOptions;
-
-
-/**
- * Snap to features from this source
- * @type {ol.source.Vector|undefined}
- */
-olx.SnapOptions.prototype.source;
-
-
-/**
- * Snap to this features
- * @type {Array.<ol.Feature>|ol.Collection.<ol.Feature>|undefined}
- * @api
- */
-olx.SnapOptions.prototype.features;
-
-
-/**
- * Interactions that are trying to be snapped
- * @type {Array.<ol.interaction.Interaction>}
- * @api
- */
-olx.SnapOptions.prototype.interactions;
-
-
-/**
- * Pixel tolerance for considering the pointer close enough to a segment or
- * vertex for editing. Default is `10` pixels.
- * @type {number|undefined}
- * @api
- */
-olx.SnapOptions.prototype.pixelTolerance;
-
-
-/**
- * Listen for SNAPME events on intractions. Default is false
- * @type {boolean|undefined}
- * @api
- */
-olx.SnapOptions.prototype.snapping;
 
 
 /**

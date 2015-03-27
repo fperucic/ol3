@@ -74,6 +74,7 @@ goog.exportProperty(
 /**
  * Get the map associated with this interaction.
  * @return {ol.Map} Map.
+ * @api
  */
 ol.interaction.Interaction.prototype.getMap = function() {
   return this.map_;

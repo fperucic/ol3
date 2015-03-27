@@ -1439,6 +1439,7 @@ goog.exportProperty(
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @api
  */
 ol.Map.prototype.skipFeature = function(feature) {
   var featureUid = goog.getUid(feature).toString();

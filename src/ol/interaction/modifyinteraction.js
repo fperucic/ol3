@@ -142,7 +142,7 @@ ol.interaction.Modify = function(options) {
    */
   this.features_ = options.features;
 
-  this.features_.forEach(this.addFeature_, this);
+  this.features_.forEach(this.addFeature, this);
   goog.events.listen(this.features_, ol.CollectionEventType.ADD,
       this.handleFeatureAdd_, false, this);
   goog.events.listen(this.features_, ol.CollectionEventType.REMOVE,
@@ -154,9 +154,9 @@ goog.inherits(ol.interaction.Modify, ol.interaction.Pointer);
 
 /**
  * @param {ol.Feature} feature Feature.
- * @private
+ * @api
  */
-ol.interaction.Modify.prototype.addFeature_ = function(feature) {
+ol.interaction.Modify.prototype.addFeature = function(feature) {
   var geometry = feature.getGeometry();
   if (goog.isDef(this.SEGMENT_WRITERS_[geometry.getType()])) {
     this.SEGMENT_WRITERS_[geometry.getType()].call(this, feature, geometry);
@@ -185,7 +185,7 @@ ol.interaction.Modify.prototype.handleFeatureAdd_ = function(evt) {
   var feature = evt.element;
   goog.asserts.assertInstanceof(feature, ol.Feature,
       'feature should be an ol.Feature');
-  this.addFeature_(feature);
+  this.addFeature(feature);
 };
 
 
@@ -195,9 +195,20 @@ ol.interaction.Modify.prototype.handleFeatureAdd_ = function(evt) {
  */
 ol.interaction.Modify.prototype.handleFeatureRemove_ = function(evt) {
   var feature = evt.element;
+  goog.asserts.assertInstanceof(feature, ol.Feature);
+  this.removeFeature(feature, feature.getGeometry().getExtent());
+};
+
+
+/**
+ * @param {ol.Feature} feature Feature.
+ * @param {ol.Extent} extent Extent.
+ * @api
+ */
+ol.interaction.Modify.prototype.removeFeature = function(feature, extent) {
   var rBush = this.rBush_;
   var i, nodesToRemove = [];
-  rBush.forEachInExtent(feature.getGeometry().getExtent(), function(node) {
+  rBush.forEachInExtent(extent, function(node) {
     if (feature === node.feature) {
       nodesToRemove.push(node);
     }

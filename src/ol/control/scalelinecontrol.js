@@ -141,6 +141,7 @@ ol.control.ScaleLine.LEADING_DIGITS = [1, 2, 5];
 
 
 /**
+ * Return the units to use in the scale line.
  * @return {ol.control.ScaleLineUnits|undefined} The units to use in the scale
  *     line.
  * @observable
@@ -150,13 +151,10 @@ ol.control.ScaleLine.prototype.getUnits = function() {
   return /** @type {ol.control.ScaleLineUnits|undefined} */ (
       this.get(ol.control.ScaleLineProperty.UNITS));
 };
-goog.exportProperty(
-    ol.control.ScaleLine.prototype,
-    'getUnits',
-    ol.control.ScaleLine.prototype.getUnits);
 
 
 /**
+ * Update the scale line element.
  * @param {ol.MapEvent} mapEvent Map event.
  * @this {ol.control.ScaleLine}
  * @api
@@ -181,6 +179,7 @@ ol.control.ScaleLine.prototype.handleUnitsChanged_ = function() {
 
 
 /**
+ * Set the units to use in the scale line.
  * @param {ol.control.ScaleLineUnits} units The units to use in the scale line.
  * @observable
  * @api stable
@@ -188,10 +187,6 @@ ol.control.ScaleLine.prototype.handleUnitsChanged_ = function() {
 ol.control.ScaleLine.prototype.setUnits = function(units) {
   this.set(ol.control.ScaleLineProperty.UNITS, units);
 };
-goog.exportProperty(
-    ol.control.ScaleLine.prototype,
-    'setUnits',
-    ol.control.ScaleLine.prototype.setUnits);
 
 
 /**

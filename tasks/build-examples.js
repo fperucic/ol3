@@ -1,87 +1,233 @@
-/*global Buffer */
+var path = require('path');
 
 var Metalsmith = require('metalsmith');
+var handlebars = require('handlebars');
 var templates = require('metalsmith-templates');
 var marked = require('marked');
-var fs = require('fs');
-var pjson = require('../package.json');
+var pkg = require('../package.json');
 
-var fileRegEx = /([^\/^\.]*)\.html$/;
-var cleanupJSRegEx = /.*(goog\.require(.*);|.*renderer: exampleNS\..*,?)[\n]*/g;
+var markupRegEx = /([^\/^\.]*)\.html$/;
+var cleanupJSRegEx = /.*(goog\.require(.*);|.*renderer: common\..*,?)[\n]*/g;
+var requiresRegEx = /.*goog\.require\('(ol\.\S*)'\);/g;
 var isCssRegEx = /\.css$/;
 var isJsRegEx = /\.js$/;
 
-function main(callback) {
+var srcDir = path.join(__dirname, '..', 'examples');
+var destDir = path.join(__dirname, '..', 'build', 'examples');
+var templatesDir = path.join(__dirname, '..', 'config', 'examples');
 
-  function build(files) {
-    var file, match, str;
-    for (var f in files) {
-      file = files[f];
-      match = f.match(fileRegEx);
-      if (match) {
-        if (file.template) {
-          if (file.docs) {
-            file.docs = marked(file.docs);
+/**
+ * Returns an array of names that are explicitly required inside the source
+ * by calling `goog.require('ol.…')`.  Only returns `ol.` prefixed names.
+ *
+ * @param {string} src The JavaScript sourcecode to search for goog.require.
+ * @returns {Array.<string>} An array of `ol.*` names.
+ */
+function getRequires(src) {
+  var requires = [];
+  var match = requiresRegEx.exec(src);
+  while (match) {
+    requires.push(match[1]);
+    match = requiresRegEx.exec(src);
+  }
+  return requires;
+}
+
+/**
+ * Takes an array of the names of required OpenLayers symbols and returns an
+ * HTML-snippet with an unordered list to the API-docs for the particular
+ * classes.
+ *
+ * @param {Array.<string>} requires An array of `ol.` names that the source
+ *   requires.
+ * @returns {string} The HTML-snippet with the list of links to API-docs.
+ */
+function getLinkToApiHtml(requires) {
+  var lis = requires.map(function(symb) {
+    var href = '../apidoc/' + symb + '.html';
+    return '<li><a href="' + href + '" title="API documentation for ' +
+        symb +'">' + symb + '</a></li>';
+  });
+  return '<ul class="inline">' + lis.join() + '</ul>';
+}
+
+/**
+ * A Metalsmith plugin that adds metadata to the example HTML files.  For each
+ * example HTML file, this adds metadata for related js and css resources. When
+ * these files are run through the example template, the extra metadata is used
+ * to show the complete example source in the textarea and submit the parts to
+ * jsFiddle.
+ *
+ * @param {Object} files The file lookup provided by Metalsmith.  Property names
+ *     are file paths relative to the source directory.  The file objects
+ *     include any existing metadata (e.g. from YAML front-matter), the file
+ *     contents, and stats.
+ * @param {Object} metalsmith The metalsmith instance the plugin is being used
+ *     with.
+ * @param {function(Error)} done Called when done (with any error).
+ */
+function augmentExamples(files, metalsmith, done) {
+  setImmediate(done); // all remaining code is synchronous
+  for (var filename in files) {
+    var file = files[filename];
+    var match = filename.match(markupRegEx);
+    if (match && filename !== 'index.html') {
+      if (!file.template) {
+        throw new Error(filename + ': Missing template in YAML front-matter');
+      }
+      var id = match[1];
+
+      // add js tag and source
+      var jsFilename = id + '.js';
+      if (!(jsFilename in files)) {
+        throw new Error('No .js file found for ' + filename);
+      }
+      var jsSource = files[jsFilename].contents.toString();
+      var requires = getRequires(jsSource);
+      file.requires = requires;
+      file.js = {
+        tag: '<script src="loader.js?id=' + id + '"></script>',
+        source: jsSource.replace(cleanupJSRegEx, ''),
+        apiHtml: getLinkToApiHtml(requires)
+      };
+
+      // add css tag and source
+      var cssFilename = id + '.css';
+      if (cssFilename in files) {
+        file.css = {
+          tag: '<link rel="stylesheet" href="' + cssFilename + '">',
+          source: files[cssFilename].contents.toString()
+        };
+      }
+
+      // add additional resources
+      if (file.resources) {
+        var resources = [];
+        for (var i = 0, ii = file.resources.length; i < ii; ++i) {
+          var resource = file.resources[i];
+          if (isJsRegEx.test(resource)) {
+            resources[i] = '<script src="' + resource + '"></script>';
+          } else if (isCssRegEx.test(resource)) {
+            resources[i] = '<link rel="stylesheet" href="' + resource + '">';
+          } else {
+            throw new Error('Invalid value for resource: ' +
+                resource + ' is not .js or .css: ' + filename);
           }
-          if (file.contents) {
-            str = marked(file.contents.toString());
-            file.contents = new Buffer(str);
-          }
-          file.ol_version = pjson.version;
-          file.js_resource = '<script src="loader.js?id=' + match[1] +
-              '"></script>';
-          var js = fs.readFileSync(__dirname + '/../examples_src/' +
-              match[1] + '.js', 'utf8');
-          file.js_inline = js.replace(cleanupJSRegEx, '');
-          var cssFile = __dirname + '/../examples_src/' + match[1] + '.css';
-          if (fs.existsSync(cssFile)) {
-            file.css_resource = '<link rel="stylesheet" href="' + match[1] +
-                '.css">';
-            file.css_inline = fs.readFileSync(cssFile, 'utf-8');
-          }
-          if (file.resources) {
-            var resources = file.resources.split(',');
-            var resource;
-            for (var i = resources.length - 1; i >= 0; --i) {
-              resource = resources[i];
-              if (isJsRegEx.test(resource)) {
-                resources[i] = '<script src="' + resource + '"></script>';
-              } else if (isCssRegEx.test(resource)) {
-                resources[i] = '<link rel="stylesheet" href="' + resource +
-                    '">';
-              } else {
-                callback(new Error(f + ': Invalid value for "resource": ' +
-                    resource + ' is no .js or .css.'));
-              }
-              file.resources = resources.join('\n');
-            }
-          }
-        } else if (f !== 'index.html'){
-          callback(new Error(f + ': Invalid YAML front-matter.'));
         }
+        file.extraHead = resources.join('\n');
       }
     }
   }
+}
 
+/**
+ * Create an inverted index of keywords from examples.  Property names are
+ * lowercased words.  Property values are objects mapping example index to word
+ * count.
+ * @param {Array.<Object>} exampleInfos Array of example info objects.
+ * @return {Object} Word index.
+ */
+function createWordIndex(exampleInfos) {
+  var index = {};
+  var keys = ['shortdesc', 'title', 'tags', 'requires'];
+  exampleInfos.forEach(function(info, i) {
+    keys.forEach(function(key) {
+      var text = info[key];
+      if (Array.isArray(text)) {
+        text = text.join(' ');
+      }
+      var words = text ? text.split(/\W+/) : [];
+      words.forEach(function(word) {
+        if (word) {
+          word = word.toLowerCase();
+          var counts = index[word];
+          if (counts) {
+            if (index in counts) {
+              counts[i] += 1;
+            } else {
+              counts[i] = 1;
+            }
+          } else {
+            counts = {};
+            counts[i] = 1;
+            index[word] = counts;
+          }
+        }
+      });
+    });
+  });
+  return index;
+}
 
-  new Metalsmith('.')
-      .source('examples_src')
-      .destination('examples')
-      .use(build)
+/**
+ * A plugin that generates the example index.js file.  This file includes a
+ * list of example metadata objects and a word index used when searching for
+ * examples.
+ * @param {Object} files The file lookup provided by Metalsmith.  Property names
+ *     are file paths relative to the source directory.  The file objects
+ *     include any existing metadata (e.g. from YAML front-matter), the file
+ *     contents, and stats.
+ * @param {Object} metalsmith The metalsmith instance the plugin is being used
+ *     with.
+ * @param {function(Error)} done Called when done (with any error).
+ */
+function createIndex(files, metalsmith, done) {
+  setImmediate(done); // all remaining code is synchronous
+  var exampleInfos = [];
+  for (var filename in files) {
+    var example = files[filename];
+    if (markupRegEx.test(filename)) {
+      exampleInfos.push({
+        link: filename,
+        example: filename,
+        title: example.title,
+        shortdesc: example.shortdesc,
+        tags: example.tags,
+        requires: example.requires
+      });
+    }
+  }
+  var info = {
+    examples: exampleInfos,
+    index: createWordIndex(exampleInfos)
+  };
+  files['index.js'] = {
+    contents: new Buffer('var info = ' + JSON.stringify(info)),
+    mode: '0644'
+  };
+}
+
+function main(callback) {
+  var smith = new Metalsmith('.')
+      .source(srcDir)
+      .destination(destDir)
+      .concurrency(25)
+      .metadata({
+        olVersion: pkg.version
+      })
+      .use(augmentExamples)
+      .use(createIndex)
       .use(templates({
         engine: 'handlebars',
-        directory: 'config/examples'
+        directory: templatesDir,
+        helpers: {
+          md: function(str) {
+            return new handlebars.SafeString(marked(str));
+          }
+        }
       }))
       .build(function(err) {
         callback(err);
       });
+  return smith;
 }
-
 
 if (require.main === module) {
   main(function(err) {
     if (err) {
-      process.stderr.write(err.message + '\n');
+      process.stderr.write(
+          'Building examples failed.  See the full trace below.\n\n' +
+          err.stack + '\n');
       process.exit(1);
     } else {
       process.exit(0);

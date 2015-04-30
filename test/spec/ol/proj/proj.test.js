@@ -30,6 +30,27 @@ describe('ol.proj', function() {
       ]);
     });
 
+    it('gives that custom 3413 is equivalent to self', function() {
+      var code = 'EPSG:3413';
+
+      var source = new ol.proj.Projection({
+        code: code
+      });
+
+      var destination = new ol.proj.Projection({
+        code: code
+      });
+
+      expect(ol.proj.equivalent(source, destination)).to.be.ok();
+    });
+
+    it('gives that default 3857 is equivalent to self', function() {
+      _testAllEquivalent([
+        'EPSG:3857',
+        'EPSG:3857'
+      ]);
+    });
+
     it('gives that CRS:84, urn:ogc:def:crs:EPSG:6.6:4326, EPSG:4326 are ' +
        'equivalent', function() {
           _testAllEquivalent([
@@ -117,6 +138,46 @@ describe('ol.proj', function() {
     });
   });
 
+  describe('canWrapX()', function() {
+
+    it('requires an extent for allowing wrapX', function() {
+      var proj = new ol.proj.Projection({
+        code: 'foo',
+        global: true
+      });
+      expect(proj.canWrapX()).to.be(false);
+      proj.setExtent([1, 2, 3, 4]);
+      expect(proj.canWrapX()).to.be(true);
+      proj = new ol.proj.Projection({
+        code: 'foo',
+        global: true,
+        extent: [1, 2, 3, 4]
+      });
+      expect(proj.canWrapX()).to.be(true);
+      proj.setExtent(null);
+      expect(proj.canWrapX()).to.be(false);
+    });
+
+    it('requires global to be true for allowing wrapX', function() {
+      var proj = new ol.proj.Projection({
+        code: 'foo',
+        extent: [1, 2, 3, 4]
+      });
+      expect(proj.canWrapX()).to.be(false);
+      proj.setGlobal(true);
+      expect(proj.canWrapX()).to.be(true);
+      proj = new ol.proj.Projection({
+        code: 'foo',
+        global: true,
+        extent: [1, 2, 3, 4]
+      });
+      expect(proj.canWrapX()).to.be(true);
+      proj.setGlobal(false);
+      expect(proj.canWrapX()).to.be(false);
+    });
+
+  });
+
   describe('transformExtent()', function() {
 
     it('transforms an extent given projection identifiers', function() {
@@ -135,6 +196,32 @@ describe('ol.proj', function() {
   });
 
   describe('Proj4js integration', function() {
+
+    it('creates ol.proj.Projection instance from EPSG:21781', function() {
+      proj4.defs('EPSG:21781',
+          '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 ' +
+          '+k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel ' +
+          '+towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs');
+      var proj = ol.proj.get('EPSG:21781');
+      expect(proj.getCode()).to.eql('EPSG:21781');
+      expect(proj.getUnits()).to.eql('m');
+      expect(proj.getMetersPerUnit()).to.eql(1);
+
+      delete proj4.defs['EPSG:21781'];
+    });
+
+    it('creates ol.proj.Projection instance from EPSG:3739', function() {
+      proj4.defs('EPSG:3739',
+          '+proj=tmerc +lat_0=40.5 +lon_0=-110.0833333333333 +k=0.9999375 ' +
+          '+x_0=800000.0000101599 +y_0=99999.99998983997 +ellps=GRS80 ' +
+          '+towgs84=0,0,0,0,0,0,0 +units=us-ft +no_defs');
+      var proj = ol.proj.get('EPSG:3739');
+      expect(proj.getCode()).to.eql('EPSG:3739');
+      expect(proj.getUnits()).to.eql('us-ft');
+      expect(proj.getMetersPerUnit()).to.eql(1200 / 3937);
+
+      delete proj4.defs['EPSG:3739'];
+    });
 
     it('allows Proj4js projections to be used transparently', function() {
       var point = ol.proj.transform(

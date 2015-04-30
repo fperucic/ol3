@@ -191,6 +191,7 @@ ol.layer.Heatmap.prototype.createCircle_ = function() {
 
 
 /**
+ * Return the blur size in pixels.
  * @return {number} Blur size in pixels.
  * @api
  * @observable
@@ -198,13 +199,10 @@ ol.layer.Heatmap.prototype.createCircle_ = function() {
 ol.layer.Heatmap.prototype.getBlur = function() {
   return /** @type {number} */ (this.get(ol.layer.HeatmapLayerProperty.BLUR));
 };
-goog.exportProperty(
-    ol.layer.Heatmap.prototype,
-    'getBlur',
-    ol.layer.Heatmap.prototype.getBlur);
 
 
 /**
+ * Return the gradient colors as array of strings.
  * @return {Array.<string>} Colors.
  * @api
  * @observable
@@ -213,13 +211,10 @@ ol.layer.Heatmap.prototype.getGradient = function() {
   return /** @type {Array.<string>} */ (
       this.get(ol.layer.HeatmapLayerProperty.GRADIENT));
 };
-goog.exportProperty(
-    ol.layer.Heatmap.prototype,
-    'getGradient',
-    ol.layer.Heatmap.prototype.getGradient);
 
 
 /**
+ * Return the size of the radius in pixels.
  * @return {number} Radius size in pixel.
  * @api
  * @observable
@@ -227,10 +222,6 @@ goog.exportProperty(
 ol.layer.Heatmap.prototype.getRadius = function() {
   return /** @type {number} */ (this.get(ol.layer.HeatmapLayerProperty.RADIUS));
 };
-goog.exportProperty(
-    ol.layer.Heatmap.prototype,
-    'getRadius',
-    ol.layer.Heatmap.prototype.getRadius);
 
 
 /**
@@ -278,6 +269,7 @@ ol.layer.Heatmap.prototype.handleRender_ = function(event) {
 
 
 /**
+ * Set the blur size in pixels.
  * @param {number} blur Blur size in pixels.
  * @api
  * @observable
@@ -285,13 +277,10 @@ ol.layer.Heatmap.prototype.handleRender_ = function(event) {
 ol.layer.Heatmap.prototype.setBlur = function(blur) {
   this.set(ol.layer.HeatmapLayerProperty.BLUR, blur);
 };
-goog.exportProperty(
-    ol.layer.Heatmap.prototype,
-    'setBlur',
-    ol.layer.Heatmap.prototype.setBlur);
 
 
 /**
+ * Set the gradient colors as array of strings.
  * @param {Array.<string>} colors Gradient.
  * @api
  * @observable
@@ -299,13 +288,10 @@ goog.exportProperty(
 ol.layer.Heatmap.prototype.setGradient = function(colors) {
   this.set(ol.layer.HeatmapLayerProperty.GRADIENT, colors);
 };
-goog.exportProperty(
-    ol.layer.Heatmap.prototype,
-    'setGradient',
-    ol.layer.Heatmap.prototype.setGradient);
 
 
 /**
+ * Set the size of the radius in pixels.
  * @param {number} radius Radius size in pixel.
  * @api
  * @observable
@@ -313,7 +299,3 @@ goog.exportProperty(
 ol.layer.Heatmap.prototype.setRadius = function(radius) {
   this.set(ol.layer.HeatmapLayerProperty.RADIUS, radius);
 };
-goog.exportProperty(
-    ol.layer.Heatmap.prototype,
-    'setRadius',
-    ol.layer.Heatmap.prototype.setRadius);

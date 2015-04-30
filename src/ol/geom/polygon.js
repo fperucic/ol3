@@ -3,6 +3,7 @@ goog.provide('ol.geom.Polygon');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('ol.extent');
+goog.require('ol.geom.GeometryLayout');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.geom.LinearRing');
 goog.require('ol.geom.Point');
@@ -83,6 +84,7 @@ goog.inherits(ol.geom.Polygon, ol.geom.SimpleGeometry);
 
 
 /**
+ * Append the passed linear ring to this polygon.
  * @param {ol.geom.LinearRing} linearRing Linear ring.
  * @api stable
  */
@@ -142,6 +144,7 @@ ol.geom.Polygon.prototype.containsXY = function(x, y) {
 
 
 /**
+ * Return the area of the polygon on projected plane.
  * @return {number} Area (on projected plane).
  * @api stable
  */
@@ -203,6 +206,7 @@ ol.geom.Polygon.prototype.getFlatInteriorPoint = function() {
 
 
 /**
+ * Return an interior point of the polygon.
  * @return {ol.geom.Point} Interior point.
  * @api stable
  */
@@ -247,6 +251,7 @@ ol.geom.Polygon.prototype.getLinearRing = function(index) {
 
 
 /**
+ * Return the linear rings of the polygon.
  * @return {Array.<ol.geom.LinearRing>} Linear rings.
  * @api stable
  */
@@ -327,6 +332,7 @@ ol.geom.Polygon.prototype.intersectsExtent = function(extent) {
 
 
 /**
+ * Set the coordinates of the polygon.
  * @param {Array.<Array.<ol.Coordinate>>} coordinates Coordinates.
  * @param {ol.geom.GeometryLayout=} opt_layout Layout.
  * @api stable

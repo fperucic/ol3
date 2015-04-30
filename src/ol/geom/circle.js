@@ -2,6 +2,7 @@ goog.provide('ol.geom.Circle');
 
 goog.require('goog.asserts');
 goog.require('ol.extent');
+goog.require('ol.geom.GeometryLayout');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.geom.SimpleGeometry');
 goog.require('ol.geom.flat.deflate');
@@ -84,6 +85,7 @@ ol.geom.Circle.prototype.containsXY = function(x, y) {
 
 
 /**
+ * Return the center of the circle as {@link ol.Coordinate coordinate}.
  * @return {ol.Coordinate} Center.
  * @api
  */
@@ -106,6 +108,7 @@ ol.geom.Circle.prototype.computeExtent = function(extent) {
 
 
 /**
+ * Return the radius of the circle.
  * @return {number} Radius.
  * @api
  */
@@ -135,6 +138,7 @@ ol.geom.Circle.prototype.getType = function() {
 
 
 /**
+ * Set the center of the circle as {@link ol.Coordinate coordinate}.
  * @param {ol.Coordinate} center Center.
  * @api
  */
@@ -154,6 +158,8 @@ ol.geom.Circle.prototype.setCenter = function(center) {
 
 
 /**
+ * Set the center (as {@link ol.Coordinate coordinate}) and the radius (as
+ * number) of the circle.
  * @param {ol.Coordinate} center Center.
  * @param {number} radius Radius.
  * @param {ol.geom.GeometryLayout=} opt_layout Layout.
@@ -195,7 +201,7 @@ ol.geom.Circle.prototype.setFlatCoordinates =
 
 
 /**
- * The radius is in the units of the projection.
+ * Set the radius of the circle. The radius is in the units of the projection.
  * @param {number} radius Radius.
  * @api
  */

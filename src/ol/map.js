@@ -541,6 +541,7 @@ ol.Map.prototype.beforeRender = function(var_args) {
 /**
  * @param {ol.PreRenderFunction} preRenderFunction Pre-render function.
  * @return {boolean} Whether the preRenderFunction has been found and removed.
+ * @api
  */
 ol.Map.prototype.removePreRenderFunction = function(preRenderFunction) {
   return goog.array.remove(this.preRenderFunctions_, preRenderFunction);

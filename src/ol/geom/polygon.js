@@ -136,6 +136,7 @@ ol.geom.Polygon.prototype.closestPointXY =
 
 /**
  * @inheritDoc
+ * @api
  */
 ol.geom.Polygon.prototype.containsXY = function(x, y) {
   return ol.geom.flat.contains.linearRingsContainsXY(

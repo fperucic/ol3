@@ -1409,12 +1409,13 @@ ol.Map.prototype.setView = function(view) {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @param {boolean} render boolean.
  * @api
  */
-ol.Map.prototype.skipFeature = function(feature) {
+ol.Map.prototype.skipFeature = function(feature, render) {
   var featureUid = goog.getUid(feature).toString();
   this.skippedFeatureUids_[featureUid] = true;
-  this.render();
+  (goog.isNull(render) || render) && this.render();
 };
 
 
@@ -1437,11 +1438,13 @@ ol.Map.prototype.updateSize = function() {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @param {boolean} render boolean.
+ * @api
  */
-ol.Map.prototype.unskipFeature = function(feature) {
+ol.Map.prototype.unskipFeature = function(feature, render) {
   var featureUid = goog.getUid(feature).toString();
   delete this.skippedFeatureUids_[featureUid];
-  this.render();
+  (goog.isNull(render) || render) && this.render();
 };
 
 

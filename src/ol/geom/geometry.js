@@ -130,6 +130,7 @@ ol.geom.Geometry.prototype.getClosestPoint = function(point, opt_closestPoint) {
 /**
  * @param {ol.Coordinate} coordinate Coordinate.
  * @return {boolean} Contains coordinate.
+ * @api
  */
 ol.geom.Geometry.prototype.containsCoordinate = function(coordinate) {
   return this.containsXY(coordinate[0], coordinate[1]);

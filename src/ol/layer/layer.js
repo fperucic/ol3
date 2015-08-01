@@ -19,10 +19,11 @@ goog.require('ol.source.State');
  * Layers group together those properties that pertain to how the data is to be
  * displayed, irrespective of the source of that data.
  *
+ * A generic `change` event is fired when the state of the source changes.
+ *
  * @constructor
  * @extends {ol.layer.Base}
  * @fires ol.render.Event
- * @fires change Triggered when the state of the source changes.
  * @param {olx.layer.LayerOptions} options Layer options.
  * @api stable
  */
@@ -148,10 +149,13 @@ ol.layer.Layer.prototype.handleSourcePropertyChange_ = function() {
 
 /**
  * Sets the layer to be rendered on a map. The map will not manage this layer in
- * its layers collection, and the layer will be rendered on top. This is useful
- * for temporary layers. To remove an unmanaged layer from the map, use
- * `#setMap(null)`. To add the layer to a map and have it managed by the map,
- * use {@link ol.Map#addLayer} instead.
+ * its layers collection, layer filters in {@link ol.Map#forEachLayerAtPixel}
+ * will not filter the layer, and it will be rendered on top. This is useful for
+ * temporary layers. To remove an unmanaged layer from the map, use
+ * `#setMap(null)`.
+ *
+ * To add the layer to a map and have it managed by the map, use
+ * {@link ol.Map#addLayer} instead.
  * @param {ol.Map} map Map.
  * @api
  */

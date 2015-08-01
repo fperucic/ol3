@@ -1,3 +1,4 @@
+
 /**
  * @type {Object}
  */
@@ -472,6 +473,7 @@ olx.ProjectionOptions.prototype.global;
  */
 olx.ProjectionOptions.prototype.worldExtent;
 
+
 /**
  * Function to determine resolution at a point. The function is called with a
  * `{number}` view resolution and an `{ol.Coordinate}` as arguments, and returns
@@ -910,6 +912,7 @@ olx.control.AttributionOptions.prototype.tipLabel;
  * @api
  */
 olx.control.AttributionOptions.prototype.label;
+
 
 /**
  * Text label to use for the expanded attributions button. Default is `»`.
@@ -2828,6 +2831,7 @@ olx.interaction.SelectOptions.prototype.removeCondition;
  */
 olx.interaction.SelectOptions.prototype.toggleCondition;
 
+
 /**
  * A boolean that determines if the default behaviour should select only
  * single features or all (overlapping) features at the clicked map
@@ -2836,6 +2840,7 @@ olx.interaction.SelectOptions.prototype.toggleCondition;
  * @api
  */
 olx.interaction.SelectOptions.prototype.multi;
+
 
 /**
  * A function that takes an {@link ol.Feature} and an {@link ol.layer.Layer} and
@@ -2876,7 +2881,7 @@ olx.interaction.SnapOptions.prototype.features;
 
 /**
  * Pixel tolerance for considering the pointer close enough to a segment or
- * vertex for editing. Default is `10` pixels.
+ * vertex for snapping. Default is `10` pixels.
  * @type {number|undefined}
  * @api
  */
@@ -4194,7 +4199,6 @@ olx.source.ImageMapGuideOptions.prototype.ratio;
 olx.source.ImageMapGuideOptions.prototype.resolutions;
 
 
-
 /**
  * Optional function to load an image given a URL.
  * @type {ol.TileLoadFunctionType|undefined}
@@ -4753,6 +4757,7 @@ olx.source.ImageStaticOptions.prototype.url;
 
 /**
  * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
+ *     crossOrigin: (null|string|undefined),
  *     params: (Object.<string, *>|undefined),
  *     logo: (string|olx.LogoOptions|undefined),
  *     tileGrid: (ol.tilegrid.TileGrid|undefined),
@@ -4765,12 +4770,25 @@ olx.source.ImageStaticOptions.prototype.url;
  */
 olx.source.TileArcGISRestOptions;
 
+
 /**
  * Attributions.
  * @type {Array.<ol.Attribution>|undefined}
  * @api
  */
 olx.source.TileArcGISRestOptions.prototype.attributions;
+
+
+/**
+ * The `crossOrigin` attribute for loaded images.  Note that you must provide a
+ * `crossOrigin` value if you are using the WebGL renderer or if you want to
+ * access pixel data with the Canvas renderer.  See
+ * {@link https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image}
+ * for more detail.
+ * @type {null|string|undefined}
+ * @api
+ */
+olx.source.TileArcGISRestOptions.prototype.crossOrigin;
 
 
 /**
@@ -4805,6 +4823,7 @@ olx.source.TileArcGISRestOptions.prototype.logo;
  * @api
  */
 olx.source.TileArcGISRestOptions.prototype.tileGrid;
+
 
 /**
  * Projection.
@@ -6406,7 +6425,7 @@ olx.view;
  *     minResolution: (number|undefined)}}
  * @api
  */
-olx.view.FitGeometryOptions;
+olx.view.FitOptions;
 
 
 /**
@@ -6415,7 +6434,7 @@ olx.view.FitGeometryOptions;
  * @type {!Array.<number>}
  * @api
  */
-olx.view.FitGeometryOptions.prototype.padding;
+olx.view.FitOptions.prototype.padding;
 
 
 /**
@@ -6423,7 +6442,7 @@ olx.view.FitGeometryOptions.prototype.padding;
  * @type {boolean|undefined}
  * @api
  */
-olx.view.FitGeometryOptions.prototype.constrainResolution;
+olx.view.FitOptions.prototype.constrainResolution;
 
 
 /**
@@ -6431,7 +6450,7 @@ olx.view.FitGeometryOptions.prototype.constrainResolution;
  * @type {boolean|undefined}
  * @api
  */
-olx.view.FitGeometryOptions.prototype.nearest;
+olx.view.FitOptions.prototype.nearest;
 
 
 /**
@@ -6439,7 +6458,7 @@ olx.view.FitGeometryOptions.prototype.nearest;
  * @type {number|undefined}
  * @api
  */
-olx.view.FitGeometryOptions.prototype.minResolution;
+olx.view.FitOptions.prototype.minResolution;
 
 
 /**
@@ -6448,7 +6467,7 @@ olx.view.FitGeometryOptions.prototype.minResolution;
  * @type {number|undefined}
  * @api
  */
-olx.view.FitGeometryOptions.prototype.maxZoom;
+olx.view.FitOptions.prototype.maxZoom;
 
 
 /* typedefs for object literals exposed by the library */

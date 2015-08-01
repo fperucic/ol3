@@ -1,5 +1,7 @@
 ## Upgrade notes
 
+### v3.8.0
+
 ### v3.7.0
 
 #### Removal of `ol.FeatureOverlay`
@@ -92,6 +94,14 @@ var tileUrlFunction = function(tileCoord, pixelRatio, projection) {
 #### Removal of `ol.tilegrid.Zoomify`
 
 The replacement of `ol.tilegrid.Zoomify` is a plain `ol.tilegrid.TileGrid`, configured with `extent`, `origin` and `resolutions`. If the `size` passed to the `ol.source.Zoomify` source is `[width, height]`, then the extent for the tile grid will be `[0, -height, width, 0]`, and the origin will be `[0, 0]`.
+
+#### Replace `ol.View.fitExtent()` and `ol.View.fitGeometry()` with `ol.View.fit()`
+* This combines two previously distinct functions into one more flexible call which takes either a geometry or an extent.
+* Rename all calls to `fitExtent` and `fitGeometry` to `fit`.
+
+#### Change to `ol.interaction.Modify`
+
+When single clicking a line or boundary within the `pixelTolerance`, a vertex is now created.
 
 ### v3.6.0
 

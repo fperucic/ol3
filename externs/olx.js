@@ -2693,6 +2693,11 @@ olx.interaction.MouseWheelZoomOptions.prototype.duration;
  */
 olx.interaction.MouseWheelZoomOptions.prototype.useAnchor;
 
+/**
+ * Event delay in milliseconds. Default is ol.MOUSEWHEELZOOM_TIMEOUT_DURATION.
+ * @type {number|undefined}
+ */
+olx.interaction.MouseWheelZoomOptions.prototype.wheelTimeout;
 
 /**
  * @typedef {{threshold: (number|undefined),

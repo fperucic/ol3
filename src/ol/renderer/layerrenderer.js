@@ -21,7 +21,6 @@ goog.require('ol.vec.Mat4');
  * @constructor
  * @extends {ol.Observable}
  * @param {ol.layer.Layer} layer Layer.
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 ol.renderer.Layer = function(layer) {
@@ -113,7 +112,6 @@ ol.renderer.Layer.prototype.createLoadedTileFinder = function(source, tiles) {
 
 
 /**
- * @protected
  * @return {ol.layer.Layer} Layer.
  */
 ol.renderer.Layer.prototype.getLayer = function() {
@@ -223,7 +221,7 @@ ol.renderer.Layer.prototype.updateAttributions =
  */
 ol.renderer.Layer.prototype.updateLogos = function(frameState, source) {
   var logo = source.getLogo();
-  if (goog.isDef(logo)) {
+  if (logo !== undefined) {
     if (goog.isString(logo)) {
       frameState.logos[logo] = '';
     } else if (goog.isObject(logo)) {
@@ -321,7 +319,7 @@ ol.renderer.Layer.prototype.manageTilePyramid = function(
                 tileGrid.getTileCoordCenter(tile.tileCoord), tileResolution]);
             }
           }
-          if (goog.isDef(opt_tileCallback)) {
+          if (opt_tileCallback !== undefined) {
             opt_tileCallback.call(opt_this, tile);
           }
         } else {

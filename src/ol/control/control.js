@@ -3,7 +3,6 @@ goog.provide('ol.control.Control');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.events.EventType');
 goog.require('ol.MapEventType');
 goog.require('ol.Object');
 
@@ -46,7 +45,7 @@ ol.control.Control = function(options) {
    * @protected
    * @type {Element}
    */
-  this.element = goog.isDef(options.element) ? options.element : null;
+  this.element = options.element ? options.element : null;
 
   /**
    * @private
@@ -69,32 +68,14 @@ ol.control.Control = function(options) {
   /**
    * @type {function(ol.MapEvent)}
    */
-  this.render = goog.isDef(options.render) ? options.render : goog.nullFunction;
+  this.render = options.render ? options.render : goog.nullFunction;
 
-  if (goog.isDef(options.target)) {
+  if (options.target) {
     this.setTarget(options.target);
   }
 
 };
 goog.inherits(ol.control.Control, ol.Object);
-
-
-/**
- * Bind a listener that blurs the passed element on any mouseout- or
- * focusout-event.
- *
- * @param {!Element} button The button which shall blur on mouseout- or
- *     focusout-event.
- * @protected
- */
-ol.control.Control.bindMouseOutFocusOutBlur = function(button) {
-  goog.events.listen(button, [
-    goog.events.EventType.MOUSEOUT,
-    goog.events.EventType.FOCUSOUT
-  ], /** @this {Element} */ function() {
-    this.blur();
-  }, false);
-};
 
 
 /**
@@ -127,7 +108,7 @@ ol.control.Control.prototype.setMap = function(map) {
   if (!goog.isNull(this.map_)) {
     goog.dom.removeNode(this.element);
   }
-  if (!goog.array.isEmpty(this.listenerKeys)) {
+  if (this.listenerKeys.length > 0) {
     goog.array.forEach(this.listenerKeys, goog.events.unlistenByKey);
     this.listenerKeys.length = 0;
   }

@@ -42,7 +42,7 @@ ol.source.Cluster = function(options) {
    * @type {number}
    * @private
    */
-  this.distance_ = goog.isDef(options.distance) ? options.distance : 20;
+  this.distance_ = options.distance !== undefined ? options.distance : 20;
 
   /**
    * @type {Array.<ol.Feature>}
@@ -77,10 +77,10 @@ ol.source.Cluster.prototype.getSource = function() {
  */
 ol.source.Cluster.prototype.loadFeatures = function(extent, resolution,
     projection) {
+  this.source_.loadFeatures(extent, resolution, projection);
   if (resolution !== this.resolution_) {
     this.clear();
     this.resolution_ = resolution;
-    this.source_.loadFeatures(extent, resolution, projection);
     this.cluster_();
     this.addFeatures(this.features_);
   }
@@ -103,7 +103,7 @@ ol.source.Cluster.prototype.onSourceChange_ = function() {
  * @private
  */
 ol.source.Cluster.prototype.cluster_ = function() {
-  if (!goog.isDef(this.resolution_)) {
+  if (this.resolution_ === undefined) {
     return;
   }
   this.features_.length = 0;

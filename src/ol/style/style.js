@@ -26,7 +26,7 @@ goog.require('ol.style.Stroke');
  */
 ol.style.Style = function(opt_options) {
 
-  var options = goog.isDef(opt_options) ? opt_options : {};
+  var options = opt_options || {};
 
   /**
    * @private
@@ -40,7 +40,7 @@ ol.style.Style = function(opt_options) {
    */
   this.geometryFunction_ = ol.style.defaultGeometryFunction;
 
-  if (goog.isDef(options.geometry)) {
+  if (options.geometry !== undefined) {
     this.setGeometry(options.geometry);
   }
 
@@ -48,25 +48,25 @@ ol.style.Style = function(opt_options) {
    * @private
    * @type {ol.style.Fill}
    */
-  this.fill_ = goog.isDef(options.fill) ? options.fill : null;
+  this.fill_ = options.fill !== undefined ? options.fill : null;
 
   /**
    * @private
    * @type {ol.style.Image}
    */
-  this.image_ = goog.isDef(options.image) ? options.image : null;
+  this.image_ = options.image !== undefined ? options.image : null;
 
   /**
    * @private
    * @type {ol.style.Stroke}
    */
-  this.stroke_ = goog.isDef(options.stroke) ? options.stroke : null;
+  this.stroke_ = options.stroke !== undefined ? options.stroke : null;
 
   /**
    * @private
    * @type {ol.style.Text}
    */
-  this.text_ = goog.isDef(options.text) ? options.text : null;
+  this.text_ = options.text !== undefined ? options.text : null;
 
   /**
    * @private
@@ -172,7 +172,7 @@ ol.style.Style.prototype.setGeometry = function(geometry) {
     };
   } else if (goog.isNull(geometry)) {
     this.geometryFunction_ = ol.style.defaultGeometryFunction;
-  } else if (goog.isDef(geometry)) {
+  } else if (geometry !== undefined) {
     goog.asserts.assertInstanceof(geometry, ol.geom.Geometry,
         'geometry must be an ol.geom.Geometry instance');
     this.geometryFunction_ = function() {
@@ -214,13 +214,10 @@ ol.style.StyleFunction;
  * @return {ol.style.StyleFunction} A style function.
  */
 ol.style.createStyleFunction = function(obj) {
-  /**
-   * @type {ol.style.StyleFunction}
-   */
   var styleFunction;
 
   if (goog.isFunction(obj)) {
-    styleFunction = /** @type {ol.style.StyleFunction} */ (obj);
+    styleFunction = obj;
   } else {
     /**
      * @type {Array.<ol.style.Style>}
@@ -240,47 +237,44 @@ ol.style.createStyleFunction = function(obj) {
 
 
 /**
+ * @type {Array.<ol.style.Style>}
+ * @private
+ */
+ol.style.defaultStyle_ = null;
+
+
+/**
  * @param {ol.Feature} feature Feature.
  * @param {number} resolution Resolution.
  * @return {Array.<ol.style.Style>} Style.
  */
 ol.style.defaultStyleFunction = function(feature, resolution) {
-  var fill = new ol.style.Fill({
-    color: 'rgba(255,255,255,0.4)'
-  });
-  var stroke = new ol.style.Stroke({
-    color: '#3399CC',
-    width: 1.25
-  });
-  var styles = [
-    new ol.style.Style({
-      image: new ol.style.Circle({
-        fill: fill,
-        stroke: stroke,
-        radius: 5
-      }),
-      fill: fill,
-      stroke: stroke
-    })
-  ];
-
-  // Now that we've run it the first time, replace the function with
-  // a constant version. We don't use an immediately-invoked function
+  // We don't use an immediately-invoked function
   // and a closure so we don't get an error at script evaluation time in
   // browsers that do not support Canvas. (ol.style.Circle does
   // canvas.getContext('2d') at construction time, which will cause an.error
   // in such browsers.)
-
-  /**
-   * @param {ol.Feature} feature Feature.
-   * @param {number} resolution Resolution.
-   * @return {Array.<ol.style.Style>} Style.
-   */
-  ol.style.defaultStyleFunction = function(feature, resolution) {
-    return styles;
-  };
-
-  return styles;
+  if (goog.isNull(ol.style.defaultStyle_)) {
+    var fill = new ol.style.Fill({
+      color: 'rgba(255,255,255,0.4)'
+    });
+    var stroke = new ol.style.Stroke({
+      color: '#3399CC',
+      width: 1.25
+    });
+    ol.style.defaultStyle_ = [
+      new ol.style.Style({
+        image: new ol.style.Circle({
+          fill: fill,
+          stroke: stroke,
+          radius: 5
+        }),
+        fill: fill,
+        stroke: stroke
+      })
+    ];
+  }
+  return ol.style.defaultStyle_;
 };
 
 
@@ -347,6 +341,7 @@ ol.style.createDefaultEditingStyles = function() {
 
   styles[ol.geom.GeometryType.GEOMETRY_COLLECTION] =
       styles[ol.geom.GeometryType.POLYGON].concat(
+          styles[ol.geom.GeometryType.LINE_STRING],
           styles[ol.geom.GeometryType.POINT]
       );
 

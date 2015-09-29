@@ -5,7 +5,6 @@ goog.require('goog.asserts');
 goog.require('goog.dom.NodeType');
 goog.require('goog.object');
 goog.require('goog.string');
-goog.require('ol.format.GML');
 goog.require('ol.format.GML2');
 goog.require('ol.format.XMLFeature');
 goog.require('ol.xml');
@@ -98,12 +97,12 @@ ol.format.WMSGetFeatureInfo.prototype.readFeatures_ =
       var parsers = {};
       parsers[featureType] = ol.xml.makeArrayPusher(
           this.gmlFormat_.readFeatureElement, this.gmlFormat_);
-      var parsersNS = ol.xml.makeParsersNS(
+      var parsersNS = ol.xml.makeStructureNS(
           [context['featureNS'], null], parsers);
       layer.namespaceURI = this.featureNS_;
       var layerFeatures = ol.xml.pushParseAndPop(
           [], parsersNS, layer, objectStack, this.gmlFormat_);
-      if (goog.isDef(layerFeatures)) {
+      if (layerFeatures) {
         goog.array.extend(features, layerFeatures);
       }
     }, this);
@@ -112,7 +111,7 @@ ol.format.WMSGetFeatureInfo.prototype.readFeatures_ =
     var gmlFeatures = ol.xml.pushParseAndPop([],
         this.gmlFormat_.FEATURE_COLLECTION_PARSERS, node,
         [{}], this.gmlFormat_);
-    if (goog.isDef(gmlFeatures)) {
+    if (gmlFeatures) {
       features = gmlFeatures;
     }
   }
@@ -141,7 +140,7 @@ ol.format.WMSGetFeatureInfo.prototype.readFeaturesFromNode =
     'featureType': this.featureType,
     'featureNS': this.featureNS
   };
-  if (goog.isDef(opt_options)) {
+  if (opt_options) {
     goog.object.extend(options, this.getReadOptions(node, opt_options));
   }
   return this.readFeatures_(node, [options]);

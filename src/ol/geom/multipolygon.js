@@ -3,6 +3,7 @@ goog.provide('ol.geom.MultiPolygon');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.object');
+goog.require('ol');
 goog.require('ol.extent');
 goog.require('ol.geom.GeometryLayout');
 goog.require('ol.geom.GeometryType');
@@ -78,8 +79,7 @@ ol.geom.MultiPolygon = function(coordinates, opt_layout) {
    */
   this.orientedFlatCoordinates_ = null;
 
-  this.setCoordinates(coordinates,
-      /** @type {ol.geom.GeometryLayout|undefined} */ (opt_layout));
+  this.setCoordinates(coordinates, opt_layout);
 
 };
 goog.inherits(ol.geom.MultiPolygon, ol.geom.SimpleGeometry);
@@ -183,7 +183,7 @@ ol.geom.MultiPolygon.prototype.getArea = function() {
  */
 ol.geom.MultiPolygon.prototype.getCoordinates = function(opt_right) {
   var flatCoordinates;
-  if (goog.isDef(opt_right)) {
+  if (opt_right !== undefined) {
     flatCoordinates = this.getOrientedFlatCoordinates().slice();
     ol.geom.flat.orient.orientLinearRingss(
         flatCoordinates, 0, this.endss_, this.stride, opt_right);

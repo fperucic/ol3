@@ -393,9 +393,7 @@ ol.renderer.webgl.Map.prototype.handleWebGLContextLost = function(event) {
       function(layerRenderer, key, object) {
         goog.asserts.assertInstanceof(layerRenderer, ol.renderer.webgl.Layer,
             'renderer is an instance of ol.renderer.webgl.Layer');
-        var webGLLayerRenderer = /** @type {ol.renderer.webgl.Layer} */
-            (layerRenderer);
-        webGLLayerRenderer.handleWebGLContextLost();
+        layerRenderer.handleWebGLContextLost();
       });
 };
 
@@ -472,6 +470,8 @@ ol.renderer.webgl.Map.prototype.renderFrame = function(frameState) {
   /** @type {Array.<ol.layer.LayerState>} */
   var layerStatesToDraw = [];
   var layerStatesArray = frameState.layerStatesArray;
+  goog.array.stableSort(layerStatesArray, ol.renderer.Map.sortByZIndex);
+
   var viewResolution = frameState.viewState.resolution;
   var i, ii, layerRenderer, layerState;
   for (i = 0, ii = layerStatesArray.length; i < ii; ++i) {
@@ -631,17 +631,4 @@ ol.renderer.webgl.Map.prototype.forEachLayerAtPixel =
     }
   }
   return undefined;
-};
-
-
-/**
- * @private
- * @const
- */
-ol.renderer.webgl.Map.DEFAULT_COLOR_VALUES_ = {
-  opacity: 1,
-  brightness: 0,
-  contrast: 1,
-  hue: 0,
-  saturation: 1
 };

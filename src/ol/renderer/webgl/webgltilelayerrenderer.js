@@ -15,7 +15,9 @@ goog.require('ol.extent');
 goog.require('ol.layer.Tile');
 goog.require('ol.math');
 goog.require('ol.renderer.webgl.Layer');
-goog.require('ol.renderer.webgl.tilelayer.shader');
+goog.require('ol.renderer.webgl.tilelayer.shader.Fragment');
+goog.require('ol.renderer.webgl.tilelayer.shader.Locations');
+goog.require('ol.renderer.webgl.tilelayer.shader.Vertex');
 goog.require('ol.size');
 goog.require('ol.tilecoord');
 goog.require('ol.vec.Mat4');
@@ -249,7 +251,7 @@ ol.renderer.webgl.TileLayer.prototype.prepareFrame =
       for (y = tileRange.minY; y <= tileRange.maxY; ++y) {
 
         tile = tileSource.getTile(z, x, y, pixelRatio, projection);
-        if (goog.isDef(layerState.extent)) {
+        if (layerState.extent !== undefined) {
           // ignore tiles outside layer extent
           tileExtent = tileGrid.getTileCoordExtent(tile.tileCoord, tmpExtent);
           if (!ol.extent.intersects(tileExtent, layerState.extent)) {

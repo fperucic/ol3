@@ -5,6 +5,7 @@ goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.functions');
+goog.require('ol');
 goog.require('ol.Object');
 goog.require('ol.geom.Geometry');
 goog.require('ol.style.Style');
@@ -96,7 +97,7 @@ ol.Feature = function(opt_geometryOrProperties) {
       this, ol.Object.getChangeEventType(this.geometryName_),
       this.handleGeometryChanged_, false, this);
 
-  if (goog.isDef(opt_geometryOrProperties)) {
+  if (opt_geometryOrProperties !== undefined) {
     if (opt_geometryOrProperties instanceof ol.geom.Geometry ||
         goog.isNull(opt_geometryOrProperties)) {
       var geometry = /** @type {ol.geom.Geometry} */ (opt_geometryOrProperties);
@@ -149,6 +150,9 @@ ol.Feature.prototype.getGeometry = function() {
 
 
 /**
+ * Get the feature identifier.  This is a stable identifier for the feature and
+ * is either set when reading data from a remote source or set explicitly by
+ * calling {@link ol.Feature#setId}.
  * @return {number|string|undefined} Id.
  * @api stable
  * @observable
@@ -283,8 +287,9 @@ ol.Feature.prototype.setGeometryName = function(name) {
 
 
 /**
- * A function that returns a style given a resolution. The `this` keyword inside
- * the function references the {@link ol.Feature} to be styled.
+ * A function that returns an array of {@link ol.style.Style styles} given a
+ * resolution. The `this` keyword inside the function references the
+ * {@link ol.Feature} to be styled.
  *
  * @typedef {function(this: ol.Feature, number): Array.<ol.style.Style>}
  * @api stable
@@ -301,13 +306,10 @@ ol.FeatureStyleFunction;
  * @return {ol.FeatureStyleFunction} A style function.
  */
 ol.Feature.createStyleFunction = function(obj) {
-  /**
-   * @type {ol.FeatureStyleFunction}
-   */
   var styleFunction;
 
   if (goog.isFunction(obj)) {
-    styleFunction = /** @type {ol.FeatureStyleFunction} */ (obj);
+    styleFunction = obj;
   } else {
     /**
      * @type {Array.<ol.style.Style>}

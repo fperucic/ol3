@@ -1,6 +1,5 @@
 goog.provide('ol.Attribution');
 
-goog.require('goog.asserts');
 goog.require('goog.math');
 goog.require('ol.TileRange');
 
@@ -39,8 +38,7 @@ ol.Attribution = function(options) {
    * @private
    * @type {Object.<string, Array.<ol.TileRange>>}
    */
-  this.tileRanges_ = goog.isDef(options.tileRanges) ?
-      options.tileRanges : null;
+  this.tileRanges_ = options.tileRanges ? options.tileRanges : null;
 
 };
 

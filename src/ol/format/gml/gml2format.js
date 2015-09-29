@@ -3,7 +3,6 @@ goog.provide('ol.format.GML2');
 goog.require('goog.asserts');
 goog.require('goog.dom.NodeType');
 goog.require('ol.extent');
-goog.require('ol.format.GML');
 goog.require('ol.format.GMLBase');
 goog.require('ol.format.XSD');
 goog.require('ol.proj');
@@ -23,7 +22,7 @@ goog.require('ol.xml');
  */
 ol.format.GML2 = function(opt_options) {
   var options = /** @type {olx.format.GMLOptions} */
-      (goog.isDef(opt_options) ? opt_options : {});
+      (opt_options ? opt_options : {});
 
   goog.base(this, options);
 
@@ -34,7 +33,7 @@ ol.format.GML2 = function(opt_options) {
   /**
    * @inheritDoc
    */
-  this.schemaLocation = goog.isDef(options.schemaLocation) ?
+  this.schemaLocation = options.schemaLocation ?
       options.schemaLocation : ol.format.GML2.schemaLocation_;
 
 };
@@ -128,7 +127,7 @@ ol.format.GML2.prototype.innerBoundaryIsParser_ =
   var flatLinearRing = ol.xml.pushParseAndPop(
       /** @type {Array.<number>|undefined} */ (undefined),
       this.RING_PARSERS, node, objectStack, this);
-  if (goog.isDef(flatLinearRing)) {
+  if (flatLinearRing) {
     var flatLinearRings = /** @type {Array.<Array.<number>>} */
         (objectStack[objectStack.length - 1]);
     goog.asserts.assert(goog.isArray(flatLinearRings),
@@ -154,7 +153,7 @@ ol.format.GML2.prototype.outerBoundaryIsParser_ =
   var flatLinearRing = ol.xml.pushParseAndPop(
       /** @type {Array.<number>|undefined} */ (undefined),
       this.RING_PARSERS, node, objectStack, this);
-  if (goog.isDef(flatLinearRing)) {
+  if (flatLinearRing) {
     var flatLinearRings = /** @type {Array.<Array.<number>>} */
         (objectStack[objectStack.length - 1]);
     goog.asserts.assert(goog.isArray(flatLinearRings),

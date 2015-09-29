@@ -93,6 +93,9 @@ ol.render.webgl.Immediate.prototype.flush = function() {
 
 
 /**
+ * Register a function to be called for rendering at a given zIndex.  The
+ * function will be called asynchronously.  The callback will receive a
+ * reference to {@link ol.render.canvas.Immediate} context for drawing.
  * @param {number} zIndex Z index.
  * @param {function(ol.render.webgl.Immediate)} callback Callback.
  * @api
@@ -100,7 +103,7 @@ ol.render.webgl.Immediate.prototype.flush = function() {
 ol.render.webgl.Immediate.prototype.drawAsync = function(zIndex, callback) {
   var zIndexKey = zIndex.toString();
   var callbacks = this.callbacksByZIndex_[zIndexKey];
-  if (goog.isDef(callbacks)) {
+  if (callbacks !== undefined) {
     callbacks.push(callback);
   } else {
     this.callbacksByZIndex_[zIndexKey] = [callback];
@@ -128,7 +131,7 @@ ol.render.webgl.Immediate.prototype.drawFeature = function(feature, style) {
     return;
   }
   var zIndex = style.getZIndex();
-  if (!goog.isDef(zIndex)) {
+  if (zIndex === undefined) {
     zIndex = 0;
   }
   this.drawAsync(zIndex, function(render) {
@@ -183,16 +186,12 @@ ol.render.webgl.Immediate.prototype.drawPointGeometry =
   replay.finish(context);
   // default colors
   var opacity = 1;
-  var brightness = 0;
-  var contrast = 1;
-  var hue = 0;
-  var saturation = 1;
   var skippedFeatures = {};
   var featureCallback;
   var oneByOne = false;
   replay.replay(this.context_, this.center_, this.resolution_, this.rotation_,
-      this.size_, this.pixelRatio_, opacity, brightness,
-      contrast, hue, saturation, skippedFeatures, featureCallback, oneByOne);
+      this.size_, this.pixelRatio_, opacity, skippedFeatures, featureCallback,
+      oneByOne);
   replay.getDeleteResourcesFunction(context)();
 };
 
@@ -228,18 +227,13 @@ ol.render.webgl.Immediate.prototype.drawMultiPointGeometry =
   replay.setImageStyle(this.imageStyle_);
   replay.drawMultiPointGeometry(multiPointGeometry, data);
   replay.finish(context);
-  // default colors
   var opacity = 1;
-  var brightness = 0;
-  var contrast = 1;
-  var hue = 0;
-  var saturation = 1;
   var skippedFeatures = {};
   var featureCallback;
   var oneByOne = false;
   replay.replay(this.context_, this.center_, this.resolution_, this.rotation_,
-      this.size_, this.pixelRatio_, opacity, brightness,
-      contrast, hue, saturation, skippedFeatures, featureCallback, oneByOne);
+      this.size_, this.pixelRatio_, opacity, skippedFeatures, featureCallback,
+      oneByOne);
   replay.getDeleteResourcesFunction(context)();
 };
 

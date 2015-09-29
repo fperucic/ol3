@@ -9,6 +9,7 @@ goog.require('goog.events.EventType');
 goog.require('goog.functions');
 goog.require('goog.object');
 goog.require('goog.vec.Mat4');
+goog.require('ol');
 goog.require('ol.extent');
 goog.require('ol.layer.Layer');
 goog.require('ol.renderer.Layer');
@@ -34,7 +35,6 @@ ol.RendererType = {
  * @extends {goog.Disposable}
  * @param {Element} container Container.
  * @param {ol.Map} map Map.
- * @suppress {checkStructDictInheritance}
  * @struct
  */
 ol.renderer.Map = function(container, map) {
@@ -140,7 +140,7 @@ ol.renderer.Map.prototype.forEachFeatureAtCoordinate =
    * @return {?} Callback result.
    */
   function forEachFeatureAtCoordinate(feature) {
-    goog.asserts.assert(goog.isDef(feature), 'received a feature');
+    goog.asserts.assert(feature !== undefined, 'received a feature');
     var key = goog.getUid(feature).toString();
     if (!(key in features)) {
       features[key] = true;
@@ -171,9 +171,11 @@ ol.renderer.Map.prototype.forEachFeatureAtCoordinate =
         (ol.layer.Layer.visibleAtResolution(layerState, viewResolution) &&
         layerFilter.call(thisArg2, layer))) {
       var layerRenderer = this.getLayerRenderer(layer);
-      result = layerRenderer.forEachFeatureAtCoordinate(
-          layer.getSource().getWrapX() ? translatedCoordinate : coordinate,
-          frameState, callback, thisArg);
+      if (!goog.isNull(layer.getSource())) {
+        result = layerRenderer.forEachFeatureAtCoordinate(
+            layer.getSource().getWrapX() ? translatedCoordinate : coordinate,
+            frameState, callback, thisArg);
+      }
       if (result) {
         return result;
       }
@@ -240,7 +242,7 @@ ol.renderer.Map.prototype.hasFeatureAtCoordinate =
   var hasFeature = this.forEachFeatureAtCoordinate(
       coordinate, frameState, goog.functions.TRUE, this, layerFilter, thisArg);
 
-  return goog.isDef(hasFeature);
+  return hasFeature !== undefined;
 };
 
 
@@ -375,4 +377,14 @@ ol.renderer.Map.prototype.scheduleRemoveUnusedLayerRenderers =
       return;
     }
   }
+};
+
+
+/**
+ * @param {ol.layer.LayerState} state1
+ * @param {ol.layer.LayerState} state2
+ * @return {number}
+ */
+ol.renderer.Map.sortByZIndex = function(state1, state2) {
+  return state1.zIndex - state2.zIndex;
 };

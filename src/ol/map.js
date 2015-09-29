@@ -101,6 +101,7 @@ ol.OL3_LOGO_URL = 'data:image/png;base64,' +
 
 /**
  * @type {Array.<ol.RendererType>}
+ * @const
  */
 ol.DEFAULT_RENDERER_TYPES = [
   ol.RendererType.CANVAS,
@@ -180,27 +181,28 @@ ol.Map = function(options) {
    * @type {boolean}
    * @private
    */
-  this.loadTilesWhileAnimating_ = goog.isDef(options.loadTilesWhileAnimating) ?
-      options.loadTilesWhileAnimating : false;
+  this.loadTilesWhileAnimating_ =
+      options.loadTilesWhileAnimating !== undefined ?
+          options.loadTilesWhileAnimating : false;
 
   /**
    * @type {boolean}
    * @private
    */
   this.loadTilesWhileInteracting_ =
-      goog.isDef(options.loadTilesWhileInteracting) ?
+      options.loadTilesWhileInteracting !== undefined ?
           options.loadTilesWhileInteracting : false;
 
   /**
    * @private
    * @type {number}
    */
-  this.pixelRatio_ = goog.isDef(options.pixelRatio) ?
+  this.pixelRatio_ = options.pixelRatio !== undefined ?
       options.pixelRatio : ol.has.DEVICE_PIXEL_RATIO;
 
   /**
    * @private
-   * @type {Object}
+   * @type {Object.<string, string>}
    */
   this.logos_ = optionsInternal.logos;
 
@@ -266,6 +268,7 @@ ol.Map = function(options) {
   this.viewport_.style.height = '100%';
   // prevent page zoom on IE >= 10 browsers
   this.viewport_.style.msTouchAction = 'none';
+  this.viewport_.style.touchAction = 'none';
   if (ol.has.TOUCH) {
     goog.dom.classlist.add(this.viewport_, 'ol-touch');
   }
@@ -494,7 +497,7 @@ goog.inherits(ol.Map, ol.Object);
  */
 ol.Map.prototype.addControl = function(control) {
   var controls = this.getControls();
-  goog.asserts.assert(goog.isDef(controls), 'controls should be defined');
+  goog.asserts.assert(controls !== undefined, 'controls should be defined');
   controls.push(control);
 };
 
@@ -506,7 +509,7 @@ ol.Map.prototype.addControl = function(control) {
  */
 ol.Map.prototype.addInteraction = function(interaction) {
   var interactions = this.getInteractions();
-  goog.asserts.assert(goog.isDef(interactions),
+  goog.asserts.assert(interactions !== undefined,
       'interactions should be defined');
   interactions.push(interaction);
 };
@@ -532,7 +535,7 @@ ol.Map.prototype.addLayer = function(layer) {
  */
 ol.Map.prototype.addOverlay = function(overlay) {
   var overlays = this.getOverlays();
-  goog.asserts.assert(goog.isDef(overlays), 'overlays should be defined');
+  goog.asserts.assert(overlays !== undefined, 'overlays should be defined');
   overlays.push(overlay);
 };
 
@@ -599,10 +602,10 @@ ol.Map.prototype.forEachFeatureAtPixel =
     return;
   }
   var coordinate = this.getCoordinateFromPixel(pixel);
-  var thisArg = goog.isDef(opt_this) ? opt_this : null;
-  var layerFilter = goog.isDef(opt_layerFilter) ?
+  var thisArg = opt_this !== undefined ? opt_this : null;
+  var layerFilter = opt_layerFilter !== undefined ?
       opt_layerFilter : goog.functions.TRUE;
-  var thisArg2 = goog.isDef(opt_this2) ? opt_this2 : null;
+  var thisArg2 = opt_this2 !== undefined ? opt_this2 : null;
   return this.renderer_.forEachFeatureAtCoordinate(
       coordinate, this.frameState_, callback, thisArg,
       layerFilter, thisArg2);
@@ -636,10 +639,10 @@ ol.Map.prototype.forEachLayerAtPixel =
   if (goog.isNull(this.frameState_)) {
     return;
   }
-  var thisArg = goog.isDef(opt_this) ? opt_this : null;
-  var layerFilter = goog.isDef(opt_layerFilter) ?
+  var thisArg = opt_this !== undefined ? opt_this : null;
+  var layerFilter = opt_layerFilter !== undefined ?
       opt_layerFilter : goog.functions.TRUE;
-  var thisArg2 = goog.isDef(opt_this2) ? opt_this2 : null;
+  var thisArg2 = opt_this2 !== undefined ? opt_this2 : null;
   return this.renderer_.forEachLayerAtPixel(
       pixel, this.frameState_, callback, thisArg,
       layerFilter, thisArg2);
@@ -667,9 +670,9 @@ ol.Map.prototype.hasFeatureAtPixel =
     return false;
   }
   var coordinate = this.getCoordinateFromPixel(pixel);
-  var layerFilter = goog.isDef(opt_layerFilter) ?
+  var layerFilter = opt_layerFilter !== undefined ?
       opt_layerFilter : goog.functions.TRUE;
-  var thisArg = goog.isDef(opt_this) ? opt_this : null;
+  var thisArg = opt_this !== undefined ? opt_this : null;
   return this.renderer_.hasFeatureAtCoordinate(
       coordinate, this.frameState_, layerFilter, thisArg);
 };
@@ -693,22 +696,8 @@ ol.Map.prototype.getEventCoordinate = function(event) {
  * @api stable
  */
 ol.Map.prototype.getEventPixel = function(event) {
-  // goog.style.getRelativePosition is based on event.targetTouches,
-  // but touchend and touchcancel events have no targetTouches when
-  // the last finger is removed from the screen.
-  // So we ourselves compute the position of touch events.
-  // See https://github.com/google/closure-library/pull/323
-  if (goog.isDef(event.changedTouches)) {
-    var touch = event.changedTouches[0];
-    var viewportPosition = goog.style.getClientPosition(this.viewport_);
-    return [
-      touch.clientX - viewportPosition.x,
-      touch.clientY - viewportPosition.y
-    ];
-  } else {
-    var eventPosition = goog.style.getRelativePosition(event, this.viewport_);
-    return [eventPosition.x, eventPosition.y];
-  }
+  var eventPosition = goog.style.getRelativePosition(event, this.viewport_);
+  return [eventPosition.x, eventPosition.y];
 };
 
 
@@ -736,7 +725,7 @@ ol.Map.prototype.getTarget = function() {
  */
 ol.Map.prototype.getTargetElement = function() {
   var target = this.getTarget();
-  return goog.isDef(target) ? goog.dom.getElement(target) : null;
+  return target !== undefined ? goog.dom.getElement(target) : null;
 };
 
 
@@ -954,7 +943,7 @@ ol.Map.prototype.handleMapBrowserEvent = function(mapBrowserEvent) {
   this.focus_ = mapBrowserEvent.coordinate;
   mapBrowserEvent.frameState = this.frameState_;
   var interactions = this.getInteractions();
-  goog.asserts.assert(goog.isDef(interactions),
+  goog.asserts.assert(interactions !== undefined,
       'interactions should be defined');
   var interactionsArray = interactions.getArray();
   var i;
@@ -1131,10 +1120,8 @@ ol.Map.prototype.handleLayerGroupPropertyChanged_ = function(event) {
  */
 ol.Map.prototype.handleLayerGroupChanged_ = function() {
   if (!goog.isNull(this.layerGroupPropertyListenerKeys_)) {
-    var length = this.layerGroupPropertyListenerKeys_.length;
-    for (var i = 0; i < length; ++i) {
-      goog.events.unlistenByKey(this.layerGroupPropertyListenerKeys_[i]);
-    }
+    goog.array.forEach(this.layerGroupPropertyListenerKeys_,
+        goog.events.unlistenByKey);
     this.layerGroupPropertyListenerKeys_ = null;
   }
   var layerGroup = this.getLayerGroup();
@@ -1214,11 +1201,8 @@ ol.Map.prototype.render = function() {
  */
 ol.Map.prototype.removeControl = function(control) {
   var controls = this.getControls();
-  goog.asserts.assert(goog.isDef(controls), 'controls should be defined');
-  if (goog.isDef(controls.remove(control))) {
-    return control;
-  }
-  return undefined;
+  goog.asserts.assert(controls !== undefined, 'controls should be defined');
+  return controls.remove(control);
 };
 
 
@@ -1230,14 +1214,10 @@ ol.Map.prototype.removeControl = function(control) {
  * @api stable
  */
 ol.Map.prototype.removeInteraction = function(interaction) {
-  var removed;
   var interactions = this.getInteractions();
-  goog.asserts.assert(goog.isDef(interactions),
+  goog.asserts.assert(interactions !== undefined,
       'interactions should be defined');
-  if (goog.isDef(interactions.remove(interaction))) {
-    removed = interaction;
-  }
-  return removed;
+  return interactions.remove(interaction);
 };
 
 
@@ -1263,11 +1243,8 @@ ol.Map.prototype.removeLayer = function(layer) {
  */
 ol.Map.prototype.removeOverlay = function(overlay) {
   var overlays = this.getOverlays();
-  goog.asserts.assert(goog.isDef(overlays), 'overlays should be defined');
-  if (goog.isDef(overlays.remove(overlay))) {
-    return overlay;
-  }
-  return undefined;
+  goog.asserts.assert(overlays !== undefined, 'overlays should be defined');
+  return overlays.remove(overlay);
 };
 
 
@@ -1283,7 +1260,7 @@ ol.Map.prototype.renderFrame_ = function(time) {
   var view = this.getView();
   /** @type {?olx.FrameState} */
   var frameState = null;
-  if (goog.isDef(size) && ol.size.hasArea(size) &&
+  if (size !== undefined && ol.size.hasArea(size) &&
       !goog.isNull(view) && view.isDef()) {
     var viewHints = view.getHints();
     var layerStatesArray = this.getLayerGroup().getLayerStatesArray();
@@ -1454,7 +1431,7 @@ ol.Map.prototype.unskipFeature = function(feature, opt_render) {
  * @typedef {{controls: ol.Collection.<ol.control.Control>,
  *            interactions: ol.Collection.<ol.interaction.Interaction>,
  *            keyboardEventTarget: (Element|Document),
- *            logos: Object,
+ *            logos: Object.<string, string>,
  *            overlays: ol.Collection.<ol.Overlay>,
  *            rendererConstructor:
  *                function(new: ol.renderer.Map, Element, ol.Map),
@@ -1473,7 +1450,7 @@ ol.Map.createOptionsInternal = function(options) {
    * @type {Element|Document}
    */
   var keyboardEventTarget = null;
-  if (goog.isDef(options.keyboardEventTarget)) {
+  if (options.keyboardEventTarget !== undefined) {
     // cannot use goog.dom.getElement because its argument cannot be
     // of type Document
     keyboardEventTarget = goog.isString(options.keyboardEventTarget) ?
@@ -1487,7 +1464,7 @@ ol.Map.createOptionsInternal = function(options) {
   var values = {};
 
   var logos = {};
-  if (!goog.isDef(options.logo) ||
+  if (options.logo === undefined ||
       (goog.isBoolean(options.logo) && options.logo)) {
     logos[ol.OL3_LOGO_URL] = ol.OL3_URL;
   } else {
@@ -1507,7 +1484,7 @@ ol.Map.createOptionsInternal = function(options) {
 
   values[ol.MapProperty.TARGET] = options.target;
 
-  values[ol.MapProperty.VIEW] = goog.isDef(options.view) ?
+  values[ol.MapProperty.VIEW] = options.view !== undefined ?
       options.view : new ol.View();
 
   /**
@@ -1519,7 +1496,7 @@ ol.Map.createOptionsInternal = function(options) {
    * @type {Array.<ol.RendererType>}
    */
   var rendererTypes;
-  if (goog.isDef(options.renderer)) {
+  if (options.renderer !== undefined) {
     if (goog.isArray(options.renderer)) {
       rendererTypes = options.renderer;
     } else if (goog.isString(options.renderer)) {
@@ -1554,7 +1531,7 @@ ol.Map.createOptionsInternal = function(options) {
   }
 
   var controls;
-  if (goog.isDef(options.controls)) {
+  if (options.controls !== undefined) {
     if (goog.isArray(options.controls)) {
       controls = new ol.Collection(options.controls.slice());
     } else {
@@ -1567,7 +1544,7 @@ ol.Map.createOptionsInternal = function(options) {
   }
 
   var interactions;
-  if (goog.isDef(options.interactions)) {
+  if (options.interactions !== undefined) {
     if (goog.isArray(options.interactions)) {
       interactions = new ol.Collection(options.interactions.slice());
     } else {
@@ -1580,7 +1557,7 @@ ol.Map.createOptionsInternal = function(options) {
   }
 
   var overlays;
-  if (goog.isDef(options.overlays)) {
+  if (options.overlays !== undefined) {
     if (goog.isArray(options.overlays)) {
       overlays = new ol.Collection(options.overlays.slice());
     } else {

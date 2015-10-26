@@ -129,7 +129,7 @@ ol.interaction.MouseWheelZoom.doZoom = function() {
   var delta = ol.math.clamp(this.delta_, -maxDelta, maxDelta);
 
   var view = map.getView();
-  goog.asserts.assert(!goog.isNull(view), 'view should not be null');
+  goog.asserts.assert(view, 'map must have view');
 
   ol.interaction.Interaction.zoomByDelta(map, view, -delta, this.lastAnchor_,
       this.duration_);

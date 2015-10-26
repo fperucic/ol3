@@ -80,11 +80,9 @@ ol.layer.Heatmap = function(opt_options) {
   this.setGradient(options.gradient ?
       options.gradient : ol.layer.Heatmap.DEFAULT_GRADIENT);
 
-  this.setBlur(options.blur !== undefined ?
-      /** @type {number} */ (options.blur) : 15);
+  this.setBlur(options.blur !== undefined ? options.blur : 15);
 
-  this.setRadius(options.radius !== undefined ?
-      /** @type {number} */ (options.radius) : 8);
+  this.setRadius(options.radius !== undefined ? options.radius : 8);
 
   goog.events.listen(this, [
     ol.Object.getChangeEventType(ol.layer.HeatmapLayerProperty.BLUR),
@@ -106,8 +104,7 @@ ol.layer.Heatmap = function(opt_options) {
       'weightFunction should be a function');
 
   this.setStyle(goog.bind(function(feature, resolution) {
-    goog.asserts.assert(!goog.isNull(this.styleCache_),
-        'this.styleCache_ should not be null');
+    goog.asserts.assert(this.styleCache_, 'this.styleCache_ expected');
     goog.asserts.assert(this.circleImage_ !== undefined,
         'this.circleImage_ should be defined');
     var weight = weightFunction(feature);
@@ -252,13 +249,12 @@ ol.layer.Heatmap.prototype.handleStyleChanged_ = function() {
 ol.layer.Heatmap.prototype.handleRender_ = function(event) {
   goog.asserts.assert(event.type == ol.render.EventType.RENDER,
       'event.type should be RENDER');
-  goog.asserts.assert(!goog.isNull(this.gradient_),
-      'this.gradient_ should not be null');
+  goog.asserts.assert(this.gradient_, 'this.gradient_ expected');
   var context = event.context;
   var canvas = context.canvas;
   var image = context.getImageData(0, 0, canvas.width, canvas.height);
   var view8 = image.data;
-  var i, ii, alpha, offset;
+  var i, ii, alpha;
   for (i = 0, ii = view8.length; i < ii; i += 4) {
     alpha = view8[i + 3] * 4;
     if (alpha) {

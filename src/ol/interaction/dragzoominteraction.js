@@ -6,8 +6,6 @@ goog.require('ol.easing');
 goog.require('ol.events.condition');
 goog.require('ol.extent');
 goog.require('ol.interaction.DragBox');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Style');
 
 
 
@@ -16,6 +14,9 @@ goog.require('ol.style.Style');
  * Allows the user to zoom the map by clicking and dragging on the map,
  * normally combined with an {@link ol.events.condition} that limits
  * it to when a key, shift by default, is held down.
+ *
+ * To change the style of the box, use CSS and the `.ol-dragzoom` selector, or
+ * your custom one configured with `className`.
  *
  * @constructor
  * @extends {ol.interaction.DragBox}
@@ -32,22 +33,11 @@ ol.interaction.DragZoom = function(opt_options) {
    * @private
    * @type {number}
    */
-  this.duration_ = options.duration ? options.duration : 200;
-
-  /**
-   * @private
-   * @type {ol.style.Style}
-   */
-  var style = options.style ?
-      options.style : new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: [0, 0, 255, 1]
-        })
-      });
+  this.duration_ = options.duration !== undefined ? options.duration : 200;
 
   goog.base(this, {
     condition: condition,
-    style: style
+    className: options.className || 'ol-dragzoom'
   });
 
 };
@@ -61,7 +51,7 @@ ol.interaction.DragZoom.prototype.onBoxEnd = function() {
   var map = this.getMap();
 
   var view = map.getView();
-  goog.asserts.assert(!goog.isNull(view), 'view should not be null');
+  goog.asserts.assert(view, 'map must have view');
 
   var size = map.getSize();
   goog.asserts.assert(size !== undefined, 'size should be defined');

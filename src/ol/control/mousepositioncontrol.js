@@ -3,7 +3,6 @@
 goog.provide('ol.control.MousePosition');
 
 goog.require('goog.dom');
-goog.require('goog.dom.TagName');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('ol.CoordinateFormatType');
@@ -44,7 +43,7 @@ ol.control.MousePosition = function(opt_options) {
 
   var className = options.className ? options.className : 'ol-mouse-position';
 
-  var element = goog.dom.createDom(goog.dom.TagName.DIV, className);
+  var element = goog.dom.createDom('DIV', className);
 
   var render = options.render ?
       options.render : ol.control.MousePosition.render;
@@ -108,7 +107,7 @@ goog.inherits(ol.control.MousePosition, ol.control.Control);
  */
 ol.control.MousePosition.render = function(mapEvent) {
   var frameState = mapEvent.frameState;
-  if (goog.isNull(frameState)) {
+  if (!frameState) {
     this.mapProjection_ = null;
   } else {
     if (this.mapProjection_ != frameState.viewState.projection) {
@@ -182,7 +181,7 @@ ol.control.MousePosition.prototype.handleMouseOut = function(browserEvent) {
  */
 ol.control.MousePosition.prototype.setMap = function(map) {
   goog.base(this, 'setMap', map);
-  if (!goog.isNull(map)) {
+  if (map) {
     var viewport = map.getViewport();
     this.listenerKeys.push(
         goog.events.listen(viewport, goog.events.EventType.MOUSEMOVE,
@@ -224,8 +223,8 @@ ol.control.MousePosition.prototype.setProjection = function(projection) {
  */
 ol.control.MousePosition.prototype.updateHTML_ = function(pixel) {
   var html = this.undefinedHTML_;
-  if (!goog.isNull(pixel) && !goog.isNull(this.mapProjection_)) {
-    if (goog.isNull(this.transform_)) {
+  if (pixel && this.mapProjection_) {
+    if (!this.transform_) {
       var projection = this.getProjection();
       if (projection) {
         this.transform_ = ol.proj.getTransformFromProjections(
@@ -236,7 +235,7 @@ ol.control.MousePosition.prototype.updateHTML_ = function(pixel) {
     }
     var map = this.getMap();
     var coordinate = map.getCoordinateFromPixel(pixel);
-    if (!goog.isNull(coordinate)) {
+    if (coordinate) {
       this.transform_(coordinate, coordinate);
       var coordinateFormat = this.getCoordinateFormat();
       if (coordinateFormat) {

@@ -94,16 +94,10 @@ ol.interaction.DragBox = function(opt_options) {
   var options = opt_options ? opt_options : {};
 
   /**
-   * @private
-   * @type {ol.style.Style}
-   */
-  var style = options.style ? options.style : null;
-
-  /**
    * @type {ol.render.Box}
    * @private
    */
-  this.box_ = new ol.render.Box(style);
+  this.box_ = new ol.render.Box(options.className || 'ol-dragbox');
 
   /**
    * @type {ol.Pixel}
@@ -152,7 +146,7 @@ ol.interaction.DragBox.prototype.getGeometry = function() {
  * @param {ol.MapBrowserEvent} mapBrowserEvent Map browser event.
  * @protected
  */
-ol.interaction.DragBox.prototype.onBoxEnd = goog.nullFunction;
+ol.interaction.DragBox.prototype.onBoxEnd = ol.nullFunction;
 
 
 /**

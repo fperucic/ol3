@@ -5,7 +5,6 @@ goog.provide('ol.dom.BrowserFeature');
 
 goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.TagName');
 goog.require('goog.userAgent');
 goog.require('goog.vec.Mat4');
 goog.require('ol');
@@ -18,7 +17,7 @@ goog.require('ol');
  * @return {CanvasRenderingContext2D}
  */
 ol.dom.createCanvasContext2D = function(opt_width, opt_height) {
-  var canvas = goog.dom.createElement(goog.dom.TagName.CANVAS);
+  var canvas = goog.dom.createElement('CANVAS');
   if (opt_width) {
     canvas.width = opt_width;
   }
@@ -39,13 +38,13 @@ ol.dom.canUseCssTransform = (function() {
   var canUseCssTransform;
   return function() {
     if (canUseCssTransform === undefined) {
-      goog.asserts.assert(!goog.isNull(document.body),
+      goog.asserts.assert(document.body,
           'document.body should not be null');
       if (!goog.global.getComputedStyle) {
         // this browser is ancient
         canUseCssTransform = false;
       } else {
-        var el = goog.dom.createElement(goog.dom.TagName.P),
+        var el = goog.dom.createElement('P'),
             has2d,
             transforms = {
               'webkitTransform': '-webkit-transform',
@@ -54,7 +53,7 @@ ol.dom.canUseCssTransform = (function() {
               'MozTransform': '-moz-transform',
               'transform': 'transform'
             };
-        goog.dom.appendChild(document.body, el);
+        document.body.appendChild(el);
         for (var t in transforms) {
           if (t in el.style) {
             el.style[t] = 'translate(1px,1px)';
@@ -82,13 +81,13 @@ ol.dom.canUseCssTransform3D = (function() {
   var canUseCssTransform3D;
   return function() {
     if (canUseCssTransform3D === undefined) {
-      goog.asserts.assert(!goog.isNull(document.body),
+      goog.asserts.assert(document.body,
           'document.body should not be null');
       if (!goog.global.getComputedStyle) {
         // this browser is ancient
         canUseCssTransform3D = false;
       } else {
-        var el = goog.dom.createElement(goog.dom.TagName.P),
+        var el = goog.dom.createElement('P'),
             has3d,
             transforms = {
               'webkitTransform': '-webkit-transform',
@@ -97,7 +96,7 @@ ol.dom.canUseCssTransform3D = (function() {
               'MozTransform': '-moz-transform',
               'transform': 'transform'
             };
-        goog.dom.appendChild(document.body, el);
+        document.body.appendChild(el);
         for (var t in transforms) {
           if (t in el.style) {
             el.style[t] = 'translate3d(1px,1px,1px)';

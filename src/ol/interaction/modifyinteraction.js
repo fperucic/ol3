@@ -12,6 +12,7 @@ goog.require('ol.Collection');
 goog.require('ol.CollectionEventType');
 goog.require('ol.Feature');
 goog.require('ol.MapBrowserEvent.EventType');
+goog.require('ol.MapBrowserPointerEvent');
 goog.require('ol.ViewHint');
 goog.require('ol.coordinate');
 goog.require('ol.events.condition');
@@ -152,6 +153,12 @@ ol.interaction.Modify = function(options) {
   this.ignoreNextSingleClick_ = false;
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.modified_ = false;
+
+  /**
    * Segment RTree for each layer
    * @type {ol.structs.RBush.<ol.interaction.SegmentDataType>}
    * @private
@@ -243,11 +250,24 @@ ol.interaction.Modify.prototype.addFeature_ = function(feature) {
     this.SEGMENT_WRITERS_[geometry.getType()].call(this, feature, geometry);
   }
   var map = this.getMap();
-  if (!goog.isNull(map)) {
+  if (map) {
     this.handlePointerAtPixel_(this.lastPixel_, map);
   }
   goog.events.listen(feature, goog.events.EventType.CHANGE,
       this.handleFeatureChange_, false, this);
+};
+
+
+/**
+ * @param {ol.MapBrowserPointerEvent} evt Map browser event
+ * @private
+ */
+ol.interaction.Modify.prototype.willModifyFeatures_ = function(evt) {
+  if (!this.modified_) {
+    this.modified_ = true;
+    this.dispatchEvent(new ol.interaction.ModifyEvent(
+        ol.ModifyEventType.MODIFYSTART, this.features_, evt));
+  }
 };
 
 
@@ -259,8 +279,7 @@ ol.interaction.Modify.prototype.removeFeature_ = function(feature) {
   this.removeFeatureSegmentData_(feature);
   // Remove the vertex feature if the collection of canditate features
   // is empty.
-  if (!goog.isNull(this.vertexFeature_) &&
-      this.features_.getLength() === 0) {
+  if (this.vertexFeature_ && this.features_.getLength() === 0) {
     this.overlay_.getSource().removeFeature(this.vertexFeature_);
     this.vertexFeature_ = null;
   }
@@ -501,7 +520,7 @@ ol.interaction.Modify.prototype.writeGeometryCollectionGeometry_ =
 ol.interaction.Modify.prototype.createOrUpdateVertexFeature_ =
     function(coordinates) {
   var vertexFeature = this.vertexFeature_;
-  if (goog.isNull(vertexFeature)) {
+  if (!vertexFeature) {
     vertexFeature = new ol.Feature(new ol.geom.Point(coordinates));
     this.vertexFeature_ = vertexFeature;
     this.overlay_.getSource().addFeature(vertexFeature);
@@ -533,8 +552,9 @@ ol.interaction.Modify.compareIndexes_ = function(a, b) {
 ol.interaction.Modify.handleDownEvent_ = function(evt) {
   this.handlePointerAtPixel_(evt.pixel, evt.map);
   this.dragSegments_ = [];
+  this.modified_ = false;
   var vertexFeature = this.vertexFeature_;
-  if (!goog.isNull(vertexFeature)) {
+  if (vertexFeature) {
     var insertVertices = [];
     var geometry = /** @type {ol.geom.Point} */ (vertexFeature.getGeometry());
     var vertex = geometry.getCoordinates();
@@ -577,14 +597,14 @@ ol.interaction.Modify.handleDownEvent_ = function(evt) {
         insertVertices.push([segmentDataMatch, vertex]);
       }
     }
+    if (insertVertices.length) {
+      this.willModifyFeatures_(evt);
+    }
     for (i = insertVertices.length - 1; i >= 0; --i) {
       this.insertVertex_.apply(this, insertVertices[i]);
     }
-    this.dispatchEvent(
-        new ol.interaction.ModifyEvent(ol.ModifyEventType.MODIFYSTART,
-        this.features_, evt));
   }
-  return !goog.isNull(this.vertexFeature_);
+  return !!this.vertexFeature_;
 };
 
 
@@ -595,6 +615,7 @@ ol.interaction.Modify.handleDownEvent_ = function(evt) {
  */
 ol.interaction.Modify.handleDragEvent_ = function(evt) {
   this.ignoreNextSingleClick_ = false;
+  this.willModifyFeatures_(evt);
 
   var vertex = evt.coordinate;
   for (var i = 0, ii = this.dragSegments_.length; i < ii; ++i) {
@@ -656,9 +677,11 @@ ol.interaction.Modify.handleUpEvent_ = function(evt) {
     this.rBush_.update(ol.extent.boundingExtent(segmentData.segment),
         segmentData);
   }
-  this.dispatchEvent(
-      new ol.interaction.ModifyEvent(ol.ModifyEventType.MODIFYEND,
-      this.features_, evt));
+  if (this.modified_) {
+    this.dispatchEvent(new ol.interaction.ModifyEvent(
+        ol.ModifyEventType.MODIFYEND, this.features_, evt));
+    this.modified_ = false;
+  }
   return false;
 };
 
@@ -672,20 +695,27 @@ ol.interaction.Modify.handleUpEvent_ = function(evt) {
  * @api
  */
 ol.interaction.Modify.handleEvent = function(mapBrowserEvent) {
+  if (!(mapBrowserEvent instanceof ol.MapBrowserPointerEvent)) {
+    return true;
+  }
+
   var handled;
   if (!mapBrowserEvent.map.getView().getHints()[ol.ViewHint.INTERACTING] &&
       mapBrowserEvent.type == ol.MapBrowserEvent.EventType.POINTERMOVE &&
       !this.handlingDownUpSequence) {
     this.handlePointerMove_(mapBrowserEvent);
   }
-  if (!goog.isNull(this.vertexFeature_) &&
-      this.deleteCondition_(mapBrowserEvent)) {
+  if (this.vertexFeature_ && this.deleteCondition_(mapBrowserEvent)) {
     if (mapBrowserEvent.type != ol.MapBrowserEvent.EventType.SINGLECLICK ||
         !this.ignoreNextSingleClick_) {
       var geometry = this.vertexFeature_.getGeometry();
       goog.asserts.assertInstanceof(geometry, ol.geom.Point,
           'geometry should be an ol.geom.Point');
+      this.willModifyFeatures_(mapBrowserEvent);
       handled = this.removeVertex_();
+      this.dispatchEvent(new ol.interaction.ModifyEvent(
+          ol.ModifyEventType.MODIFYEND, this.features_, mapBrowserEvent));
+      this.modified_ = false;
     } else {
       handled = true;
     }
@@ -768,7 +798,7 @@ ol.interaction.Modify.prototype.handlePointerAtPixel_ = function(pixel, map) {
       return;
     }
   }
-  if (!goog.isNull(this.vertexFeature_)) {
+  if (this.vertexFeature_) {
     this.overlay_.getSource().removeFeature(this.vertexFeature_);
     this.vertexFeature_ = null;
   }
@@ -826,7 +856,7 @@ ol.interaction.Modify.prototype.insertVertex_ = function(segmentData, vertex) {
   goog.asserts.assert(segment !== undefined, 'segment should be defined');
   rTree.remove(segmentData);
   goog.asserts.assert(index !== undefined, 'index should be defined');
-  this.updateSegmentIndices_(geometry, /** @type {number} */ (index), depth, 1);
+  this.updateSegmentIndices_(geometry, index, depth, 1);
   var newSegmentData = /** @type {ol.interaction.SegmentDataType} */ ({
     segment: [segment[0], vertex],
     feature: feature,
@@ -940,7 +970,7 @@ ol.interaction.Modify.prototype.removeVertex_ = function() {
             newSegmentData);
         this.updateSegmentIndices_(geometry, index, segmentData.depth, -1);
 
-        if (!goog.isNull(this.vertexFeature_)) {
+        if (this.vertexFeature_) {
           this.overlay_.getSource().removeFeature(this.vertexFeature_);
           this.vertexFeature_ = null;
         }

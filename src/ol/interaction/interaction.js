@@ -148,7 +148,7 @@ ol.interaction.Interaction.rotate =
  */
 ol.interaction.Interaction.rotateWithoutConstraints =
     function(map, view, rotation, opt_anchor, opt_duration) {
-  if (goog.isDefAndNotNull(rotation)) {
+  if (rotation !== undefined) {
     var currentRotation = view.getRotation();
     var currentCenter = view.getCenter();
     if (currentRotation !== undefined && currentCenter &&
@@ -219,14 +219,14 @@ ol.interaction.Interaction.zoomByDelta =
  */
 ol.interaction.Interaction.zoomWithoutConstraints =
     function(map, view, resolution, opt_anchor, opt_duration) {
-  if (goog.isDefAndNotNull(resolution)) {
+  if (resolution) {
     var currentResolution = view.getResolution();
     var currentCenter = view.getCenter();
     if (currentResolution !== undefined && currentCenter &&
         resolution !== currentResolution &&
         opt_duration && opt_duration > 0) {
       map.beforeRender(ol.animation.zoom({
-        resolution: /** @type {number} */ (currentResolution),
+        resolution: currentResolution,
         duration: opt_duration,
         easing: ol.easing.easeOut
       }));
@@ -238,7 +238,7 @@ ol.interaction.Interaction.zoomWithoutConstraints =
         }));
       }
     }
-    if (goog.isDefAndNotNull(opt_anchor)) {
+    if (opt_anchor) {
       var center = view.calculateCenterZoom(resolution, opt_anchor);
       view.setCenter(center);
     }

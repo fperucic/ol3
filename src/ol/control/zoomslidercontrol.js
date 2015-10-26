@@ -4,7 +4,6 @@ goog.provide('ol.control.ZoomSlider');
 
 goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.TagName');
 goog.require('goog.events');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
@@ -79,9 +78,11 @@ ol.control.ZoomSlider = function(opt_options) {
   this.duration_ = options.duration ? options.duration : 200;
 
   var className = options.className ? options.className : 'ol-zoomslider';
-  var thumbElement = goog.dom.createDom(goog.dom.TagName.DIV,
-      [className + '-thumb', ol.css.CLASS_UNSELECTABLE]);
-  var containerElement = goog.dom.createDom(goog.dom.TagName.DIV,
+  var thumbElement = goog.dom.createDom('BUTTON', {
+    'type': 'button',
+    'class': className + '-thumb ' + ol.css.CLASS_UNSELECTABLE
+  });
+  var containerElement = goog.dom.createDom('DIV',
       [className, ol.css.CLASS_UNSELECTABLE, ol.css.CLASS_CONTROL],
       thumbElement);
 
@@ -130,7 +131,7 @@ ol.control.ZoomSlider.direction = {
  */
 ol.control.ZoomSlider.prototype.setMap = function(map) {
   goog.base(this, 'setMap', map);
-  if (!goog.isNull(map)) {
+  if (map) {
     map.render();
   }
 };
@@ -179,10 +180,10 @@ ol.control.ZoomSlider.prototype.initSlider_ = function() {
  * @api
  */
 ol.control.ZoomSlider.render = function(mapEvent) {
-  if (goog.isNull(mapEvent.frameState)) {
+  if (!mapEvent.frameState) {
     return;
   }
-  goog.asserts.assert(goog.isDefAndNotNull(mapEvent.frameState.viewState),
+  goog.asserts.assert(mapEvent.frameState.viewState,
       'viewState should be defined');
   if (!this.sliderInitialized_) {
     this.initSlider_();

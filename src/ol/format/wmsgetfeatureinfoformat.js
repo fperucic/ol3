@@ -4,7 +4,6 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom.NodeType');
 goog.require('goog.object');
-goog.require('goog.string');
 goog.require('ol.format.GML2');
 goog.require('ol.format.XMLFeature');
 goog.require('ol.xml');
@@ -75,9 +74,10 @@ ol.format.WMSGetFeatureInfo.prototype.readFeatures_ =
     return features;
   }
   if (localName == 'msGMLOutput') {
-    goog.array.forEach(node.childNodes, function(layer) {
+    for (var i = 0, ii = node.childNodes.length; i < ii; i++) {
+      var layer = node.childNodes[i];
       if (layer.nodeType !== goog.dom.NodeType.ELEMENT) {
-        return;
+        continue;
       }
       var context = objectStack[0];
       goog.asserts.assert(goog.isObject(context),
@@ -87,8 +87,8 @@ ol.format.WMSGetFeatureInfo.prototype.readFeatures_ =
           ol.format.WMSGetFeatureInfo.layerIdentifier_) >= 0,
           'localName of layer node should match layerIdentifier');
 
-      var featureType = goog.string.remove(layer.localName,
-          ol.format.WMSGetFeatureInfo.layerIdentifier_) +
+      var toRemove = ol.format.WMSGetFeatureInfo.layerIdentifier_;
+      var featureType = layer.localName.replace(toRemove, '') +
           ol.format.WMSGetFeatureInfo.featureIdentifier_;
 
       context['featureType'] = featureType;
@@ -105,7 +105,7 @@ ol.format.WMSGetFeatureInfo.prototype.readFeatures_ =
       if (layerFeatures) {
         goog.array.extend(features, layerFeatures);
       }
-    }, this);
+    }
   }
   if (localName == 'FeatureCollection') {
     var gmlFeatures = ol.xml.pushParseAndPop([],

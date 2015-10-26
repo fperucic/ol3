@@ -185,7 +185,7 @@ ol.source.ImageWMS.prototype.getParams = function() {
 /**
  * @inheritDoc
  */
-ol.source.ImageWMS.prototype.getImage =
+ol.source.ImageWMS.prototype.getImageInternal =
     function(extent, resolution, pixelRatio, projection) {
 
   if (this.url_ === undefined) {
@@ -223,7 +223,7 @@ ol.source.ImageWMS.prototype.getImage =
   extent[3] = centerY + imageResolution * height / 2;
 
   var image = this.image_;
-  if (!goog.isNull(image) &&
+  if (image &&
       this.renderedRevision_ == this.getRevision() &&
       image.getResolution() == resolution &&
       image.getPixelRatio() == pixelRatio &&

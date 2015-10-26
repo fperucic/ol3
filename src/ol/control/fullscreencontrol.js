@@ -2,7 +2,6 @@ goog.provide('ol.control.FullScreen');
 
 goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.dom.fullscreen');
 goog.require('goog.dom.fullscreen.EventType');
@@ -43,8 +42,8 @@ ol.control.FullScreen = function(opt_options) {
    * @private
    * @type {Node}
    */
-  this.labelNode_ = /** @type {Node} */ (goog.isString(label) ?
-          goog.dom.createTextNode(label) : label);
+  this.labelNode_ = goog.isString(label) ?
+      goog.dom.createTextNode(label) : label;
 
   var labelActive = options.labelActive ? options.labelActive : '\u00d7';
 
@@ -52,11 +51,11 @@ ol.control.FullScreen = function(opt_options) {
    * @private
    * @type {Node}
    */
-  this.labelActiveNode_ = /** @type {Node} */ (goog.isString(labelActive) ?
-          goog.dom.createTextNode(labelActive) : labelActive);
+  this.labelActiveNode_ = goog.isString(labelActive) ?
+      goog.dom.createTextNode(labelActive) : labelActive;
 
   var tipLabel = options.tipLabel ? options.tipLabel : 'Toggle full-screen';
-  var button = goog.dom.createDom(goog.dom.TagName.BUTTON, {
+  var button = goog.dom.createDom('BUTTON', {
     'class': this.cssClassName_ + '-' + goog.dom.fullscreen.isFullScreen(),
     'type': 'button',
     'title': tipLabel
@@ -72,7 +71,7 @@ ol.control.FullScreen = function(opt_options) {
   var cssClasses = this.cssClassName_ + ' ' + ol.css.CLASS_UNSELECTABLE +
       ' ' + ol.css.CLASS_CONTROL + ' ' +
       (!goog.dom.fullscreen.isSupported() ? ol.css.CLASS_UNSUPPORTED : '');
-  var element = goog.dom.createDom(goog.dom.TagName.DIV, cssClasses, button);
+  var element = goog.dom.createDom('DIV', cssClasses, button);
 
   goog.base(this, {
     element: element,
@@ -107,18 +106,16 @@ ol.control.FullScreen.prototype.handleFullScreen_ = function() {
     return;
   }
   var map = this.getMap();
-  if (goog.isNull(map)) {
+  if (!map) {
     return;
   }
   if (goog.dom.fullscreen.isFullScreen()) {
     goog.dom.fullscreen.exitFullScreen();
   } else {
     var target = map.getTarget();
-    goog.asserts.assert(goog.isDefAndNotNull(target),
-        'target should be defined');
+    goog.asserts.assert(target, 'target should be defined');
     var element = goog.dom.getElement(target);
-    goog.asserts.assert(goog.isDefAndNotNull(element),
-        'element should be defined');
+    goog.asserts.assert(element, 'element should be defined');
     if (this.keys_) {
       goog.dom.fullscreen.requestFullScreenWithKeys(element);
     } else {
@@ -143,7 +140,7 @@ ol.control.FullScreen.prototype.handleFullScreenChange_ = function() {
     goog.dom.classlist.swap(button, opened, closed);
     goog.dom.replaceNode(this.labelNode_, this.labelActiveNode_);
   }
-  if (!goog.isNull(map)) {
+  if (map) {
     map.updateSize();
   }
 };

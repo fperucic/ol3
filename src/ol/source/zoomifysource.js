@@ -104,7 +104,7 @@ ol.source.Zoomify = function(opt_options) {
    * @return {string|undefined} Tile URL.
    */
   function tileUrlFunction(tileCoord, pixelRatio, projection) {
-    if (goog.isNull(tileCoord)) {
+    if (!tileCoord) {
       return undefined;
     } else {
       var tileCoordZ = tileCoord[0];
@@ -124,6 +124,7 @@ ol.source.Zoomify = function(opt_options) {
     attributions: options.attributions,
     crossOrigin: options.crossOrigin,
     logo: options.logo,
+    reprojectionErrorThreshold: options.reprojectionErrorThreshold,
     tileClass: ol.source.ZoomifyTile_,
     tileGrid: tileGrid,
     tileUrlFunction: tileUrlFunction

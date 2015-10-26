@@ -1,11 +1,9 @@
 goog.provide('ol.control.Rotate');
 
 goog.require('goog.dom');
-goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
-goog.require('goog.math');
 goog.require('ol');
 goog.require('ol.animation');
 goog.require('ol.control.Control');
@@ -41,7 +39,7 @@ ol.control.Rotate = function(opt_options) {
   this.label_ = null;
 
   if (goog.isString(label)) {
-    this.label_ = goog.dom.createDom(goog.dom.TagName.SPAN,
+    this.label_ = goog.dom.createDom('SPAN',
         'ol-compass', label);
   } else {
     this.label_ = label;
@@ -50,7 +48,7 @@ ol.control.Rotate = function(opt_options) {
 
   var tipLabel = options.tipLabel ? options.tipLabel : 'Reset rotation';
 
-  var button = goog.dom.createDom(goog.dom.TagName.BUTTON, {
+  var button = goog.dom.createDom('BUTTON', {
     'class': className + '-reset',
     'type' : 'button',
     'title': tipLabel
@@ -61,7 +59,7 @@ ol.control.Rotate = function(opt_options) {
 
   var cssClasses = className + ' ' + ol.css.CLASS_UNSELECTABLE + ' ' +
       ol.css.CLASS_CONTROL;
-  var element = goog.dom.createDom(goog.dom.TagName.DIV, cssClasses, button);
+  var element = goog.dom.createDom('DIV', cssClasses, button);
 
   var render = options.render ? options.render : ol.control.Rotate.render;
 
@@ -113,20 +111,21 @@ ol.control.Rotate.prototype.handleClick_ = function(event) {
 ol.control.Rotate.prototype.resetNorth_ = function() {
   var map = this.getMap();
   var view = map.getView();
-  if (goog.isNull(view)) {
+  if (!view) {
     // the map does not have a view, so we can't act
     // upon it
     return;
   }
   var currentRotation = view.getRotation();
-  while (currentRotation < -Math.PI) {
-    currentRotation += 2 * Math.PI;
-  }
-  while (currentRotation > Math.PI) {
-    currentRotation -= 2 * Math.PI;
-  }
   if (currentRotation !== undefined) {
     if (this.duration_ > 0) {
+      currentRotation = currentRotation % (2 * Math.PI);
+      if (currentRotation < -Math.PI) {
+        currentRotation += 2 * Math.PI;
+      }
+      if (currentRotation > Math.PI) {
+        currentRotation -= 2 * Math.PI;
+      }
       map.beforeRender(ol.animation.rotate({
         rotation: currentRotation,
         duration: this.duration_,
@@ -146,12 +145,12 @@ ol.control.Rotate.prototype.resetNorth_ = function() {
  */
 ol.control.Rotate.render = function(mapEvent) {
   var frameState = mapEvent.frameState;
-  if (goog.isNull(frameState)) {
+  if (!frameState) {
     return;
   }
   var rotation = frameState.viewState.rotation;
   if (rotation != this.rotation_) {
-    var transform = 'rotate(' + goog.math.toDegrees(rotation) + 'deg)';
+    var transform = 'rotate(' + rotation + 'rad)';
     if (this.autoHide_) {
       goog.dom.classlist.enable(
           this.element, ol.css.CLASS_HIDDEN, rotation === 0);

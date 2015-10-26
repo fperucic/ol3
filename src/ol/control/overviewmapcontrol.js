@@ -2,7 +2,6 @@ goog.provide('ol.control.OverviewMap');
 
 goog.require('goog.asserts');
 goog.require('goog.dom');
-goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
@@ -64,9 +63,9 @@ ol.control.OverviewMap = function(opt_options) {
    * @private
    * @type {Node}
    */
-  this.collapseLabel_ = /** @type {Node} */ (goog.isString(collapseLabel) ?
-      goog.dom.createDom(goog.dom.TagName.SPAN, {}, collapseLabel) :
-      collapseLabel);
+  this.collapseLabel_ = goog.isString(collapseLabel) ?
+      goog.dom.createDom('SPAN', {}, collapseLabel) :
+      collapseLabel;
 
   var label = options.label ? options.label : '\u00BB';
 
@@ -74,13 +73,13 @@ ol.control.OverviewMap = function(opt_options) {
    * @private
    * @type {Node}
    */
-  this.label_ = /** @type {Node} */ (goog.isString(label) ?
-      goog.dom.createDom(goog.dom.TagName.SPAN, {}, label) :
-      label);
+  this.label_ = goog.isString(label) ?
+      goog.dom.createDom('SPAN', {}, label) :
+      label;
 
   var activeLabel = (this.collapsible_ && !this.collapsed_) ?
       this.collapseLabel_ : this.label_;
-  var button = goog.dom.createDom(goog.dom.TagName.BUTTON, {
+  var button = goog.dom.createDom('BUTTON', {
     'type': 'button',
     'title': tipLabel
   }, activeLabel);
@@ -88,7 +87,7 @@ ol.control.OverviewMap = function(opt_options) {
   goog.events.listen(button, goog.events.EventType.CLICK,
       this.handleClick_, false, this);
 
-  var ovmapDiv = goog.dom.createDom(goog.dom.TagName.DIV, 'ol-overviewmap-map');
+  var ovmapDiv = goog.dom.createDom('DIV', 'ol-overviewmap-map');
 
   /**
    * @type {ol.Map}
@@ -97,7 +96,8 @@ ol.control.OverviewMap = function(opt_options) {
   this.ovmap_ = new ol.Map({
     controls: new ol.Collection(),
     interactions: new ol.Collection(),
-    target: ovmapDiv
+    target: ovmapDiv,
+    view: options.view
   });
   var ovmap = this.ovmap_;
 
@@ -111,7 +111,7 @@ ol.control.OverviewMap = function(opt_options) {
         }, this);
   }
 
-  var box = goog.dom.createDom(goog.dom.TagName.DIV, 'ol-overviewmap-box');
+  var box = goog.dom.createDom('DIV', 'ol-overviewmap-box');
 
   /**
    * @type {ol.Overlay}
@@ -128,7 +128,7 @@ ol.control.OverviewMap = function(opt_options) {
       ol.css.CLASS_CONTROL +
       (this.collapsed_ && this.collapsible_ ? ' ol-collapsed' : '') +
       (this.collapsible_ ? '' : ' ol-uncollapsible');
-  var element = goog.dom.createDom(goog.dom.TagName.DIV,
+  var element = goog.dom.createDom('DIV',
       cssClasses, ovmapDiv, button);
 
   var render = options.render ? options.render : ol.control.OverviewMap.render;
@@ -395,7 +395,7 @@ ol.control.OverviewMap.prototype.updateBox_ = function() {
   overlay.setPosition(rotateBottomLeft);
 
   // set box size calculated from map extent size and overview map resolution
-  if (goog.isDefAndNotNull(box)) {
+  if (box) {
     var boxWidth = Math.abs((bottomLeft[0] - topRight[0]) / ovresolution);
     var boxHeight = Math.abs((topRight[1] - bottomLeft[1]) / ovresolution);
     goog.style.setBorderBoxSize(box, new goog.math.Size(
@@ -518,4 +518,14 @@ ol.control.OverviewMap.prototype.setCollapsed = function(collapsed) {
  */
 ol.control.OverviewMap.prototype.getCollapsed = function() {
   return this.collapsed_;
+};
+
+
+/**
+ * Return the overview map.
+ * @return {ol.Map} Overview map.
+ * @api
+ */
+ol.control.OverviewMap.prototype.getOverviewMap = function() {
+  return this.ovmap_;
 };

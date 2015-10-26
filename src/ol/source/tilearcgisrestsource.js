@@ -41,6 +41,7 @@ ol.source.TileArcGISRest = function(opt_options) {
     crossOrigin: options.crossOrigin,
     logo: options.logo,
     projection: options.projection,
+    reprojectionErrorThreshold: options.reprojectionErrorThreshold,
     tileGrid: options.tileGrid,
     tileLoadFunction: options.tileLoadFunction,
     tileUrlFunction: goog.bind(this.tileUrlFunction_, this),
@@ -56,7 +57,7 @@ ol.source.TileArcGISRest = function(opt_options) {
    * @private
    * @type {!Array.<string>}
    */
-  this.urls_ = goog.isDefAndNotNull(urls) ? urls : [];
+  this.urls_ = urls || [];
 
   /**
    * @private
@@ -184,7 +185,7 @@ ol.source.TileArcGISRest.prototype.setUrl = function(url) {
  * @api stable
  */
 ol.source.TileArcGISRest.prototype.setUrls = function(urls) {
-  this.urls_ = goog.isDefAndNotNull(urls) ? urls : [];
+  this.urls_ = urls || [];
   this.changed();
 };
 
@@ -200,7 +201,7 @@ ol.source.TileArcGISRest.prototype.tileUrlFunction_ =
     function(tileCoord, pixelRatio, projection) {
 
   var tileGrid = this.getTileGrid();
-  if (goog.isNull(tileGrid)) {
+  if (!tileGrid) {
     tileGrid = this.getTileGridForProjection(projection);
   }
 

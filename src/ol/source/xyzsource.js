@@ -49,6 +49,7 @@ ol.source.XYZ = function(options) {
     crossOrigin: options.crossOrigin,
     logo: options.logo,
     projection: projection,
+    reprojectionErrorThreshold: options.reprojectionErrorThreshold,
     tileGrid: tileGrid,
     tileLoadFunction: options.tileLoadFunction,
     tilePixelRatio: options.tilePixelRatio,
@@ -87,7 +88,7 @@ ol.source.XYZ.prototype.getUrls = function() {
  */
 ol.source.XYZ.prototype.setUrl = function(url) {
   this.setTileUrlFunction(ol.TileUrlFunction.createFromTemplates(
-      ol.TileUrlFunction.expandUrl(url)));
+      ol.TileUrlFunction.expandUrl(url), this.tileGrid));
   this.urls_ = [url];
 };
 
@@ -97,6 +98,7 @@ ol.source.XYZ.prototype.setUrl = function(url) {
  * @param {Array.<string>} urls URLs.
  */
 ol.source.XYZ.prototype.setUrls = function(urls) {
-  this.setTileUrlFunction(ol.TileUrlFunction.createFromTemplates(urls));
+  this.setTileUrlFunction(
+      ol.TileUrlFunction.createFromTemplates(urls, this.tileGrid));
   this.urls_ = urls;
 };

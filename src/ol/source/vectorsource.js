@@ -66,7 +66,9 @@ ol.source.VectorEventType = {
 
 /**
  * @classdesc
- * Provides a source of features for vector layers.
+ * Provides a source of features for vector layers. Vector features provided
+ * by this source are suitable for editing. See {@link ol.source.VectorTile} for
+ * vector data that is optimized for rendering.
  *
  * @constructor
  * @extends {ol.source.Source}
@@ -492,20 +494,6 @@ ol.source.Vector.prototype.forEachFeatureInExtent =
 
 
 /**
- * @param {ol.Extent} extent Extent.
- * @param {number} resolution Resolution.
- * @param {function(this: T, ol.Feature): S} f Callback.
- * @param {T=} opt_this The object to use as `this` in `f`.
- * @return {S|undefined}
- * @template T,S
- */
-ol.source.Vector.prototype.forEachFeatureInExtentAtResolution =
-    function(extent, resolution, f, opt_this) {
-  return this.forEachFeatureInExtent(extent, f, opt_this);
-};
-
-
-/**
  * Iterate through all features whose geometry intersects the provided extent,
  * calling the callback with each feature.  If the callback returns a "truthy"
  * value, iteration will stop and the function will return the same value.
@@ -671,7 +659,7 @@ ol.source.Vector.prototype.getClosestFeatureToCoordinate =
  *
  * This method is not available when the source is configured with
  * `useSpatialIndex` set to `false`.
- * @return {ol.Extent} Extent.
+ * @return {!ol.Extent} Extent.
  * @api stable
  */
 ol.source.Vector.prototype.getExtent = function() {

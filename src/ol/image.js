@@ -35,16 +35,16 @@ ol.Image = function(extent, resolution, pixelRatio, attributions, src,
 
   /**
    * @private
-   * @type {Image}
+   * @type {HTMLCanvasElement|Image|HTMLVideoElement}
    */
   this.image_ = new Image();
-  if (crossOrigin) {
+  if (crossOrigin !== null) {
     this.image_.crossOrigin = crossOrigin;
   }
 
   /**
    * @private
-   * @type {Object.<number, Image>}
+   * @type {Object.<number, (HTMLCanvasElement|Image|HTMLVideoElement)>}
    */
   this.imageByContext_ = {};
 
@@ -139,6 +139,14 @@ ol.Image.prototype.load = function() {
     ];
     this.imageLoadFunction_(this, this.src_);
   }
+};
+
+
+/**
+ * @param {HTMLCanvasElement|Image|HTMLVideoElement} image Image.
+ */
+ol.Image.prototype.setImage = function(image) {
+  this.image_ = image;
 };
 
 

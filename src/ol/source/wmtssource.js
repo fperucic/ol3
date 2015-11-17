@@ -61,8 +61,8 @@ ol.source.WMTS = function(options) {
    * @private
    * @type {string}
    */
-  this.coordKeyPrefix_ = '';
-  this.resetCoordKeyPrefix_();
+  this.dimensionsKey_ = '';
+  this.resetDimensionsKey_();
 
   /**
    * @private
@@ -86,12 +86,6 @@ ol.source.WMTS = function(options) {
   if (urls === undefined && options.url !== undefined) {
     urls = ol.TileUrlFunction.expandUrl(options.url);
   }
-
-  /**
-   * @private
-   * @type {!Array.<string>}
-   */
-  this.urls_ = urls || [];
 
   // FIXME: should we guess this requestEncoding from options.url(s)
   //        structure? that would mean KVP only if a template is not provided.
@@ -175,9 +169,9 @@ ol.source.WMTS = function(options) {
         });
   }
 
-  var tileUrlFunction = this.urls_.length > 0 ?
+  var tileUrlFunction = (urls && urls.length > 0) ?
       ol.TileUrlFunction.createFromTileUrlFunctions(
-          this.urls_.map(createFromWMTSTemplate)) :
+          urls.map(createFromWMTSTemplate)) :
       ol.TileUrlFunction.nullTileUrlFunction;
 
   goog.base(this, {
@@ -191,6 +185,7 @@ ol.source.WMTS = function(options) {
     tileLoadFunction: options.tileLoadFunction,
     tilePixelRatio: options.tilePixelRatio,
     tileUrlFunction: tileUrlFunction,
+    urls: urls,
     wrapX: options.wrapX !== undefined ? options.wrapX : false
   });
 
@@ -223,8 +218,8 @@ ol.source.WMTS.prototype.getFormat = function() {
 /**
  * @inheritDoc
  */
-ol.source.WMTS.prototype.getKeyZXY = function(z, x, y) {
-  return this.coordKeyPrefix_ + goog.base(this, 'getKeyZXY', z, x, y);
+ol.source.WMTS.prototype.getKeyParams = function() {
+  return this.dimensionsKey_;
 };
 
 
@@ -269,16 +264,6 @@ ol.source.WMTS.prototype.getStyle = function() {
 
 
 /**
- * Return the URLs used for this WMTS source.
- * @return {!Array.<string>} URLs.
- * @api
- */
-ol.source.WMTS.prototype.getUrls = function() {
-  return this.urls_;
-};
-
-
-/**
  * Return the version of the WMTS source.
  * @return {string} Version.
  * @api
@@ -291,13 +276,13 @@ ol.source.WMTS.prototype.getVersion = function() {
 /**
  * @private
  */
-ol.source.WMTS.prototype.resetCoordKeyPrefix_ = function() {
+ol.source.WMTS.prototype.resetDimensionsKey_ = function() {
   var i = 0;
   var res = [];
   for (var key in this.dimensions_) {
     res[i++] = key + '-' + this.dimensions_[key];
   }
-  this.coordKeyPrefix_ = res.join('/');
+  this.dimensionsKey_ = res.join('/');
 };
 
 
@@ -308,7 +293,7 @@ ol.source.WMTS.prototype.resetCoordKeyPrefix_ = function() {
  */
 ol.source.WMTS.prototype.updateDimensions = function(dimensions) {
   goog.object.extend(this.dimensions_, dimensions);
-  this.resetCoordKeyPrefix_();
+  this.resetDimensionsKey_();
   this.changed();
 };
 

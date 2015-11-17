@@ -201,26 +201,10 @@ ol.source.ImageWMS.prototype.getImageInternal =
   extent = extent.slice();
   var centerX = (extent[0] + extent[2]) / 2;
   var centerY = (extent[1] + extent[3]) / 2;
-  if (this.ratio_ != 1) {
-    var halfWidth = this.ratio_ * ol.extent.getWidth(extent) / 2;
-    var halfHeight = this.ratio_ * ol.extent.getHeight(extent) / 2;
-    extent[0] = centerX - halfWidth;
-    extent[1] = centerY - halfHeight;
-    extent[2] = centerX + halfWidth;
-    extent[3] = centerY + halfHeight;
-  }
 
   var imageResolution = resolution / pixelRatio;
-
-  // Compute an integer width and height.
-  var width = Math.ceil(ol.extent.getWidth(extent) / imageResolution);
-  var height = Math.ceil(ol.extent.getHeight(extent) / imageResolution);
-
-  // Modify the extent to match the integer width and height.
-  extent[0] = centerX - imageResolution * width / 2;
-  extent[2] = centerX + imageResolution * width / 2;
-  extent[1] = centerY - imageResolution * height / 2;
-  extent[3] = centerY + imageResolution * height / 2;
+  var imageWidth = ol.extent.getWidth(extent) / imageResolution;
+  var imageHeight = ol.extent.getHeight(extent) / imageResolution;
 
   var image = this.image_;
   if (image &&
@@ -229,6 +213,15 @@ ol.source.ImageWMS.prototype.getImageInternal =
       image.getPixelRatio() == pixelRatio &&
       ol.extent.containsExtent(image.getExtent(), extent)) {
     return image;
+  }
+
+  if (this.ratio_ != 1) {
+    var halfWidth = this.ratio_ * ol.extent.getWidth(extent) / 2;
+    var halfHeight = this.ratio_ * ol.extent.getHeight(extent) / 2;
+    extent[0] = centerX - halfWidth;
+    extent[1] = centerY - halfHeight;
+    extent[2] = centerX + halfWidth;
+    extent[3] = centerY + halfHeight;
   }
 
   var params = {
@@ -240,8 +233,8 @@ ol.source.ImageWMS.prototype.getImageInternal =
   };
   goog.object.extend(params, this.params_);
 
-  this.imageSize_[0] = width;
-  this.imageSize_[1] = height;
+  this.imageSize_[0] = Math.ceil(imageWidth * this.ratio_);
+  this.imageSize_[1] = Math.ceil(imageHeight * this.ratio_);
 
   var url = this.getRequestUrl_(extent, this.imageSize_, pixelRatio,
       projection, params);

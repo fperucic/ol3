@@ -19,6 +19,7 @@ goog.require('ol.tilegrid.TileGrid');
 
 /**
  * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
+ *            cacheSize: (number|undefined),
  *            extent: (ol.Extent|undefined),
  *            logo: (string|olx.LogoOptions|undefined),
  *            opaque: (boolean|undefined),
@@ -77,7 +78,7 @@ ol.source.Tile = function(options) {
    * @protected
    * @type {ol.TileCache}
    */
-  this.tileCache = new ol.TileCache();
+  this.tileCache = new ol.TileCache(options.cacheSize);
 
   /**
    * @protected
@@ -152,6 +153,17 @@ ol.source.Tile.prototype.forEachLoadedTile =
  */
 ol.source.Tile.prototype.getGutter = function() {
   return 0;
+};
+
+
+/**
+ * Return the "parameters" key, a string composed of the source's
+ * parameters/dimensions.
+ * @return {string} The parameters key.
+ * @protected
+ */
+ol.source.Tile.prototype.getKeyParams = function() {
+  return '';
 };
 
 

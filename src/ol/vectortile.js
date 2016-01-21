@@ -4,6 +4,8 @@ goog.require('ol.Tile');
 goog.require('ol.TileCoord');
 goog.require('ol.TileLoadFunctionType');
 goog.require('ol.TileState');
+goog.require('ol.dom');
+goog.require('ol.proj.Projection');
 
 
 /**
@@ -16,7 +18,6 @@ goog.require('ol.TileState');
 ol.TileReplayState;
 
 
-
 /**
  * @constructor
  * @extends {ol.Tile}
@@ -25,10 +26,17 @@ ol.TileReplayState;
  * @param {string} src Data source url.
  * @param {ol.format.Feature} format Feature format.
  * @param {ol.TileLoadFunctionType} tileLoadFunction Tile load function.
+ * @param {ol.proj.Projection} projection Feature projection.
  */
-ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
+ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction, projection) {
 
   goog.base(this, tileCoord, state);
+
+  /**
+   * @private
+   * @type {CanvasRenderingContext2D}
+   */
+  this.context_ = ol.dom.createCanvasContext2D();
 
   /**
    * @private
@@ -52,7 +60,7 @@ ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
    * @private
    * @type {ol.proj.Projection}
    */
-  this.projection_ = null;
+  this.projection_ = projection;
 
   /**
    * @private
@@ -82,6 +90,14 @@ goog.inherits(ol.VectorTile, ol.Tile);
 
 
 /**
+ * @return {CanvasRenderingContext2D} The rendering context.
+ */
+ol.VectorTile.prototype.getContext = function() {
+  return this.context_;
+};
+
+
+/**
  * @inheritDoc
  */
 ol.VectorTile.prototype.disposeInternal = function() {
@@ -108,7 +124,7 @@ ol.VectorTile.prototype.getFeatures = function() {
 
 
 /**
- * @return {ol.TileReplayState}
+ * @return {ol.TileReplayState} The replay state.
  */
 ol.VectorTile.prototype.getReplayState = function() {
   return this.replayState_;
@@ -124,7 +140,7 @@ ol.VectorTile.prototype.getKey = function() {
 
 
 /**
- * @return {ol.proj.Projection} Projection.
+ * @return {ol.proj.Projection} Feature projection.
  */
 ol.VectorTile.prototype.getProjection = function() {
   return this.projection_;
@@ -138,13 +154,14 @@ ol.VectorTile.prototype.load = function() {
   if (this.state == ol.TileState.IDLE) {
     this.setState(ol.TileState.LOADING);
     this.tileLoadFunction_(this, this.url_);
-    this.loader_(null, NaN, null);
+    this.loader_(null, NaN, this.projection_);
   }
 };
 
 
 /**
  * @param {Array.<ol.Feature>} features Features.
+ * @api
  */
 ol.VectorTile.prototype.setFeatures = function(features) {
   this.features_ = features;
@@ -153,7 +170,7 @@ ol.VectorTile.prototype.setFeatures = function(features) {
 
 
 /**
- * @param {ol.proj.Projection} projection Projection.
+ * @param {ol.proj.Projection} projection Feature projection.
  */
 ol.VectorTile.prototype.setProjection = function(projection) {
   this.projection_ = projection;

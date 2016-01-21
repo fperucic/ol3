@@ -185,17 +185,20 @@ var map = new ol.Map({
   })
 });
 
-$('#refresh-points').click(function() {
-  vectorPoints.setStyle(pointStyleFunction);
-});
+document.getElementById('refresh-points')
+    .addEventListener('click', function() {
+      vectorPoints.setStyle(pointStyleFunction);
+    });
 
-$('#refresh-lines').click(function() {
-  vectorLines.setStyle(lineStyleFunction);
-});
+document.getElementById('refresh-lines')
+    .addEventListener('click', function() {
+      vectorLines.setStyle(lineStyleFunction);
+    });
 
-$('#refresh-polygons').click(function() {
-  vectorPolygons.setStyle(polygonStyleFunction);
-});
+document.getElementById('refresh-polygons')
+    .addEventListener('click', function() {
+      vectorPolygons.setStyle(polygonStyleFunction);
+    });
 
 
 /**
@@ -212,7 +215,8 @@ String.prototype.trunc = String.prototype.trunc ||
 function stringDivider(str, width, spaceReplacer) {
   if (str.length > width) {
     var p = width;
-    for (; p > 0 && (str[p] != ' ' && str[p] != '-'); p--) {
+    while (p > 0 && (str[p] != ' ' && str[p] != '-')) {
+      p--;
     }
     if (p > 0) {
       var left;

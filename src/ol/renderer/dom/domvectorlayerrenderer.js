@@ -1,6 +1,5 @@
 goog.provide('ol.renderer.dom.VectorLayer');
 
-goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.vec.Mat4');
@@ -15,7 +14,6 @@ goog.require('ol.render.canvas.ReplayGroup');
 goog.require('ol.renderer.dom.Layer');
 goog.require('ol.renderer.vector');
 goog.require('ol.vec.Mat4');
-
 
 
 /**
@@ -95,8 +93,7 @@ goog.inherits(ol.renderer.dom.VectorLayer, ol.renderer.dom.Layer);
 /**
  * @inheritDoc
  */
-ol.renderer.dom.VectorLayer.prototype.composeFrame =
-    function(frameState, layerState) {
+ol.renderer.dom.VectorLayer.prototype.composeFrame = function(frameState, layerState) {
 
   var vectorLayer = /** @type {ol.layer.Vector} */ (this.getLayer());
   goog.asserts.assertInstanceof(vectorLayer, ol.layer.Vector,
@@ -157,8 +154,7 @@ ol.renderer.dom.VectorLayer.prototype.composeFrame =
  * @param {goog.vec.Mat4.Number} transform Transform.
  * @private
  */
-ol.renderer.dom.VectorLayer.prototype.dispatchEvent_ =
-    function(type, frameState, transform) {
+ol.renderer.dom.VectorLayer.prototype.dispatchEvent_ = function(type, frameState, transform) {
   var context = this.context_;
   var layer = this.getLayer();
   if (layer.hasListener(type)) {
@@ -176,8 +172,7 @@ ol.renderer.dom.VectorLayer.prototype.dispatchEvent_ =
 /**
  * @inheritDoc
  */
-ol.renderer.dom.VectorLayer.prototype.forEachFeatureAtCoordinate =
-    function(coordinate, frameState, callback, thisArg) {
+ol.renderer.dom.VectorLayer.prototype.forEachFeatureAtCoordinate = function(coordinate, frameState, callback, thisArg) {
   if (!this.replayGroup_) {
     return undefined;
   } else {
@@ -210,8 +205,7 @@ ol.renderer.dom.VectorLayer.prototype.forEachFeatureAtCoordinate =
  * @param {goog.events.Event} event Image style change event.
  * @private
  */
-ol.renderer.dom.VectorLayer.prototype.handleStyleImageChange_ =
-    function(event) {
+ol.renderer.dom.VectorLayer.prototype.handleStyleImageChange_ = function(event) {
   this.renderIfReadyAndVisible();
 };
 
@@ -219,8 +213,7 @@ ol.renderer.dom.VectorLayer.prototype.handleStyleImageChange_ =
 /**
  * @inheritDoc
  */
-ol.renderer.dom.VectorLayer.prototype.prepareFrame =
-    function(frameState, layerState) {
+ol.renderer.dom.VectorLayer.prototype.prepareFrame = function(frameState, layerState) {
 
   var vectorLayer = /** @type {ol.layer.Vector} */ (this.getLayer());
   goog.asserts.assertInstanceof(vectorLayer, ol.layer.Vector,
@@ -276,12 +269,11 @@ ol.renderer.dom.VectorLayer.prototype.prepareFrame =
           ol.renderer.vector.getTolerance(resolution, pixelRatio), extent,
           resolution, vectorLayer.getRenderBuffer());
   vectorSource.loadFeatures(extent, resolution, projection);
-  var renderFeature =
-      /**
-       * @param {ol.Feature} feature Feature.
-       * @this {ol.renderer.dom.VectorLayer}
-       */
-      function(feature) {
+  /**
+   * @param {ol.Feature} feature Feature.
+   * @this {ol.renderer.dom.VectorLayer}
+   */
+  var renderFeature = function(feature) {
     var styles;
     var styleFunction = feature.getStyleFunction();
     if (styleFunction) {
@@ -308,7 +300,7 @@ ol.renderer.dom.VectorLayer.prototype.prepareFrame =
         function(feature) {
           features.push(feature);
         }, this);
-    goog.array.sort(features, vectorLayerRenderOrder);
+    features.sort(vectorLayerRenderOrder);
     features.forEach(renderFeature, this);
   } else {
     vectorSource.forEachFeatureInExtent(extent, renderFeature, this);
@@ -334,8 +326,7 @@ ol.renderer.dom.VectorLayer.prototype.prepareFrame =
  * @param {ol.render.canvas.ReplayGroup} replayGroup Replay group.
  * @return {boolean} `true` if an image is loading.
  */
-ol.renderer.dom.VectorLayer.prototype.renderFeature =
-    function(feature, resolution, pixelRatio, styles, replayGroup) {
+ol.renderer.dom.VectorLayer.prototype.renderFeature = function(feature, resolution, pixelRatio, styles, replayGroup) {
   if (!styles) {
     return false;
   }

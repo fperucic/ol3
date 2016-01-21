@@ -5,10 +5,8 @@ goog.require('goog.events.MouseWheelEvent');
 goog.require('goog.events.MouseWheelHandler.EventType');
 goog.require('ol');
 goog.require('ol.Coordinate');
-goog.require('ol.ViewHint');
 goog.require('ol.interaction.Interaction');
 goog.require('ol.math');
-
 
 
 /**
@@ -33,12 +31,6 @@ ol.interaction.MouseWheelZoom = function(opt_options) {
    * @type {number}
    */
   this.delta_ = 0;
-
-  /**
-   * @type {function(): undefined}
-   * @private
-   */
-  this.doZoom_ = goog.bind(ol.interaction.MouseWheelZoom.doZoom, this);
 
   /**
    * @private
@@ -70,12 +62,6 @@ ol.interaction.MouseWheelZoom = function(opt_options) {
    */
   this.timeoutId_ = undefined;
 
-  /**
-   * @private
-   * @type {number|undefined}
-   */
-  this.wheelTimeout_ = options.wheelTimeout;
-
 };
 goog.inherits(ol.interaction.MouseWheelZoom, ol.interaction.Interaction);
 
@@ -92,6 +78,7 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
   var stopEvent = false;
   if (mapBrowserEvent.type ==
       goog.events.MouseWheelHandler.EventType.MOUSEWHEEL) {
+    var map = mapBrowserEvent.map;
     var mouseWheelEvent = mapBrowserEvent.browserEvent;
     goog.asserts.assertInstanceof(mouseWheelEvent, goog.events.MouseWheelEvent,
         'mouseWheelEvent should be of type MouseWheelEvent');
@@ -106,11 +93,12 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
       this.startTime_ = Date.now();
     }
 
-    var duration = this.wheelTimeout_ || ol.MOUSEWHEELZOOM_TIMEOUT_DURATION;
+    var duration = ol.MOUSEWHEELZOOM_TIMEOUT_DURATION;
     var timeLeft = Math.max(duration - (Date.now() - this.startTime_), 0);
 
     goog.global.clearTimeout(this.timeoutId_);
-    this.timeoutId_ = goog.global.setTimeout(this.doZoom_, timeLeft);
+    this.timeoutId_ = goog.global.setTimeout(
+        this.doZoom_.bind(this, map), timeLeft);
 
     mapBrowserEvent.preventDefault();
     stopEvent = true;
@@ -120,17 +108,17 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
 
 
 /**
- * @this {ol.interaction.MouseWheelZoom}
  * @private
+ * @param {ol.Map} map Map.
  */
-ol.interaction.MouseWheelZoom.doZoom = function() {
-  var map = this.getMap();
+ol.interaction.MouseWheelZoom.prototype.doZoom_ = function(map) {
   var maxDelta = ol.MOUSEWHEELZOOM_MAXDELTA;
   var delta = ol.math.clamp(this.delta_, -maxDelta, maxDelta);
 
   var view = map.getView();
   goog.asserts.assert(view, 'map must have view');
 
+  map.render();
   ol.interaction.Interaction.zoomByDelta(map, view, -delta, this.lastAnchor_,
       this.duration_);
 

@@ -98,9 +98,12 @@ layers['wms21781'] = new ol.layer.Tile({
 });
 
 var parser = new ol.format.WMTSCapabilities();
-$.ajax('http://map1.vis.earthdata.nasa.gov/wmts-arctic/' +
-    'wmts.cgi?SERVICE=WMTS&request=GetCapabilities').then(function(response) {
-  var result = parser.read(response);
+var url = 'http://map1.vis.earthdata.nasa.gov/wmts-arctic/' +
+    'wmts.cgi?SERVICE=WMTS&request=GetCapabilities';
+fetch(url).then(function(response) {
+  return response.text();
+}).then(function(text) {
+  var result = parser.read(text);
   var options = ol.source.WMTS.optionsFromCapabilities(result,
       {layer: 'OSM_Land_Mask', matrixSet: 'EPSG3413_250m'});
   options.crossOrigin = '';
@@ -189,9 +192,9 @@ function updateViewProjection() {
 
 
 /**
- * @param {Event} e Change event.
+ * Handle change event.
  */
-viewProjSelect.onchange = function(e) {
+viewProjSelect.onchange = function() {
   updateViewProjection();
 };
 
@@ -208,9 +211,9 @@ var updateRenderEdgesOnLayer = function(layer) {
 
 
 /**
- * @param {Event} e Change event.
+ * Handle change event.
  */
-baseLayerSelect.onchange = function(e) {
+baseLayerSelect.onchange = function() {
   var layer = layers[baseLayerSelect.value];
   if (layer) {
     layer.setOpacity(1);
@@ -221,9 +224,9 @@ baseLayerSelect.onchange = function(e) {
 
 
 /**
- * @param {Event} e Change event.
+ * Handle change event.
  */
-overlayLayerSelect.onchange = function(e) {
+overlayLayerSelect.onchange = function() {
   var layer = layers[overlayLayerSelect.value];
   if (layer) {
     layer.setOpacity(0.7);
@@ -234,9 +237,9 @@ overlayLayerSelect.onchange = function(e) {
 
 
 /**
- * @param {Event} e Change event.
+ * Handle change event.
  */
-renderEdgesCheckbox.onchange = function(e) {
+renderEdgesCheckbox.onchange = function() {
   renderEdges = renderEdgesCheckbox.checked;
   map.getLayers().forEach(function(layer) {
     updateRenderEdgesOnLayer(layer);

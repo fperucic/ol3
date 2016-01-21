@@ -429,6 +429,7 @@ olx.OverlayOptions.prototype.autoPanMargin;
  *     extent: (ol.Extent|undefined),
  *     axisOrientation: (string|undefined),
  *     global: (boolean|undefined),
+ *     metersPerUnit: (number|undefined),
  *     worldExtent: (ol.Extent|undefined),
  *     getPointResolution: (function(number, ol.Coordinate):number|undefined) }}
  * @api
@@ -474,6 +475,15 @@ olx.ProjectionOptions.prototype.axisOrientation;
  * @api stable
  */
 olx.ProjectionOptions.prototype.global;
+
+
+/**
+ * The meters per unit for the SRS. If not provided, the `units` are used to get
+ * the meters per unit from the {@link ol.proj.METERS_PER_UNIT} lookup table.
+ * @type {number|undefined}
+ * @api
+ */
+olx.ProjectionOptions.prototype.metersPerUnit;
 
 
 /**
@@ -1059,7 +1069,7 @@ olx.control.FullScreenOptions.prototype.className;
 
 
 /**
- * Text label to use for the button. Default is `\u2194` (an arrow).
+ * Text label to use for the button. Default is `\u2922` (NORTH EAST AND SOUTH WEST ARROW).
  * Instead of text, also a Node (e.g. a `span` element) can be used.
  * @type {string|Node|undefined}
  * @api
@@ -1757,7 +1767,7 @@ olx.format.PolylineOptions;
 /**
  * The factor by which the coordinates values will be scaled.
  * Default is `1e5`.
- * @type {number}
+ * @type {number|undefined}
  * @api stable
  */
 olx.format.PolylineOptions.prototype.factor;
@@ -1954,7 +1964,7 @@ olx.format.GPXOptions;
  * node is not allowed in GPX 1.0. Moreover, only `extensions`
  * nodes from `wpt`, `rte` and `trk` can be processed, as those are
  * directly mapped to a feature.
- * @type {function(ol.Feature, Node)}
+ * @type {function(ol.Feature, Node)|undefined}
  * @api stable
  */
 olx.format.GPXOptions.prototype.readExtensions;
@@ -2361,7 +2371,8 @@ olx.interaction.DragAndDropOptions.prototype.projection;
 
 /**
  * @typedef {{className: (string|undefined),
- *     condition: (ol.events.ConditionType|undefined)}}
+ *     condition: (ol.events.ConditionType|undefined),
+ *     boxEndCondition: (ol.interaction.DragBoxEndConditionType|undefined)}}
  * @api
  */
 olx.interaction.DragBoxOptions;
@@ -2383,6 +2394,25 @@ olx.interaction.DragBoxOptions.prototype.className;
  * @api
  */
 olx.interaction.DragBoxOptions.prototype.condition;
+
+
+/**
+ * A function that takes a {@link ol.MapBrowserEvent} and two
+ * {@link ol.Pixel}s to indicate whether a boxend event should be fired.
+ * Default is:
+ * ```js
+ * function(mapBrowserEvent,
+ *     startPixel, endPixel) {
+ *   var width = endPixel[0] - startPixel[0];
+ *   var height = endPixel[1] - startPixel[1];
+ *   return width * width + height * height >=
+ *     ol.DRAG_BOX_HYSTERESIS_PIXELS_SQUARED;
+ * }
+ * ```
+ * @type {ol.interaction.DragBoxEndConditionType|undefined}
+ * @api
+ */
+olx.interaction.DragBoxOptions.prototype.boxEndCondition;
 
 
 /**
@@ -3000,7 +3030,7 @@ olx.interaction.SelectOptions.prototype.multi;
  * not set the interaction will create a collection. In any case the collection
  * used by the interaction is returned by
  * {@link ol.interaction.Select#getFeatures}.
- * @type {ol.Collection.<ol.Feature>}
+ * @type {ol.Collection.<ol.Feature>|undefined}
  * @api
  */
 olx.interaction.SelectOptions.prototype.features;
@@ -3693,9 +3723,11 @@ olx.layer.VectorTileOptions;
 
 
 /**
- * The buffer around the viewport extent used by the renderer when getting
- * features from the vector source for the rendering or hit-detection.
- * Recommended value: the size of the largest symbol, line width or label.
+ * The buffer around the tile extent used by the renderer when getting features
+ * from the vector tile for the rendering or hit-detection.
+ * Recommended value: Vector tiles are usually generated with a buffer, so this
+ * value should match the largest possible buffer of the used tiles. It should
+ * be at least the size of the largest point symbol or line width.
  * Default is 100 pixels.
  * @type {number|undefined}
  * @api
@@ -3799,6 +3831,40 @@ olx.layer.VectorTileOptions.prototype.updateWhileInteracting;
  * @api stable
  */
 olx.layer.VectorTileOptions.prototype.visible;
+
+
+/**
+ * Namespace.
+ * @type {Object}
+ */
+olx.render;
+
+
+/**
+ * @typedef {{size: (ol.Size|undefined),
+ *     pixelRatio: (number|undefined)}}
+ * @api
+ */
+olx.render.ToContextOptions;
+
+
+/**
+ * Desired size of the canvas in css pixels. When provided, both canvas and css
+ * size will be set according to the `pixelRatio`. If not provided, the current
+ * canvas and css sizes will not be altered.
+ * @type {ol.Size|undefined}
+ * @api
+ */
+olx.render.ToContextOptions.prototype.size;
+
+
+/**
+ * Pixel ratio (canvas pixel to css pixel ratio) for the canvas. Default
+ * is the detected device pixel ratio.
+ * @type {ol.Size|undefined}
+ * @api
+ */
+olx.render.ToContextOptions.prototype.pixelRatio;
 
 
 /**
@@ -4373,7 +4439,7 @@ olx.source.ImageMapGuideOptions.prototype.resolutions;
 
 /**
  * Optional function to load an image given a URL.
- * @type {ol.TileLoadFunctionType|undefined}
+ * @type {ol.ImageLoadFunctionType|undefined}
  * @api
  */
 olx.source.ImageMapGuideOptions.prototype.imageLoadFunction;
@@ -4981,7 +5047,7 @@ olx.source.ImageStaticOptions.prototype.imageExtent;
 
 /**
  * Optional function to load an image given a URL.
- * @type {ol.TileLoadFunctionType|undefined}
+ * @type {ol.ImageLoadFunctionType|undefined}
  * @api
  */
 olx.source.ImageStaticOptions.prototype.imageLoadFunction;
@@ -5145,6 +5211,7 @@ olx.source.TileArcGISRestOptions.prototype.urls;
 /**
  * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
  *     crossOrigin: (null|string|undefined),
+ *     jsonp: (boolean|undefined),
  *     reprojectionErrorThreshold: (number|undefined),
  *     tileLoadFunction: (ol.TileLoadFunctionType|undefined),
  *     url: string,
@@ -5174,6 +5241,15 @@ olx.source.TileJSONOptions.prototype.attributions;
  * @api stable
  */
 olx.source.TileJSONOptions.prototype.crossOrigin;
+
+
+/**
+ * Use JSONP with callback to load the TileJSON. Useful when the server
+ * does not support CORS. Default is `false`.
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.source.TileJSONOptions.prototype.jsonp;
 
 
 /**
@@ -5508,7 +5584,7 @@ olx.source.VectorOptions.prototype.wrapX;
  *     version: (string|undefined),
  *     format: (string|undefined),
  *     matrixSet: string,
- *     dimensions: (Object|undefined),
+ *     dimensions: (!Object|undefined),
  *     url: (string|undefined),
  *     maxZoom: (number|undefined),
  *     tileLoadFunction: (ol.TileLoadFunctionType|undefined),
@@ -5647,7 +5723,7 @@ olx.source.WMTSOptions.prototype.matrixSet;
 /**
  * Additional "dimensions" for tile requests.  This is an object with properties
  * named like the advertised WMTS dimensions.
- * @type {Object|undefined}
+ * @type {!Object|undefined}
  * @api stable
  */
 olx.source.WMTSOptions.prototype.dimensions;
@@ -6009,8 +6085,9 @@ olx.style.FillOptions.prototype.color;
  *     anchorOrigin: (ol.style.IconOrigin|undefined),
  *     anchorXUnits: (ol.style.IconAnchorUnits|undefined),
  *     anchorYUnits: (ol.style.IconAnchorUnits|undefined),
+ *     color: (ol.Color|string|undefined),
  *     crossOrigin: (null|string|undefined),
- *     img: (Image|undefined),
+ *     img: (Image|HTMLCanvasElement|undefined),
  *     offset: (Array.<number>|undefined),
  *     offsetOrigin: (ol.style.IconOrigin|undefined),
  *     opacity: (number|undefined),
@@ -6064,6 +6141,14 @@ olx.style.IconOptions.prototype.anchorYUnits;
 
 
 /**
+ * Color to tint the icon. If not specified, the icon will be left as is.
+ * @type {ol.Color|string|undefined}
+ * @api
+ */
+olx.style.IconOptions.prototype.color;
+
+
+/**
  * The `crossOrigin` attribute for loaded images.  Note that you must provide a
  * `crossOrigin` value if you are using the WebGL renderer or if you want to
  * access pixel data with the Canvas renderer.  See
@@ -6079,7 +6164,7 @@ olx.style.IconOptions.prototype.crossOrigin;
  * Image object for the icon. If the `src` option is not provided then the
  * provided image must already be loaded. And in that case, it is required
  * to provide the size of the image, with the `imgSize` option.
- * @type {Image|undefined}
+ * @type {Image|HTMLCanvasElement|undefined}
  * @api
  */
 olx.style.IconOptions.prototype.img;
@@ -6186,6 +6271,7 @@ olx.style.IconOptions.prototype.src;
  *     snapToPixel: (boolean|undefined),
  *     stroke: (ol.style.Stroke|undefined),
  *     rotation: (number|undefined),
+ *     rotateWithView: (boolean|undefined),
  *     atlasManager: (ol.style.AtlasManager|undefined)}}
  * @api
  */
@@ -6271,6 +6357,14 @@ olx.style.RegularShapeOptions.prototype.stroke;
  * @api
  */
 olx.style.RegularShapeOptions.prototype.rotation;
+
+
+/**
+ * Whether to rotate the shape with the view. Default is `false`.
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.style.RegularShapeOptions.prototype.rotateWithView;
 
 
 /**

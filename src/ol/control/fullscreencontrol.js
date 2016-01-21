@@ -12,7 +12,6 @@ goog.require('ol.control.Control');
 goog.require('ol.css');
 
 
-
 /**
  * @classdesc
  * Provides a button that when clicked fills up the full screen with the map.
@@ -36,14 +35,14 @@ ol.control.FullScreen = function(opt_options) {
    */
   this.cssClassName_ = options.className ? options.className : 'ol-full-screen';
 
-  var label = options.label ? options.label : '\u2194';
+  var label = options.label ? options.label : '\u2922';
 
   /**
    * @private
    * @type {Node}
    */
   this.labelNode_ = goog.isString(label) ?
-      goog.dom.createTextNode(label) : label;
+      document.createTextNode(label) : label;
 
   var labelActive = options.labelActive ? options.labelActive : '\u00d7';
 
@@ -52,7 +51,7 @@ ol.control.FullScreen = function(opt_options) {
    * @type {Node}
    */
   this.labelActiveNode_ = goog.isString(labelActive) ?
-      goog.dom.createTextNode(labelActive) : labelActive;
+      document.createTextNode(labelActive) : labelActive;
 
   var tipLabel = options.tipLabel ? options.tipLabel : 'Toggle full-screen';
   var button = goog.dom.createDom('BUTTON', {
@@ -112,9 +111,7 @@ ol.control.FullScreen.prototype.handleFullScreen_ = function() {
   if (goog.dom.fullscreen.isFullScreen()) {
     goog.dom.fullscreen.exitFullScreen();
   } else {
-    var target = map.getTarget();
-    goog.asserts.assert(target, 'target should be defined');
-    var element = goog.dom.getElement(target);
+    var element = map.getTargetElement();
     goog.asserts.assert(element, 'element should be defined');
     if (this.keys_) {
       goog.dom.fullscreen.requestFullScreenWithKeys(element);

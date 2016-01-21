@@ -28,7 +28,6 @@ goog.require('ol.source.TileEvent');
 ol.source.UrlTileOptions;
 
 
-
 /**
  * @classdesc
  * Base class for sources providing tiles divided into a tile grid over http.
@@ -64,8 +63,8 @@ ol.source.UrlTile = function(options) {
    * @protected
    * @type {ol.TileUrlFunctionType}
    */
-  this.tileUrlFunction = options.tileUrlFunction ?
-      options.tileUrlFunction :
+  this.tileUrlFunction = this.fixedTileUrlFunction ?
+      this.fixedTileUrlFunction.bind(this) :
       ol.TileUrlFunction.nullTileUrlFunction;
 
   /**
@@ -75,11 +74,7 @@ ol.source.UrlTile = function(options) {
   this.urls = null;
 
   if (options.urls) {
-    if (options.tileUrlFunction) {
-      this.urls = options.urls;
-    } else {
-      this.setUrls(options.urls);
-    }
+    this.setUrls(options.urls);
   } else if (options.url) {
     this.setUrl(options.url);
   }
@@ -90,6 +85,12 @@ ol.source.UrlTile = function(options) {
 };
 goog.inherits(ol.source.UrlTile, ol.source.Tile);
 
+
+/**
+ * @type {ol.TileUrlFunctionType|undefined}
+ * @protected
+ */
+ol.source.UrlTile.prototype.fixedTileUrlFunction;
 
 /**
  * Return the tile load function of the source.
@@ -143,6 +144,8 @@ ol.source.UrlTile.prototype.handleTileChange = function(event) {
       this.dispatchEvent(
           new ol.source.TileEvent(ol.source.TileEventType.TILELOADERROR, tile));
       break;
+    default:
+      // pass
   }
 };
 
@@ -180,9 +183,11 @@ ol.source.UrlTile.prototype.setTileUrlFunction = function(tileUrlFunction) {
  * @api stable
  */
 ol.source.UrlTile.prototype.setUrl = function(url) {
-  this.setTileUrlFunction(ol.TileUrlFunction.createFromTemplates(
-      ol.TileUrlFunction.expandUrl(url), this.tileGrid));
   this.urls = [url];
+  var urls = ol.TileUrlFunction.expandUrl(url);
+  this.setTileUrlFunction(this.fixedTileUrlFunction ?
+      this.fixedTileUrlFunction.bind(this) :
+      ol.TileUrlFunction.createFromTemplates(urls, this.tileGrid));
 };
 
 
@@ -192,9 +197,10 @@ ol.source.UrlTile.prototype.setUrl = function(url) {
  * @api stable
  */
 ol.source.UrlTile.prototype.setUrls = function(urls) {
-  this.setTileUrlFunction(ol.TileUrlFunction.createFromTemplates(
-      urls, this.tileGrid));
   this.urls = urls;
+  this.setTileUrlFunction(this.fixedTileUrlFunction ?
+      this.fixedTileUrlFunction.bind(this) :
+      ol.TileUrlFunction.createFromTemplates(urls, this.tileGrid));
 };
 
 

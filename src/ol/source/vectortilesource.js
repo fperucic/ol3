@@ -9,7 +9,6 @@ goog.require('ol.featureloader');
 goog.require('ol.source.UrlTile');
 
 
-
 /**
  * @classdesc
  * Class for layer sources providing vector data divided into a tile grid, to be
@@ -56,7 +55,7 @@ ol.source.VectorTile = function(options) {
   /**
    * @protected
    * @type {function(new: ol.VectorTile, ol.TileCoord, ol.TileState, string,
-   *        ol.format.Feature, ol.TileLoadFunctionType)}
+   *        ol.format.Feature, ol.TileLoadFunctionType, ol.proj.Projection)}
    */
   this.tileClass = options.tileClass ? options.tileClass : ol.VectorTile;
 
@@ -67,8 +66,7 @@ goog.inherits(ol.source.VectorTile, ol.source.UrlTile);
 /**
  * @inheritDoc
  */
-ol.source.VectorTile.prototype.getTile =
-    function(z, x, y, pixelRatio, projection) {
+ol.source.VectorTile.prototype.getTile = function(z, x, y, pixelRatio, projection) {
   var tileCoordKey = this.getKeyZXY(z, x, y);
   if (this.tileCache.containsKey(tileCoordKey)) {
     return /** @type {!ol.Tile} */ (this.tileCache.get(tileCoordKey));
@@ -83,8 +81,7 @@ ol.source.VectorTile.prototype.getTile =
         tileCoord,
         tileUrl !== undefined ? ol.TileState.IDLE : ol.TileState.EMPTY,
         tileUrl !== undefined ? tileUrl : '',
-        this.format_,
-        this.tileLoadFunction);
+        this.format_, this.tileLoadFunction, projection);
     goog.events.listen(tile, goog.events.EventType.CHANGE,
         this.handleTileChange, false, this);
 

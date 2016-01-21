@@ -3,20 +3,18 @@
 
 goog.provide('ol.renderer.canvas.TileLayer');
 
-goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.vec.Mat4');
 goog.require('ol.Size');
 goog.require('ol.TileRange');
 goog.require('ol.TileState');
+goog.require('ol.array');
 goog.require('ol.dom');
 goog.require('ol.extent');
 goog.require('ol.layer.Tile');
 goog.require('ol.renderer.canvas.Layer');
 goog.require('ol.size');
-goog.require('ol.tilecoord');
 goog.require('ol.vec.Mat4');
-
 
 
 /**
@@ -123,8 +121,7 @@ ol.renderer.canvas.TileLayer.prototype.getImageTransform = function() {
 /**
  * @inheritDoc
  */
-ol.renderer.canvas.TileLayer.prototype.prepareFrame =
-    function(frameState, layerState) {
+ol.renderer.canvas.TileLayer.prototype.prepareFrame = function(frameState, layerState) {
 
   //
   // Warning! You're entering a dangerous zone!
@@ -336,7 +333,7 @@ ol.renderer.canvas.TileLayer.prototype.prepareFrame =
       }
       goog.asserts.assert(tile);
       if (drawableTile(tile)) {
-        tilesToDrawByZ[z][ol.tilecoord.toString(tile.tileCoord)] = tile;
+        tilesToDrawByZ[z][tile.tileCoord.toString()] = tile;
         continue;
       }
       fullyLoaded = tileGrid.forEachTileCoordParentTileRange(
@@ -365,8 +362,8 @@ ol.renderer.canvas.TileLayer.prototype.prepareFrame =
 
   /** @type {Array.<number>} */
   var zs = Object.keys(tilesToDrawByZ).map(Number);
-  goog.array.sort(zs);
-  var opaque = tileSource.getOpaque();
+  zs.sort(ol.array.numberSafeCompareFunction);
+  var opaque = tileSource.getOpaque(projection);
   var origin = ol.extent.getTopLeft(tileGrid.getTileCoordExtent(
       [z, canvasTileRange.minX, canvasTileRange.maxY],
       tmpExtent));
@@ -459,8 +456,7 @@ ol.renderer.canvas.TileLayer.prototype.prepareFrame =
 /**
  * @inheritDoc
  */
-ol.renderer.canvas.TileLayer.prototype.forEachLayerAtPixel =
-    function(pixel, frameState, callback, thisArg) {
+ol.renderer.canvas.TileLayer.prototype.forEachLayerAtPixel = function(pixel, frameState, callback, thisArg) {
   if (!this.context_) {
     return undefined;
   }

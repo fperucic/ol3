@@ -15,7 +15,7 @@ var externsPaths = [
 ];
 var infoPath = path.join(__dirname, '..', 'build', 'info.json');
 
-var jsdocResolved = require.resolve('jsdoc-fork/jsdoc.js');
+var jsdocResolved = require.resolve('jsdoc/jsdoc.js');
 var jsdoc = path.resolve(path.dirname(jsdocResolved), '../.bin/jsdoc');
 
 // on Windows, use jsdoc.cmd
@@ -109,7 +109,7 @@ function getNewer(date, newer, callback) {
      * pass the sourceDir to the task so it can do the walking.
      */
     if (isWindows) {
-        paths = [sourceDir].concat(externsPaths);
+      paths = [sourceDir].concat(externsPaths);
     }
 
     callback(null, newer ? paths : []);

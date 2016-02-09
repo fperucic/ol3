@@ -5,11 +5,11 @@ goog.provide('ol.proj.ProjectionLike');
 goog.provide('ol.proj.Units');
 
 goog.require('goog.asserts');
-goog.require('goog.object');
 goog.require('ol');
 goog.require('ol.Extent');
 goog.require('ol.TransformFunction');
 goog.require('ol.extent');
+goog.require('ol.object');
 goog.require('ol.sphere.NORMAL');
 
 
@@ -520,7 +520,7 @@ ol.proj.clearAllProjections = function() {
 ol.proj.createProjection = function(projection, defaultCode) {
   if (!projection) {
     return ol.proj.get(defaultCode);
-  } else if (goog.isString(projection)) {
+  } else if (typeof projection === 'string') {
     return ol.proj.get(projection);
   } else {
     goog.asserts.assertInstanceof(projection, ol.proj.Projection,
@@ -630,7 +630,7 @@ ol.proj.removeTransform = function(source, destination) {
       'destinationCode should be in transforms of sourceCode');
   var transform = transforms[sourceCode][destinationCode];
   delete transforms[sourceCode][destinationCode];
-  if (goog.object.isEmpty(transforms[sourceCode])) {
+  if (ol.object.isEmpty(transforms[sourceCode])) {
     delete transforms[sourceCode];
   }
   return transform;
@@ -680,7 +680,7 @@ ol.proj.get = function(projectionLike) {
   var projection;
   if (projectionLike instanceof ol.proj.Projection) {
     projection = projectionLike;
-  } else if (goog.isString(projectionLike)) {
+  } else if (typeof projectionLike === 'string') {
     var code = projectionLike;
     projection = ol.proj.projections_[code];
     if (ol.ENABLE_PROJ4JS) {

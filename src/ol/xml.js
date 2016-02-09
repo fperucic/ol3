@@ -1,11 +1,10 @@
 goog.provide('ol.xml');
 
-goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.xml');
-goog.require('goog.object');
 goog.require('goog.userAgent');
+goog.require('ol.array');
 
 
 /**
@@ -370,7 +369,7 @@ ol.xml.makeArrayExtender = function(valueReader, opt_this) {
               (objectStack[objectStack.length - 1]);
           goog.asserts.assert(goog.isArray(array),
               'objectStack is supposed to be an array of arrays');
-          goog.array.extend(array, value);
+          ol.array.extend(array, value);
         }
       });
 };
@@ -454,7 +453,12 @@ ol.xml.makeObjectPropertyPusher = function(valueReader, opt_property, opt_this) 
               opt_property : node.localName;
           goog.asserts.assert(goog.isObject(object),
               'entity from stack was not an object');
-          var array = goog.object.setIfUndefined(object, property, []);
+          var array;
+          if (property in object) {
+            array = object[property];
+          } else {
+            array = object[property] = [];
+          }
           array.push(value);
         }
       });

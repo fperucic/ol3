@@ -1,7 +1,7 @@
 goog.provide('ol.renderer.canvas.VectorTileLayer');
 
 goog.require('goog.asserts');
-goog.require('goog.events');
+goog.require('ol.events');
 goog.require('goog.vec.Mat4');
 goog.require('ol.Feature');
 goog.require('ol.TileRange');
@@ -13,6 +13,7 @@ goog.require('ol.dom');
 goog.require('ol.extent');
 goog.require('ol.geom.flat.transform');
 goog.require('ol.layer.VectorTile');
+goog.require('ol.proj');
 goog.require('ol.proj.Units');
 goog.require('ol.render.EventType');
 goog.require('ol.render.canvas.ReplayGroup');
@@ -92,7 +93,6 @@ ol.renderer.canvas.VectorTileLayer.prototype.composeFrame = function(frameState,
   goog.asserts.assertInstanceof(source, ol.source.VectorTile,
       'Source is an ol.source.VectorTile');
   var tilePixelRatio = source.getTilePixelRatio(pixelRatio);
-  var maxScale = tilePixelRatio / pixelRatio;
 
   var transform = this.getTransform(frameState, 0);
 
@@ -117,9 +117,9 @@ ol.renderer.canvas.VectorTileLayer.prototype.composeFrame = function(frameState,
   var tileGrid = source.getTileGrid();
 
   var currentZ, height, i, ii, insertPoint, insertTransform, offsetX, offsetY;
-  var origin, pixelSpace, replayState, scale, tile, tileCenter, tileContext;
-  var tileExtent, tilePixelResolution, tilePixelSize, tileResolution, tileSize;
-  var tileTransform, width;
+  var origin, pixelSpace, replayState, resolutionRatio, tile, tileCenter;
+  var tileContext, tileExtent, tilePixelResolution, tilePixelSize;
+  var tileResolution, tileSize, tileTransform, width;
   for (i = 0, ii = tilesToDraw.length; i < ii; ++i) {
     tile = tilesToDraw[i];
     replayState = tile.getReplayState();
@@ -130,12 +130,13 @@ ol.renderer.canvas.VectorTileLayer.prototype.composeFrame = function(frameState,
     pixelSpace = tile.getProjection().getUnits() == ol.proj.Units.TILE_PIXELS;
     tileResolution = tileGrid.getResolution(currentZ);
     tilePixelResolution = tileResolution / tilePixelRatio;
-    scale = tileResolution / resolution;
+    resolutionRatio = tileResolution / resolution;
     offsetX = Math.round(pixelRatio * size[0] / 2);
     offsetY = Math.round(pixelRatio * size[1] / 2);
-    width = tileSize[0] * pixelRatio * scale;
-    height = tileSize[1] * pixelRatio * scale;
-    if (width < 1 || scale > maxScale) {
+    width = tileSize[0] * pixelRatio * resolutionRatio;
+    height = tileSize[1] * pixelRatio * resolutionRatio;
+    var unscaledPixelTileSize = tileSize[0] * pixelRatio;
+    if (width < unscaledPixelTileSize / 4 || width > unscaledPixelTileSize * 4) {
       if (pixelSpace) {
         origin = ol.extent.getTopLeft(tileExtent);
         tileTransform = ol.vec.Mat4.makeTransform2D(this.tmpTransform_,
@@ -205,9 +206,10 @@ ol.renderer.canvas.VectorTileLayer.prototype.composeFrame = function(frameState,
  * @param {ol.VectorTile} tile Tile.
  * @param {ol.layer.VectorTile} layer Vector tile layer.
  * @param {number} pixelRatio Pixel ratio.
+ * @param {ol.proj.Projection} projection Projection.
  */
 ol.renderer.canvas.VectorTileLayer.prototype.createReplayGroup = function(tile,
-    layer, pixelRatio) {
+    layer, pixelRatio, projection) {
   var revision = layer.getRevision();
   var renderOrder = layer.getRenderOrder() || null;
 
@@ -227,14 +229,19 @@ ol.renderer.canvas.VectorTileLayer.prototype.createReplayGroup = function(tile,
       'Source is an ol.source.VectorTile');
   var tileGrid = source.getTileGrid();
   var tileCoord = tile.getTileCoord();
-  var pixelSpace = tile.getProjection().getUnits() == ol.proj.Units.TILE_PIXELS;
-  var extent;
+  var tileProjection = tile.getProjection();
+  var pixelSpace = tileProjection.getUnits() == ol.proj.Units.TILE_PIXELS;
+  var extent, reproject;
   if (pixelSpace) {
     var tilePixelSize = source.getTilePixelSize(tileCoord[0], pixelRatio,
         tile.getProjection());
     extent = [0, 0, tilePixelSize[0], tilePixelSize[1]];
   } else {
     extent = tileGrid.getTileCoordExtent(tileCoord);
+    if (!ol.proj.equivalent(projection, tileProjection)) {
+      reproject = true;
+      tile.setProjection(projection);
+    }
   }
   var resolution = tileGrid.getResolution(tileCoord[0]);
   var tileResolution =
@@ -276,7 +283,14 @@ ol.renderer.canvas.VectorTileLayer.prototype.createReplayGroup = function(tile,
   if (renderOrder && renderOrder !== replayState.renderedRenderOrder) {
     features.sort(renderOrder);
   }
-  features.forEach(renderFeature, this);
+  var feature;
+  for (var i = 0, ii = features.length; i < ii; ++i) {
+    feature = features[i];
+    if (reproject) {
+      feature.getGeometry().transform(tileProjection, projection);
+    }
+    renderFeature.call(this, feature);
+  }
 
   replayGroup.finish();
 
@@ -350,7 +364,7 @@ ol.renderer.canvas.VectorTileLayer.prototype.forEachFeatureAtCoordinate = functi
 
 /**
  * Handle changes in image style state.
- * @param {goog.events.Event} event Image style change event.
+ * @param {ol.events.Event} event Image style change event.
  * @private
  */
 ol.renderer.canvas.VectorTileLayer.prototype.handleStyleImageChange_ = function(event) {
@@ -464,7 +478,7 @@ ol.renderer.canvas.VectorTileLayer.prototype.prepareFrame = function(frameState,
       tile = tilesToDraw[tileCoordKey];
       if (tile.getState() == ol.TileState.LOADED) {
         replayables.push(tile);
-        this.createReplayGroup(tile, layer, pixelRatio);
+        this.createReplayGroup(tile, layer, pixelRatio, projection);
       }
     }
   }

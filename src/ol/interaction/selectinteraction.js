@@ -3,19 +3,18 @@ goog.provide('ol.interaction.SelectEvent');
 goog.provide('ol.interaction.SelectEventType');
 goog.provide('ol.interaction.SelectFilterFunction');
 
-goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.events');
-goog.require('goog.events.Event');
 goog.require('goog.functions');
-goog.require('goog.object');
 goog.require('ol.CollectionEventType');
 goog.require('ol.Feature');
 goog.require('ol.array');
+goog.require('ol.events');
+goog.require('ol.events.Event');
 goog.require('ol.events.condition');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.interaction.Interaction');
 goog.require('ol.layer.Vector');
+goog.require('ol.object');
 goog.require('ol.source.Vector');
 
 
@@ -54,7 +53,7 @@ ol.interaction.SelectFilterFunction;
  * @param {ol.MapBrowserEvent} mapBrowserEvent Associated
  *     {@link ol.MapBrowserEvent}.
  * @implements {oli.SelectEvent}
- * @extends {goog.events.Event}
+ * @extends {ol.events.Event}
  * @constructor
  */
 ol.interaction.SelectEvent = function(type, selected, deselected, mapBrowserEvent) {
@@ -81,7 +80,7 @@ ol.interaction.SelectEvent = function(type, selected, deselected, mapBrowserEven
    */
   this.mapBrowserEvent = mapBrowserEvent;
 };
-goog.inherits(ol.interaction.SelectEvent, goog.events.Event);
+goog.inherits(ol.interaction.SelectEvent, ol.events.Event);
 
 
 /**
@@ -209,10 +208,10 @@ ol.interaction.Select = function(opt_options) {
   this.featureLayerAssociation_ = {};
 
   var features = this.featureOverlay_.getSource().getFeaturesCollection();
-  goog.events.listen(features, ol.CollectionEventType.ADD,
-      this.addFeature_, false, this);
-  goog.events.listen(features, ol.CollectionEventType.REMOVE,
-      this.removeFeature_, false, this);
+  ol.events.listen(features, ol.CollectionEventType.ADD,
+      this.addFeature_, this);
+  ol.events.listen(features, ol.CollectionEventType.REMOVE,
+      this.removeFeature_, this);
 
 };
 goog.inherits(ol.interaction.Select, ol.interaction.Interaction);
@@ -285,6 +284,7 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
         /**
          * @param {ol.Feature|ol.render.Feature} feature Feature.
          * @param {ol.layer.Layer} layer Layer.
+         * @return {boolean|undefined} Continue to iterate over the features.
          */
         function(feature, layer) {
           if (this.filter_(feature, layer)) {
@@ -305,7 +305,7 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
       features.extend(selected);
       // Modify object this.featureLayerAssociation_
       if (selected.length === 0) {
-        goog.object.clear(this.featureLayerAssociation_);
+        ol.object.clear(this.featureLayerAssociation_);
       } else {
         if (deselected.length > 0) {
           deselected.forEach(function(feature) {
@@ -322,7 +322,8 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
          * @param {ol.layer.Layer} layer Layer.
          */
         function(feature, layer) {
-          if (layer !== this.featureOverlay_) {
+          goog.asserts.assertInstanceof(feature, ol.Feature);
+          if (layer !== null) {
             if (add || toggle) {
               if (this.filter_(feature, layer) &&
                   !ol.array.includes(features.getArray(), feature) &&
@@ -331,7 +332,7 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
                 this.addFeatureLayerAssociation_(feature, layer);
               }
             }
-          } else {
+          } else if (this.featureOverlay_.getSource().hasFeature(feature)) {
             if (remove || toggle) {
               deselected.push(feature);
               this.removeFeatureLayerAssociation_(feature);
@@ -382,9 +383,9 @@ ol.interaction.Select.prototype.setMap = function(map) {
  */
 ol.interaction.Select.getDefaultStyleFunction = function() {
   var styles = ol.style.createDefaultEditingStyles();
-  goog.array.extend(styles[ol.geom.GeometryType.POLYGON],
+  ol.array.extend(styles[ol.geom.GeometryType.POLYGON],
       styles[ol.geom.GeometryType.LINE_STRING]);
-  goog.array.extend(styles[ol.geom.GeometryType.GEOMETRY_COLLECTION],
+  ol.array.extend(styles[ol.geom.GeometryType.GEOMETRY_COLLECTION],
       styles[ol.geom.GeometryType.LINE_STRING]);
 
   return function(feature, resolution) {

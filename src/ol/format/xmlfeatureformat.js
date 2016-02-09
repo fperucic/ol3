@@ -1,9 +1,9 @@
 goog.provide('ol.format.XMLFeature');
 
-goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom.NodeType');
 goog.require('goog.dom.xml');
+goog.require('ol.array');
 goog.require('ol.format.Feature');
 goog.require('ol.format.FormatType');
 goog.require('ol.proj');
@@ -42,7 +42,7 @@ ol.format.XMLFeature.prototype.readFeature = function(source, opt_options) {
         /** @type {Document} */ (source), opt_options);
   } else if (ol.xml.isNode(source)) {
     return this.readFeatureFromNode(/** @type {Node} */ (source), opt_options);
-  } else if (goog.isString(source)) {
+  } else if (typeof source === 'string') {
     var doc = ol.xml.parse(source);
     return this.readFeatureFromDocument(doc, opt_options);
   } else {
@@ -85,7 +85,7 @@ ol.format.XMLFeature.prototype.readFeatures = function(source, opt_options) {
         /** @type {Document} */ (source), opt_options);
   } else if (ol.xml.isNode(source)) {
     return this.readFeaturesFromNode(/** @type {Node} */ (source), opt_options);
-  } else if (goog.isString(source)) {
+  } else if (typeof source === 'string') {
     var doc = ol.xml.parse(source);
     return this.readFeaturesFromDocument(doc, opt_options);
   } else {
@@ -108,7 +108,7 @@ ol.format.XMLFeature.prototype.readFeaturesFromDocument = function(
   var n;
   for (n = doc.firstChild; n; n = n.nextSibling) {
     if (n.nodeType == goog.dom.NodeType.ELEMENT) {
-      goog.array.extend(features, this.readFeaturesFromNode(n, opt_options));
+      ol.array.extend(features, this.readFeaturesFromNode(n, opt_options));
     }
   }
   return features;
@@ -133,7 +133,7 @@ ol.format.XMLFeature.prototype.readGeometry = function(source, opt_options) {
         /** @type {Document} */ (source), opt_options);
   } else if (ol.xml.isNode(source)) {
     return this.readGeometryFromNode(/** @type {Node} */ (source), opt_options);
-  } else if (goog.isString(source)) {
+  } else if (typeof source === 'string') {
     var doc = ol.xml.parse(source);
     return this.readGeometryFromDocument(doc, opt_options);
   } else {
@@ -169,7 +169,7 @@ ol.format.XMLFeature.prototype.readProjection = function(source) {
     return this.readProjectionFromDocument(/** @type {Document} */ (source));
   } else if (ol.xml.isNode(source)) {
     return this.readProjectionFromNode(/** @type {Node} */ (source));
-  } else if (goog.isString(source)) {
+  } else if (typeof source === 'string') {
     var doc = ol.xml.parse(source);
     return this.readProjectionFromDocument(doc);
   } else {

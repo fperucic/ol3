@@ -1054,7 +1054,8 @@ olx.control.DefaultsOptions.prototype.zoomOptions;
  *     labelActive: (string|Node|undefined),
  *     tipLabel: (string|undefined),
  *     keys: (boolean|undefined),
- *     target: (Element|undefined)}}
+ *     target: (Element|undefined),
+ *     source: (Element|string|undefined)}}
  * @api
  */
 olx.control.FullScreenOptions;
@@ -1110,6 +1111,12 @@ olx.control.FullScreenOptions.prototype.keys;
  */
 olx.control.FullScreenOptions.prototype.target;
 
+/**
+ * The element to be displayed fullscreen. When not provided, the element containing the map viewport will be displayed fullscreen.
+ * @type {Element|string|undefined}
+ * @api
+ */
+olx.control.FullScreenOptions.prototype.source;
 
 /**
  * @typedef {{className: (string|undefined),
@@ -1675,7 +1682,7 @@ olx.format.GeoJSONOptions;
 
 
 /**
- * Default data projection.
+ * Default data projection. Default is `EPSG:4326`.
  * @type {ol.proj.ProjectionLike}
  * @api stable
  */
@@ -1790,7 +1797,7 @@ olx.format.TopoJSONOptions;
 
 
 /**
- * Default data projection.
+ * Default data projection. Default is `EPSG:4326`.
  * @type {ol.proj.ProjectionLike}
  * @api stable
  */
@@ -2215,6 +2222,24 @@ olx.format.WKTOptions;
  * @api stable
  */
 olx.format.WKTOptions.prototype.splitCollection;
+
+
+/**
+ * @typedef {{
+ *     layers: (Array.<string>|undefined)
+ * }}
+ * @api
+ */
+olx.format.WMSGetFeatureInfoOptions;
+
+
+/**
+ * If set, only features of the given layers will be returned by the format
+ * when read.
+ * @type {Array.<string>|undefined}
+ * @api
+ */
+olx.format.WMSGetFeatureInfoOptions.prototype.layers;
 
 
 /**
@@ -3930,7 +3955,12 @@ olx.source.BingMapsOptions.prototype.reprojectionErrorThreshold;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -4058,7 +4088,7 @@ olx.source.TileUTFGridOptions.prototype.url;
  *            opaque: (boolean|undefined),
  *            projection: ol.proj.ProjectionLike,
  *            reprojectionErrorThreshold: (number|undefined),
- *            state: (ol.source.State|string|undefined),
+ *            state: (ol.source.State|undefined),
  *            tileClass: (function(new: ol.ImageTile, ol.TileCoord,
  *                                 ol.TileState, string, ?string,
  *                                 ol.TileLoadFunctionType)|undefined),
@@ -4129,7 +4159,7 @@ olx.source.TileImageOptions.prototype.reprojectionErrorThreshold;
 
 /**
  * Source state.
- * @type {ol.source.State|string|undefined}
+ * @type {ol.source.State|undefined}
  * @api
  */
 olx.source.TileImageOptions.prototype.state;
@@ -4154,7 +4184,12 @@ olx.source.TileImageOptions.prototype.tileGrid;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -4215,7 +4250,7 @@ olx.source.TileImageOptions.prototype.wrapX;
  *            logo: (string|olx.LogoOptions|undefined),
  *            opaque: (boolean|undefined),
  *            projection: ol.proj.ProjectionLike,
- *            state: (ol.source.State|string|undefined),
+ *            state: (ol.source.State|undefined),
  *            tileClass: (function(new: ol.VectorTile, ol.TileCoord,
  *                 ol.TileState, string, ol.format.Feature,
  *                 ol.TileLoadFunctionType)|undefined),
@@ -4231,7 +4266,6 @@ olx.source.TileImageOptions.prototype.wrapX;
 olx.source.VectorTileOptions;
 
 
-/**
 /**
  * Attributions.
  * @type {Array.<ol.Attribution>|undefined}
@@ -4275,7 +4309,7 @@ olx.source.VectorTileOptions.prototype.projection;
 
 /**
  * Source state.
- * @type {ol.source.State|string|undefined}
+ * @type {ol.source.State|undefined}
  * @api
  */
 olx.source.VectorTileOptions.prototype.state;
@@ -4300,7 +4334,13 @@ olx.source.VectorTileOptions.prototype.tileGrid;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(tile, url) {
+ *   tile.setLoader(
+ *       ol.featureloader.tile(url, tile.getFormat()));
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -4481,7 +4521,12 @@ olx.source.MapQuestOptions.prototype.reprojectionErrorThreshold;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -4533,6 +4578,7 @@ olx.source.TileDebugOptions.prototype.wrapX;
  * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
  *     crossOrigin: (null|string|undefined),
  *     maxZoom: (number|undefined),
+ *     opaque: (boolean|undefined),
  *     reprojectionErrorThreshold: (number|undefined),
  *     tileLoadFunction: (ol.TileLoadFunctionType|undefined),
  *     url: (string|undefined),
@@ -4573,6 +4619,14 @@ olx.source.OSMOptions.prototype.maxZoom;
 
 
 /**
+ * Whether the layer is opaque. Default is `true`.
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.source.OSMOptions.prototype.opaque;
+
+
+/**
  * Maximum allowed reprojection error (in pixels). Default is `0.5`.
  * Higher values can increase reprojection performance, but decrease precision.
  * @type {number|undefined}
@@ -4582,7 +4636,12 @@ olx.source.OSMOptions.prototype.reprojectionErrorThreshold;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -4613,7 +4672,7 @@ olx.source.OSMOptions.prototype.wrapX;
  *     projection: ol.proj.ProjectionLike,
  *     ratio: (number|undefined),
  *     resolutions: (Array.<number>|undefined),
- *     state: (ol.source.State|string|undefined)}}
+ *     state: (ol.source.State|undefined)}}
  * @api
  */
 olx.source.ImageCanvasOptions;
@@ -4679,7 +4738,7 @@ olx.source.ImageCanvasOptions.prototype.resolutions;
 
 /**
  * Source state.
- * @type {ol.source.State|string|undefined}
+ * @type {ol.source.State|undefined}
  * @api
  */
 olx.source.ImageCanvasOptions.prototype.state;
@@ -4987,7 +5046,12 @@ olx.source.StamenOptions.prototype.reprojectionErrorThreshold;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -5175,7 +5239,12 @@ olx.source.TileArcGISRestOptions.prototype.reprojectionErrorThreshold;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -5262,7 +5331,12 @@ olx.source.TileJSONOptions.prototype.reprojectionErrorThreshold;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -5415,7 +5489,12 @@ olx.source.TileWMSOptions.prototype.serverType;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -5749,7 +5828,12 @@ olx.source.WMTSOptions.prototype.maxZoom;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -5863,7 +5947,12 @@ olx.source.XYZOptions.prototype.tileGrid;
 
 
 /**
- * Optional function to load a tile given a URL.
+ * Optional function to load a tile given a URL. The default is
+ * ```js
+ * function(imageTile, src) {
+ *   imageTile.getImage().src = src;
+ * };
+ * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api
  */
@@ -6304,10 +6393,10 @@ olx.style.RegularShapeOptions.prototype.radius;
 
 
 /**
-* Inner radius of a star.
-* @type {number|undefined}
-* @api
-*/
+ * Inner radius of a star.
+ * @type {number|undefined}
+ * @api
+ */
 olx.style.RegularShapeOptions.prototype.radius1;
 
 
@@ -6924,11 +7013,12 @@ olx.view.FitOptions.prototype.maxZoom;
  *     size: ol.Size,
  *     skippedFeatureUids: Object.<string, boolean>,
  *     tileQueue: ol.TileQueue,
+ *     tileSourceCount: number,
  *     time: number,
  *     usedTiles: Object.<string, Object.<string, ol.TileRange>>,
  *     viewState: olx.ViewState,
  *     viewHints: Array.<number>,
- *     wantedTiles: Object.<string, Object.<string, boolean>>}}
+ *     wantedTiles: !Object.<string, Object.<string, boolean>>}}
  * @api
  */
 olx.FrameState;

@@ -8,9 +8,7 @@ goog.provide('ol.render.canvas.Replay');
 goog.provide('ol.render.canvas.ReplayGroup');
 goog.provide('ol.render.canvas.TextReplay');
 
-goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.object');
 goog.require('goog.vec.Mat4');
 goog.require('ol');
 goog.require('ol.array');
@@ -21,6 +19,7 @@ goog.require('ol.extent.Relationship');
 goog.require('ol.geom.flat.simplify');
 goog.require('ol.geom.flat.transform');
 goog.require('ol.has');
+goog.require('ol.object');
 goog.require('ol.render.IReplayGroup');
 goog.require('ol.render.VectorContext');
 goog.require('ol.render.canvas');
@@ -250,7 +249,7 @@ ol.render.canvas.Replay.prototype.replay_ = function(
     goog.asserts.assert(pixelCoordinates === this.pixelCoordinates_,
         'pixelCoordinates should be the same as this.pixelCoordinates_');
   }
-  var skipFeatures = !goog.object.isEmpty(skippedFeaturesHash);
+  var skipFeatures = !ol.object.isEmpty(skippedFeaturesHash);
   var i = 0; // instruction index
   var ii = instructions.length; // end of instructions
   var d = 0; // data index
@@ -270,8 +269,7 @@ ol.render.canvas.Replay.prototype.replay_ = function(
             !feature.getGeometry()) {
           i = /** @type {number} */ (instruction[2]);
         } else if (opt_hitExtent !== undefined && !ol.extent.intersects(
-            /** @type {Array<number>} */ (opt_hitExtent),
-            feature.getGeometry().getExtent())) {
+            opt_hitExtent, feature.getGeometry().getExtent())) {
           i = /** @type {number} */ (instruction[2]);
         } else {
           ++i;
@@ -378,7 +376,7 @@ ol.render.canvas.Replay.prototype.replay_ = function(
         goog.asserts.assert(goog.isNumber(instruction[2]),
             '3rd instruction should be a number');
         dd = /** @type {number} */ (instruction[2]);
-        goog.asserts.assert(goog.isString(instruction[3]),
+        goog.asserts.assert(typeof instruction[3] === 'string',
             '4th instruction should be a string');
         text = /** @type {string} */ (instruction[3]);
         goog.asserts.assert(goog.isNumber(instruction[4]),
@@ -499,19 +497,19 @@ ol.render.canvas.Replay.prototype.replay_ = function(
         ++i;
         break;
       case ol.render.canvas.Instruction.SET_FILL_STYLE:
-        goog.asserts.assert(goog.isString(instruction[1]),
+        goog.asserts.assert(typeof instruction[1] === 'string',
             '2nd instruction should be a string');
         context.fillStyle = /** @type {string} */ (instruction[1]);
         ++i;
         break;
       case ol.render.canvas.Instruction.SET_STROKE_STYLE:
-        goog.asserts.assert(goog.isString(instruction[1]),
+        goog.asserts.assert(typeof instruction[1] === 'string',
             '2nd instruction should be a string');
         goog.asserts.assert(goog.isNumber(instruction[2]),
             '3rd instruction should be a number');
-        goog.asserts.assert(goog.isString(instruction[3]),
+        goog.asserts.assert(typeof instruction[3] === 'string',
             '4rd instruction should be a string');
-        goog.asserts.assert(goog.isString(instruction[4]),
+        goog.asserts.assert(typeof instruction[4] === 'string',
             '5th instruction should be a string');
         goog.asserts.assert(goog.isNumber(instruction[5]),
             '6th instruction should be a number');
@@ -533,11 +531,11 @@ ol.render.canvas.Replay.prototype.replay_ = function(
         ++i;
         break;
       case ol.render.canvas.Instruction.SET_TEXT_STYLE:
-        goog.asserts.assert(goog.isString(instruction[1]),
+        goog.asserts.assert(typeof instruction[1] === 'string',
             '2nd instruction should be a string');
-        goog.asserts.assert(goog.isString(instruction[2]),
+        goog.asserts.assert(typeof instruction[2] === 'string',
             '3rd instruction should be a string');
-        goog.asserts.assert(goog.isString(instruction[3]),
+        goog.asserts.assert(typeof instruction[3] === 'string',
             '4th instruction should be a string');
         context.font = /** @type {string} */ (instruction[1]);
         context.textAlign = /** @type {string} */ (instruction[2]);
@@ -1037,7 +1035,7 @@ ol.render.canvas.LineStringReplay.prototype.setStrokeStyle_ = function() {
   goog.asserts.assert(miterLimit !== undefined, 'miterLimit should be defined');
   if (state.currentStrokeStyle != strokeStyle ||
       state.currentLineCap != lineCap ||
-      !goog.array.equals(state.currentLineDash, lineDash) ||
+      !ol.array.equals(state.currentLineDash, lineDash) ||
       state.currentLineJoin != lineJoin ||
       state.currentLineWidth != lineWidth ||
       state.currentMiterLimit != miterLimit) {
@@ -1983,7 +1981,7 @@ ol.render.canvas.ReplayGroup.prototype.getReplay = function(zIndex, replayType) 
  * @inheritDoc
  */
 ol.render.canvas.ReplayGroup.prototype.isEmpty = function() {
-  return goog.object.isEmpty(this.replaysByZIndex_);
+  return ol.object.isEmpty(this.replaysByZIndex_);
 };
 
 

@@ -1,12 +1,11 @@
 goog.provide('ol.source.TileImage');
 
 goog.require('goog.asserts');
-goog.require('goog.events');
-goog.require('goog.events.EventType');
-goog.require('goog.object');
 goog.require('ol.ImageTile');
 goog.require('ol.TileCache');
 goog.require('ol.TileState');
+goog.require('ol.events');
+goog.require('ol.events.EventType');
 goog.require('ol.proj');
 goog.require('ol.reproj.Tile');
 goog.require('ol.source.UrlTile');
@@ -30,8 +29,7 @@ ol.source.TileImage = function(options) {
     logo: options.logo,
     opaque: options.opaque,
     projection: options.projection,
-    state: options.state !== undefined ?
-        /** @type {ol.source.State} */ (options.state) : undefined,
+    state: options.state,
     tileGrid: options.tileGrid,
     tileLoadFunction: options.tileLoadFunction ?
         options.tileLoadFunction : ol.source.TileImage.defaultTileLoadFunction,
@@ -91,14 +89,16 @@ ol.source.TileImage.prototype.canExpireCache = function() {
   if (!ol.ENABLE_RASTER_REPROJECTION) {
     return goog.base(this, 'canExpireCache');
   }
-  var canExpire = this.tileCache.canExpireCache();
-  if (canExpire) {
+  if (this.tileCache.canExpireCache()) {
     return true;
   } else {
-    return goog.object.some(this.tileCacheForProjection, function(tileCache) {
-      return tileCache.canExpireCache();
-    });
+    for (var key in this.tileCacheForProjection) {
+      if (this.tileCacheForProjection[key].canExpireCache()) {
+        return true;
+      }
+    }
   }
+  return false;
 };
 
 
@@ -113,9 +113,10 @@ ol.source.TileImage.prototype.expireCache = function(projection, usedTiles) {
   var usedTileCache = this.getTileCacheForProjection(projection);
 
   this.tileCache.expireCache(this.tileCache == usedTileCache ? usedTiles : {});
-  goog.object.forEach(this.tileCacheForProjection, function(tileCache) {
+  for (var id in this.tileCacheForProjection) {
+    var tileCache = this.tileCacheForProjection[id];
     tileCache.expireCache(tileCache == usedTileCache ? usedTiles : {});
-  });
+  }
 };
 
 
@@ -198,8 +199,8 @@ ol.source.TileImage.prototype.createTile_ = function(z, x, y, pixelRatio, projec
       this.crossOrigin,
       this.tileLoadFunction);
   tile.key = key;
-  goog.events.listen(tile, goog.events.EventType.CHANGE,
-      this.handleTileChange, false, this);
+  ol.events.listen(tile, ol.events.EventType.CHANGE,
+      this.handleTileChange, this);
   return tile;
 };
 
@@ -304,9 +305,9 @@ ol.source.TileImage.prototype.setRenderReprojectionEdges = function(render) {
     return;
   }
   this.renderReprojectionEdges_ = render;
-  goog.object.forEach(this.tileCacheForProjection, function(tileCache) {
-    tileCache.clear();
-  });
+  for (var id in this.tileCacheForProjection) {
+    this.tileCacheForProjection[id].clear();
+  }
   this.changed();
 };
 

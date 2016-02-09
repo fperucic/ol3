@@ -2,8 +2,8 @@ goog.provide('ol.control.Rotate');
 
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
-goog.require('goog.events');
-goog.require('goog.events.EventType');
+goog.require('ol.events');
+goog.require('ol.events.EventType');
 goog.require('ol');
 goog.require('ol.animation');
 goog.require('ol.control.Control');
@@ -26,8 +26,7 @@ ol.control.Rotate = function(opt_options) {
 
   var options = opt_options ? opt_options : {};
 
-  var className = options.className ?
-      options.className : 'ol-rotate';
+  var className = options.className ? options.className : 'ol-rotate';
 
   var label = options.label ? options.label : '\u21E7';
 
@@ -37,7 +36,7 @@ ol.control.Rotate = function(opt_options) {
    */
   this.label_ = null;
 
-  if (goog.isString(label)) {
+  if (typeof label === 'string') {
     this.label_ = goog.dom.createDom('SPAN',
         'ol-compass', label);
   } else {
@@ -53,8 +52,8 @@ ol.control.Rotate = function(opt_options) {
     'title': tipLabel
   }, this.label_);
 
-  goog.events.listen(button, goog.events.EventType.CLICK,
-      ol.control.Rotate.prototype.handleClick_, false, this);
+  ol.events.listen(button, ol.events.EventType.CLICK,
+      ol.control.Rotate.prototype.handleClick_, this);
 
   var cssClasses = className + ' ' + ol.css.CLASS_UNSELECTABLE + ' ' +
       ol.css.CLASS_CONTROL;
@@ -97,7 +96,7 @@ goog.inherits(ol.control.Rotate, ol.control.Control);
 
 
 /**
- * @param {goog.events.BrowserEvent} event The event to handle
+ * @param {Event} event The event to handle
  * @private
  */
 ol.control.Rotate.prototype.handleClick_ = function(event) {

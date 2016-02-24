@@ -50,6 +50,12 @@ ol.interaction.DragAndDrop = function(opt_options) {
    */
   this.dropListenKeys_ = null;
 
+  /**
+   * @private
+   * @type {Element}
+   */
+  this.target = options.target ? options.target : null;
+
 };
 goog.inherits(ol.interaction.DragAndDrop, ol.interaction.Interaction);
 
@@ -106,19 +112,11 @@ ol.interaction.DragAndDrop.prototype.handleResult_ = function(file, event) {
   for (i = 0, ii = formatConstructors.length; i < ii; ++i) {
     var formatConstructor = formatConstructors[i];
     var format = new formatConstructor();
-    var readFeatures = this.tryReadFeatures_(format, result);
-    if (readFeatures) {
-      var featureProjection = format.readProjection(result);
-      var transform = ol.proj.getTransform(featureProjection, projection);
-      var j, jj;
-      for (j = 0, jj = readFeatures.length; j < jj; ++j) {
-        var feature = readFeatures[j];
-        var geometry = feature.getGeometry();
-        if (geometry) {
-          geometry.applyTransform(transform);
-        }
-        features.push(feature);
-      }
+    features = this.tryReadFeatures_(format, result, {
+      featureProjection: projection
+    });
+    if (features && features.length > 0) {
+      break;
     }
   }
   this.dispatchEvent(
@@ -149,7 +147,7 @@ ol.interaction.DragAndDrop.prototype.setMap = function(map) {
   }
   goog.base(this, 'setMap', map);
   if (map) {
-    var dropArea = map.getViewport();
+    var dropArea = this.target ? this.target : map.getViewport();
     this.dropListenKeys_ = [
       ol.events.listen(dropArea, ol.events.EventType.DROP,
           ol.interaction.DragAndDrop.handleDrop_, this),
@@ -167,12 +165,13 @@ ol.interaction.DragAndDrop.prototype.setMap = function(map) {
 /**
  * @param {ol.format.Feature} format Format.
  * @param {string} text Text.
+ * @param {olx.format.ReadOptions} options Read options.
  * @private
  * @return {Array.<ol.Feature>} Features.
  */
-ol.interaction.DragAndDrop.prototype.tryReadFeatures_ = function(format, text) {
+ol.interaction.DragAndDrop.prototype.tryReadFeatures_ = function(format, text, options) {
   try {
-    return format.readFeatures(text);
+    return format.readFeatures(text, options);
   } catch (e) {
     return null;
   }

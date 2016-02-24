@@ -131,19 +131,17 @@ ol.renderer.Map.prototype.forEachFeatureAtCoordinate = function(coordinate, fram
   var viewState = frameState.viewState;
   var viewResolution = viewState.resolution;
 
-  /** @type {Object.<string, boolean>} */
-  var features = {};
-
   /**
    * @param {ol.Feature|ol.render.Feature} feature Feature.
+   * @param {ol.layer.Layer} layer Layer.
    * @return {?} Callback result.
    */
-  function forEachFeatureAtCoordinate(feature) {
+  function forEachFeatureAtCoordinate(feature, layer) {
     goog.asserts.assert(feature !== undefined, 'received a feature');
     var key = goog.getUid(feature).toString();
-    if (!(key in features)) {
-      features[key] = true;
-      return callback.call(thisArg, feature, null);
+    var managed = frameState.layerStates[goog.getUid(layer)].managed;
+    if (!(key in frameState.skippedFeatureUids && !managed)) {
+      return callback.call(thisArg, feature, managed ? layer : null);
     }
   }
 
@@ -172,9 +170,7 @@ ol.renderer.Map.prototype.forEachFeatureAtCoordinate = function(coordinate, fram
       if (layer.getSource()) {
         result = layerRenderer.forEachFeatureAtCoordinate(
             layer.getSource().getWrapX() ? translatedCoordinate : coordinate,
-            frameState,
-            layerState.managed ? callback : forEachFeatureAtCoordinate,
-            thisArg);
+            frameState, forEachFeatureAtCoordinate, thisArg);
       }
       if (result) {
         return result;
@@ -355,7 +351,9 @@ ol.renderer.Map.prototype.removeUnusedLayerRenderers_ = function(map, frameState
  * @protected
  */
 ol.renderer.Map.prototype.scheduleExpireIconCache = function(frameState) {
-  frameState.postRenderFunctions.push(ol.renderer.Map.expireIconCache_);
+  frameState.postRenderFunctions.push(
+    /** @type {ol.PostRenderFunction} */ (ol.renderer.Map.expireIconCache_)
+  );
 };
 
 
@@ -368,7 +366,8 @@ ol.renderer.Map.prototype.scheduleRemoveUnusedLayerRenderers = function(frameSta
   for (layerKey in this.layerRenderers_) {
     if (!(layerKey in frameState.layerStates)) {
       frameState.postRenderFunctions.push(
-          this.removeUnusedLayerRenderers_.bind(this));
+        /** @type {ol.PostRenderFunction} */ (this.removeUnusedLayerRenderers_.bind(this))
+      );
       return;
     }
   }

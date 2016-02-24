@@ -98,7 +98,7 @@ ol.control.ZoomSlider = function(opt_options) {
    */
   this.duration_ = options.duration !== undefined ? options.duration : 200;
 
-  var className = options.className ? options.className : 'ol-zoomslider';
+  var className = options.className !== undefined ? options.className : 'ol-zoomslider';
   var thumbElement = goog.dom.createDom('BUTTON', {
     'type': 'button',
     'class': className + '-thumb ' + ol.css.CLASS_UNSELECTABLE
@@ -325,11 +325,10 @@ ol.control.ZoomSlider.prototype.setThumbPosition_ = function(res) {
   var thumb = goog.dom.getFirstElementChild(this.element);
 
   if (this.direction_ == ol.control.ZoomSlider.direction.HORIZONTAL) {
-    var left = this.limits_.left + this.limits_.width * position;
-    goog.style.setPosition(thumb, left);
+    thumb.style.left = this.limits_.left + this.limits_.width * position + 'px';
   } else {
-    var top = this.limits_.top + this.limits_.height * position;
-    goog.style.setPosition(thumb, this.limits_.left, top);
+    thumb.style.left = this.limits_.left + 'px';
+    thumb.style.top = this.limits_.top + this.limits_.height * position + 'px';
   }
 };
 

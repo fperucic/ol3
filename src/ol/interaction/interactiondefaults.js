@@ -94,7 +94,7 @@ ol.interaction.defaults = function(opt_options) {
   if (mouseWheelZoom) {
     interactions.push(new ol.interaction.MouseWheelZoom({
       duration: options.zoomDuration,
-      wheelTimeout: opt_options.wheelTimeout
+      wheelTimeout: options.wheelTimeout
     }));
   }
 

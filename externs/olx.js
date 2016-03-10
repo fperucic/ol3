@@ -3939,7 +3939,7 @@ olx.source.BingMapsOptions.prototype.culture;
 
 
 /**
- * Bing Maps API key. Get yours at http://bingmapsportal.com/.
+ * Bing Maps API key. Get yours at http://www.bingmapsportal.com/.
  * @type {string}
  * @api stable
  */
@@ -4391,12 +4391,16 @@ olx.source.VectorTileOptions.prototype.tileGrid;
 
 
 /**
- * Optional function to load a tile given a URL. The default is
+ * Optional function to load a tile given a URL. Could look like this:
  * ```js
  * function(tile, url) {
- *   tile.setLoader(
- *       ol.featureloader.tile(url, tile.getFormat()));
- * };
+ *   tile.setLoader(function() {
+ *     var data = // ... fetch data
+ *     var format = tile.getFormat();
+ *     tile.setFeatures(format.readFeatures(data));
+ *     tile.setProjection(format.readProjection(data));
+ *   };
+ * });
  * ```
  * @type {ol.TileLoadFunctionType|undefined}
  * @api

@@ -32,12 +32,6 @@ ol.interaction.MouseWheelZoom = function(opt_options) {
   this.delta_ = 0;
 
   /**
-   * @type {function(): undefined}
-   * @private
-   */
-  this.doZoom_ = goog.bind(ol.interaction.MouseWheelZoom.doZoom, this);
-
-  /**
    * @private
    * @type {number}
    */
@@ -104,10 +98,10 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
     if (mapBrowserEvent.type == ol.events.EventType.WHEEL) {
       delta = wheelEvent.deltaY;
       if (ol.has.FIREFOX &&
-          wheelEvent.deltaMode === goog.global.WheelEvent.DOM_DELTA_PIXEL) {
+          wheelEvent.deltaMode === ol.global.WheelEvent.DOM_DELTA_PIXEL) {
         delta /= ol.has.DEVICE_PIXEL_RATIO;
       }
-      if (wheelEvent.deltaMode === goog.global.WheelEvent.DOM_DELTA_LINE) {
+      if (wheelEvent.deltaMode === ol.global.WheelEvent.DOM_DELTA_LINE) {
         delta *= 40;
       }
     } else if (mapBrowserEvent.type == ol.events.EventType.MOUSEWHEEL) {
@@ -127,7 +121,7 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
     var timeLeft = Math.max(duration - (Date.now() - this.startTime_), 0);
 
     goog.global.clearTimeout(this.timeoutId_);
-    this.timeoutId_ = goog.global.setTimeout(this.doZoom_, timeLeft);
+    this.timeoutId_ = ol.global.setTimeout(this.doZoom_, timeLeft);
 
     mapBrowserEvent.preventDefault();
     stopEvent = true;
@@ -139,6 +133,7 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
 /**
  * @this {ol.interaction.MouseWheelZoom}
  * @private
+ * @param {ol.Map} map Map.
  */
 ol.interaction.MouseWheelZoom.doZoom = function() {
   var map = this.getMap();

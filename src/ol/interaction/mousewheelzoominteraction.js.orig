@@ -126,8 +126,14 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
     var duration = this.wheelTimeout_ || ol.MOUSEWHEELZOOM_TIMEOUT_DURATION;
     var timeLeft = Math.max(duration - (Date.now() - this.startTime_), 0);
 
+<<<<<<< HEAD
     goog.global.clearTimeout(this.timeoutId_);
-    this.timeoutId_ = ol.global.setTimeout(this.doZoom_, timeLeft);
+    this.timeoutId_ = goog.global.setTimeout(this.doZoom_, timeLeft);
+=======
+    ol.global.clearTimeout(this.timeoutId_);
+    this.timeoutId_ = ol.global.setTimeout(
+        this.doZoom_.bind(this, map), timeLeft);
+>>>>>>> master
 
     mapBrowserEvent.preventDefault();
     stopEvent = true;

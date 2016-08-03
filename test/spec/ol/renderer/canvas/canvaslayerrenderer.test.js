@@ -23,12 +23,12 @@ describe('ol.renderer.canvas.Layer', function() {
         },
         size: [10, 10],
         pixelRatio: 1,
-        coordinateToPixelMatrix: goog.vec.Mat4.createNumber(),
-        pixelToCoordinateMatrix: goog.vec.Mat4.createNumber()
+        coordinateToPixelTransform: ol.transform.create(),
+        pixelToCoordinateTransform: ol.transform.create()
       };
       renderer.getImageTransform = function() {
-        return goog.vec.Mat4.createNumberIdentity();
-      }
+        return ol.transform.create();
+      };
       ol.renderer.Map.prototype.calculateMatrices2D(frameState);
       var layerState = layer.getLayerState();
       var context = {
@@ -41,7 +41,7 @@ describe('ol.renderer.canvas.Layer', function() {
         lineTo: sinon.spy(),
         clip: sinon.spy(),
         drawImage: sinon.spy()
-      }
+      };
       renderer.composeFrame(frameState, layerState, context);
       expect(context.save.callCount).to.be(1);
       expect(context.translate.callCount).to.be(0);
@@ -62,7 +62,7 @@ describe('ol.renderer.canvas.Layer', function() {
 
 
 goog.require('ol.render.canvas');
-goog.require('goog.vec.Mat4');
+goog.require('ol.transform');
 goog.require('ol.layer.Image');
 goog.require('ol.renderer.Map');
 goog.require('ol.renderer.canvas.Layer');

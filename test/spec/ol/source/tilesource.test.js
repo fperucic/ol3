@@ -12,6 +12,47 @@ describe('ol.source.Tile', function() {
     });
   });
 
+  describe('#setKey()', function() {
+    it('sets the source key', function() {
+      var source = new ol.source.Tile({});
+      expect(source.getKey()).to.equal('');
+
+      var key = 'foo';
+      source.setKey(key);
+      expect(source.getKey()).to.equal(key);
+    });
+  });
+
+  describe('#setKey()', function() {
+    it('dispatches a change event', function(done) {
+      var source = new ol.source.Tile({});
+
+      var key = 'foo';
+      source.once('change', function() {
+        done();
+      });
+      source.setKey(key);
+    });
+
+    it('does not dispatch change if key does not change', function(done) {
+      var source = new ol.source.Tile({});
+
+      var key = 'foo';
+      source.once('change', function() {
+        source.once('change', function() {
+          done(new Error('Unexpected change event after source.setKey()'));
+        });
+        setTimeout(function() {
+          done();
+        }, 10);
+        source.setKey(key); // this should not result in a change event
+      });
+
+      source.setKey(key); // this should result in a change event
+    });
+
+  });
+
   describe('#forEachLoadedTile()', function() {
 
     var callback;
@@ -46,10 +87,10 @@ describe('ol.source.Tile', function() {
 
     it('calls callback for each loaded tile', function() {
       var source = new ol.test.source.TileMock({
-        '1/0/0': ol.TileState.LOADED,
-        '1/0/1': ol.TileState.LOADED,
-        '1/1/0': ol.TileState.LOADING,
-        '1/1/1': ol.TileState.LOADED
+        '1/0/0': 2, // LOADED
+        '1/0/1': 2, // LOADED
+        '1/1/0': 1, // LOADING,
+        '1/1/1': 2 // LOADED
       });
 
       var zoom = 1;
@@ -62,10 +103,10 @@ describe('ol.source.Tile', function() {
     it('returns true if range is fully loaded', function() {
       // a source with no loaded tiles
       var source = new ol.test.source.TileMock({
-        '1/0/0': ol.TileState.LOADED,
-        '1/0/1': ol.TileState.LOADED,
-        '1/1/0': ol.TileState.LOADED,
-        '1/1/1': ol.TileState.LOADED
+        '1/0/0': 2, // LOADED,
+        '1/0/1': 2, // LOADED,
+        '1/1/0': 2, // LOADED,
+        '1/1/1': 2 // LOADED
       });
 
       var zoom = 1;
@@ -82,10 +123,10 @@ describe('ol.source.Tile', function() {
     it('returns false if range is not fully loaded', function() {
       // a source with no loaded tiles
       var source = new ol.test.source.TileMock({
-        '1/0/0': ol.TileState.LOADED,
-        '1/0/1': ol.TileState.LOADED,
-        '1/1/0': ol.TileState.LOADING,
-        '1/1/1': ol.TileState.LOADED
+        '1/0/0': 2, // LOADED,
+        '1/0/1': 2, // LOADED,
+        '1/1/0': 1, // LOADING,
+        '1/1/1': 2 // LOADED
       });
 
       var zoom = 1;
@@ -102,10 +143,10 @@ describe('ol.source.Tile', function() {
     it('allows callback to override loaded check', function() {
       // a source with no loaded tiles
       var source = new ol.test.source.TileMock({
-        '1/0/0': ol.TileState.LOADED,
-        '1/0/1': ol.TileState.LOADED,
-        '1/1/0': ol.TileState.LOADED,
-        '1/1/1': ol.TileState.LOADED
+        '1/0/0': 2, // LOADED,
+        '1/0/1': 2, // LOADED,
+        '1/1/0': 2, // LOADED,
+        '1/1/1': 2 // LOADED
       });
 
       var zoom = 1;
@@ -174,7 +215,7 @@ describe('ol.source.Tile', function() {
     it('checks clearing of internal state', function() {
       // create a source with one loaded tile
       var source = new ol.test.source.TileMock({
-        '1/0/0': ol.TileState.LOADED
+        '1/0/0': 2 // LOADED
       });
       // check the loaded tile is there
       var tile = source.getTile(1, 0, 0);
@@ -207,7 +248,7 @@ ol.test.source.TileMock = function(tileStates) {
     tileSize: 256
   });
 
-  goog.base(this, {
+  ol.source.Tile.call(this, {
     projection: ol.proj.get('EPSG:4326'),
     tileGrid: tileGrid
   });
@@ -217,7 +258,7 @@ ol.test.source.TileMock = function(tileStates) {
   }
 
 };
-goog.inherits(ol.test.source.TileMock, ol.source.Tile);
+ol.inherits(ol.test.source.TileMock, ol.source.Tile);
 
 
 /**
@@ -228,7 +269,7 @@ ol.test.source.TileMock.prototype.getTile = function(z, x, y) {
   if (this.tileCache.containsKey(key)) {
     return /** @type {!ol.Tile} */ (this.tileCache.get(key));
   } else {
-    var tile = new ol.Tile(key, ol.TileState.IDLE);
+    var tile = new ol.Tile(key, 0); // IDLE
     this.tileCache.set(key, tile);
     return tile;
   }
@@ -248,25 +289,25 @@ describe('ol.test.source.TileMock', function() {
   describe('#getTile()', function() {
     it('returns a tile with state based on constructor arg', function() {
       var source = new ol.test.source.TileMock({
-        '0/0/0': ol.TileState.LOADED,
-        '1/0/0': ol.TileState.LOADED
+        '0/0/0': 2, // LOADED,
+        '1/0/0': 2 // LOADED
       });
       var tile;
 
       // check a loaded tile
       tile = source.getTile(0, 0, 0);
       expect(tile).to.be.a(ol.Tile);
-      expect(tile.state).to.be(ol.TileState.LOADED);
+      expect(tile.state).to.be(2); // LOADED
 
       // check a tile that is not loaded
       tile = source.getTile(1, 0, -1);
       expect(tile).to.be.a(ol.Tile);
-      expect(tile.state).to.be(ol.TileState.IDLE);
+      expect(tile.state).to.be(0); // IDLE
 
       // check another loaded tile
       tile = source.getTile(1, 0, 0);
       expect(tile).to.be.a(ol.Tile);
-      expect(tile.state).to.be(ol.TileState.LOADED);
+      expect(tile.state).to.be(2); // LOADED
 
     });
   });
@@ -275,7 +316,6 @@ describe('ol.test.source.TileMock', function() {
 
 goog.require('ol.Tile');
 goog.require('ol.TileRange');
-goog.require('ol.TileState');
 goog.require('ol.proj');
 goog.require('ol.proj.Projection');
 goog.require('ol.source.Source');

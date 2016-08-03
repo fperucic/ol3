@@ -1,6 +1,5 @@
 goog.provide('ol.style.Fill');
 
-goog.require('ol.ColorLike');
 goog.require('ol.color');
 
 
@@ -61,7 +60,7 @@ ol.style.Fill.prototype.getChecksum = function() {
         this.color_ instanceof CanvasPattern ||
         this.color_ instanceof CanvasGradient
     ) {
-      this.checksum_ = goog.getUid(this.color_).toString();
+      this.checksum_ = ol.getUid(this.color_).toString();
     } else {
       this.checksum_ = 'f' + (this.color_ ?
           ol.color.asString(this.color_) : '-');

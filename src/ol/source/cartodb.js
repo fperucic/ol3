@@ -40,7 +40,7 @@ ol.source.CartoDB = function(options) {
    */
   this.templateCache_ = {};
 
-  goog.base(this, {
+  ol.source.XYZ.call(this, {
     attributions: options.attributions,
     cacheSize: options.cacheSize,
     crossOrigin: options.crossOrigin,
@@ -53,7 +53,7 @@ ol.source.CartoDB = function(options) {
   });
   this.initializeMap_();
 };
-goog.inherits(ol.source.CartoDB, ol.source.XYZ);
+ol.inherits(ol.source.CartoDB, ol.source.XYZ);
 
 
 /**
@@ -83,6 +83,7 @@ ol.source.CartoDB.prototype.updateConfig = function(config) {
  * @param {Object} config In the case of anonymous maps, a CartoDB configuration
  *     object.
  * If using named maps, a key-value lookup with the template parameters.
+ * @api
  */
 ol.source.CartoDB.prototype.setConfig = function(config) {
   this.config_ = config || {};
@@ -124,7 +125,8 @@ ol.source.CartoDB.prototype.initializeMap_ = function() {
  */
 ol.source.CartoDB.prototype.handleInitResponse_ = function(paramHash, event) {
   var client = /** @type {XMLHttpRequest} */ (event.target);
-  if (client.status >= 200 && client.status < 300) {
+  // status will be 0 for file:// urls
+  if (!client.status || client.status >= 200 && client.status < 300) {
     var response;
     try {
       response = /** @type {CartoDBLayerInfo} */(JSON.parse(client.responseText));
@@ -147,7 +149,7 @@ ol.source.CartoDB.prototype.handleInitResponse_ = function(paramHash, event) {
  */
 ol.source.CartoDB.prototype.handleInitError_ = function(event) {
   this.setState(ol.source.State.ERROR);
-}
+};
 
 
 /**

@@ -21,6 +21,32 @@ describe('ol.View', function() {
 
   describe('create constraints', function() {
 
+    describe('create center constraint', function() {
+
+      describe('with no options', function() {
+        it('gives a correct center constraint function', function() {
+          var options = {};
+          var fn = ol.View.createCenterConstraint_(options);
+          expect(fn([0, 0])).to.eql([0, 0]);
+          expect(fn(undefined)).to.eql(undefined);
+          expect(fn([42, -100])).to.eql([42, -100]);
+        });
+      });
+
+      describe('with extent option', function() {
+        it('gives a correct center constraint function', function() {
+          var options = {
+            extent: [0, 0, 1, 1]
+          };
+          var fn = ol.View.createCenterConstraint_(options);
+          expect(fn([0, 0])).to.eql([0, 0]);
+          expect(fn([-10, 0])).to.eql([0, 0]);
+          expect(fn([100, 100])).to.eql([1, 1]);
+        });
+      });
+
+    });
+
     describe('create resolution constraint', function() {
 
       describe('with no options', function() {
@@ -266,6 +292,23 @@ describe('ol.View', function() {
       });
     });
 
+  });
+
+  describe('#getResolutions', function() {
+    var view;
+    var resolutions = [512, 256, 128, 64, 32, 16];
+
+    it('returns correct resolutions', function() {
+      view = new ol.View({
+        resolutions: resolutions
+      });
+      expect(view.getResolutions()).to.be(resolutions);
+    });
+
+    it('returns resolutions as undefined', function() {
+      view = new ol.View();
+      expect(view.getResolutions()).to.be(undefined);
+    });
   });
 
   describe('#getZoom', function() {

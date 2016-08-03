@@ -14,23 +14,13 @@ ol.style.ImageState = {
 
 
 /**
- * @typedef {{opacity: number,
- *            rotateWithView: boolean,
- *            rotation: number,
- *            scale: number,
- *            snapToPixel: boolean}}
- */
-ol.style.ImageOptions;
-
-
-/**
  * @classdesc
  * A base class used for creating subclasses and not instantiated in
  * apps. Base class for {@link ol.style.Icon}, {@link ol.style.Circle} and
  * {@link ol.style.RegularShape}.
  *
  * @constructor
- * @param {ol.style.ImageOptions} options Options.
+ * @param {ol.StyleImageOptions} options Options.
  * @api
  */
 ol.style.Image = function(options) {
@@ -119,62 +109,66 @@ ol.style.Image.prototype.getSnapToPixel = function() {
 
 
 /**
- * Get the anchor point.  The anchor determines the center point for the
- * symbolizer.  Its units are determined by `anchorXUnits` and `anchorYUnits`.
- * @function
+ * Get the anchor point in pixels. The anchor determines the center point for the
+ * symbolizer.
+ * @abstract
  * @return {Array.<number>} Anchor.
  */
-ol.style.Image.prototype.getAnchor = goog.abstractMethod;
+ol.style.Image.prototype.getAnchor = function() {};
 
 
 /**
  * Get the image element for the symbolizer.
- * @function
+ * @abstract
  * @param {number} pixelRatio Pixel ratio.
  * @return {HTMLCanvasElement|HTMLVideoElement|Image} Image element.
  */
-ol.style.Image.prototype.getImage = goog.abstractMethod;
+ol.style.Image.prototype.getImage = function(pixelRatio) {};
 
 
 /**
+ * @abstract
  * @param {number} pixelRatio Pixel ratio.
  * @return {HTMLCanvasElement|HTMLVideoElement|Image} Image element.
  */
-ol.style.Image.prototype.getHitDetectionImage = goog.abstractMethod;
+ol.style.Image.prototype.getHitDetectionImage = function(pixelRatio) {};
 
 
 /**
+ * @abstract
  * @return {ol.style.ImageState} Image state.
  */
-ol.style.Image.prototype.getImageState = goog.abstractMethod;
+ol.style.Image.prototype.getImageState = function() {};
 
 
 /**
+ * @abstract
  * @return {ol.Size} Image size.
  */
-ol.style.Image.prototype.getImageSize = goog.abstractMethod;
+ol.style.Image.prototype.getImageSize = function() {};
 
 
 /**
+ * @abstract
  * @return {ol.Size} Size of the hit-detection image.
  */
-ol.style.Image.prototype.getHitDetectionImageSize = goog.abstractMethod;
+ol.style.Image.prototype.getHitDetectionImageSize = function() {};
 
 
 /**
  * Get the origin of the symbolizer.
- * @function
+ * @abstract
  * @return {Array.<number>} Origin.
  */
-ol.style.Image.prototype.getOrigin = goog.abstractMethod;
+ol.style.Image.prototype.getOrigin = function() {};
 
 
 /**
  * Get the size of the symbolizer (in pixels).
- * @function
+ * @abstract
  * @return {ol.Size} Size.
  */
-ol.style.Image.prototype.getSize = goog.abstractMethod;
+ol.style.Image.prototype.getSize = function() {};
 
 
 /**
@@ -231,23 +225,26 @@ ol.style.Image.prototype.setSnapToPixel = function(snapToPixel) {
 
 
 /**
+ * @abstract
  * @param {function(this: T, ol.events.Event)} listener Listener function.
  * @param {T} thisArg Value to use as `this` when executing `listener`.
- * @return {ol.events.Key|undefined} Listener key.
+ * @return {ol.EventsKey|undefined} Listener key.
  * @template T
  */
-ol.style.Image.prototype.listenImageChange = goog.abstractMethod;
+ol.style.Image.prototype.listenImageChange = function(listener, thisArg) {};
 
 
 /**
  * Load not yet loaded URI.
+ * @abstract
  */
-ol.style.Image.prototype.load = goog.abstractMethod;
+ol.style.Image.prototype.load = function() {};
 
 
 /**
+ * @abstract
  * @param {function(this: T, ol.events.Event)} listener Listener function.
  * @param {T} thisArg Value to use as `this` when executing `listener`.
  * @template T
  */
-ol.style.Image.prototype.unlistenImageChange = goog.abstractMethod;
+ol.style.Image.prototype.unlistenImageChange = function(listener, thisArg) {};

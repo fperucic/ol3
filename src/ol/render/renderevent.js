@@ -32,17 +32,16 @@ ol.render.EventType = {
  * @extends {ol.events.Event}
  * @implements {oli.render.Event}
  * @param {ol.render.EventType} type Type.
- * @param {Object=} opt_target Target.
  * @param {ol.render.VectorContext=} opt_vectorContext Vector context.
  * @param {olx.FrameState=} opt_frameState Frame state.
  * @param {?CanvasRenderingContext2D=} opt_context Context.
  * @param {?ol.webgl.Context=} opt_glContext WebGL Context.
  */
 ol.render.Event = function(
-    type, opt_target, opt_vectorContext, opt_frameState, opt_context,
+    type, opt_vectorContext, opt_frameState, opt_context,
     opt_glContext) {
 
-  goog.base(this, type, opt_target);
+  ol.events.Event.call(this, type);
 
   /**
    * For canvas, this is an instance of {@link ol.render.canvas.Immediate}.
@@ -75,4 +74,4 @@ ol.render.Event = function(
   this.glContext = opt_glContext;
 
 };
-goog.inherits(ol.render.Event, ol.events.Event);
+ol.inherits(ol.render.Event, ol.events.Event);

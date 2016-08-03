@@ -5,7 +5,7 @@
 goog.provide('ol.render.canvas.Immediate');
 
 goog.require('goog.asserts');
-goog.require('goog.vec.Mat4');
+goog.require('ol.transform');
 goog.require('ol.array');
 goog.require('ol.color');
 goog.require('ol.colorlike');
@@ -15,7 +15,6 @@ goog.require('ol.geom.flat.transform');
 goog.require('ol.has');
 goog.require('ol.render.VectorContext');
 goog.require('ol.render.canvas');
-goog.require('ol.vec.Mat4');
 
 
 /**
@@ -32,12 +31,12 @@ goog.require('ol.vec.Mat4');
  * @param {CanvasRenderingContext2D} context Context.
  * @param {number} pixelRatio Pixel ratio.
  * @param {ol.Extent} extent Extent.
- * @param {goog.vec.Mat4.Number} transform Transform.
+ * @param {ol.Transform} transform Transform.
  * @param {number} viewRotation View rotation.
  * @struct
  */
 ol.render.canvas.Immediate = function(context, pixelRatio, extent, transform, viewRotation) {
-  goog.base(this);
+  ol.render.VectorContext.call(this);
 
   /**
    * @private
@@ -59,7 +58,7 @@ ol.render.canvas.Immediate = function(context, pixelRatio, extent, transform, vi
 
   /**
    * @private
-   * @type {goog.vec.Mat4.Number}
+   * @type {ol.Transform}
    */
   this.transform_ = transform;
 
@@ -71,31 +70,31 @@ ol.render.canvas.Immediate = function(context, pixelRatio, extent, transform, vi
 
   /**
    * @private
-   * @type {?ol.render.canvas.FillState}
+   * @type {?ol.CanvasFillState}
    */
   this.contextFillState_ = null;
 
   /**
    * @private
-   * @type {?ol.render.canvas.StrokeState}
+   * @type {?ol.CanvasStrokeState}
    */
   this.contextStrokeState_ = null;
 
   /**
    * @private
-   * @type {?ol.render.canvas.TextState}
+   * @type {?ol.CanvasTextState}
    */
   this.contextTextState_ = null;
 
   /**
    * @private
-   * @type {?ol.render.canvas.FillState}
+   * @type {?ol.CanvasFillState}
    */
   this.fillState_ = null;
 
   /**
    * @private
-   * @type {?ol.render.canvas.StrokeState}
+   * @type {?ol.CanvasStrokeState}
    */
   this.strokeState_ = null;
 
@@ -203,19 +202,19 @@ ol.render.canvas.Immediate = function(context, pixelRatio, extent, transform, vi
 
   /**
    * @private
-   * @type {?ol.render.canvas.FillState}
+   * @type {?ol.CanvasFillState}
    */
   this.textFillState_ = null;
 
   /**
    * @private
-   * @type {?ol.render.canvas.StrokeState}
+   * @type {?ol.CanvasStrokeState}
    */
   this.textStrokeState_ = null;
 
   /**
    * @private
-   * @type {?ol.render.canvas.TextState}
+   * @type {?ol.CanvasTextState}
    */
   this.textState_ = null;
 
@@ -227,12 +226,12 @@ ol.render.canvas.Immediate = function(context, pixelRatio, extent, transform, vi
 
   /**
    * @private
-   * @type {!goog.vec.Mat4.Number}
+   * @type {ol.Transform}
    */
-  this.tmpLocalTransform_ = goog.vec.Mat4.createNumber();
+  this.tmpLocalTransform_ = ol.transform.create();
 
 };
-goog.inherits(ol.render.canvas.Immediate, ol.render.VectorContext);
+ol.inherits(ol.render.canvas.Immediate, ol.render.VectorContext);
 
 
 /**
@@ -273,16 +272,12 @@ ol.render.canvas.Immediate.prototype.drawImages_ = function(flatCoordinates, off
     if (rotation !== 0 || this.imageScale_ != 1) {
       var centerX = x + this.imageAnchorX_;
       var centerY = y + this.imageAnchorY_;
-      ol.vec.Mat4.makeTransform2D(localTransform,
-          centerX, centerY, this.imageScale_, this.imageScale_,
-          rotation, -centerX, -centerY);
-      context.setTransform(
-          goog.vec.Mat4.getElement(localTransform, 0, 0),
-          goog.vec.Mat4.getElement(localTransform, 1, 0),
-          goog.vec.Mat4.getElement(localTransform, 0, 1),
-          goog.vec.Mat4.getElement(localTransform, 1, 1),
-          goog.vec.Mat4.getElement(localTransform, 0, 3),
-          goog.vec.Mat4.getElement(localTransform, 1, 3));
+      ol.transform.compose(localTransform,
+          centerX, centerY,
+          this.imageScale_, this.imageScale_,
+          rotation,
+          -centerX, -centerY);
+      context.setTransform.apply(context, localTransform);
     }
     context.drawImage(this.image_, this.imageOriginX_, this.imageOriginY_,
         this.imageWidth_, this.imageHeight_, x, y,
@@ -326,15 +321,12 @@ ol.render.canvas.Immediate.prototype.drawText_ = function(flatCoordinates, offse
     var x = pixelCoordinates[offset] + this.textOffsetX_;
     var y = pixelCoordinates[offset + 1] + this.textOffsetY_;
     if (this.textRotation_ !== 0 || this.textScale_ != 1) {
-      var localTransform = ol.vec.Mat4.makeTransform2D(this.tmpLocalTransform_,
-          x, y, this.textScale_, this.textScale_, this.textRotation_, -x, -y);
-      context.setTransform(
-          goog.vec.Mat4.getElement(localTransform, 0, 0),
-          goog.vec.Mat4.getElement(localTransform, 1, 0),
-          goog.vec.Mat4.getElement(localTransform, 0, 1),
-          goog.vec.Mat4.getElement(localTransform, 1, 1),
-          goog.vec.Mat4.getElement(localTransform, 0, 3),
-          goog.vec.Mat4.getElement(localTransform, 1, 3));
+      var localTransform = ol.transform.compose(this.tmpLocalTransform_,
+          x, y,
+          this.textScale_, this.textScale_,
+          this.textRotation_,
+          -x, -y);
+      context.setTransform.apply(context, localTransform);
     }
     if (this.textStrokeState_) {
       context.strokeText(this.text_, x, y);
@@ -700,7 +692,7 @@ ol.render.canvas.Immediate.prototype.drawMultiPolygon = function(geometry) {
 
 
 /**
- * @param {ol.render.canvas.FillState} fillState Fill state.
+ * @param {ol.CanvasFillState} fillState Fill state.
  * @private
  */
 ol.render.canvas.Immediate.prototype.setContextFillState_ = function(fillState) {
@@ -720,7 +712,7 @@ ol.render.canvas.Immediate.prototype.setContextFillState_ = function(fillState) 
 
 
 /**
- * @param {ol.render.canvas.StrokeState} strokeState Stroke state.
+ * @param {ol.CanvasStrokeState} strokeState Stroke state.
  * @private
  */
 ol.render.canvas.Immediate.prototype.setContextStrokeState_ = function(strokeState) {
@@ -772,7 +764,7 @@ ol.render.canvas.Immediate.prototype.setContextStrokeState_ = function(strokeSta
 
 
 /**
- * @param {ol.render.canvas.TextState} textState Text state.
+ * @param {ol.CanvasTextState} textState Text state.
  * @private
  */
 ol.render.canvas.Immediate.prototype.setContextTextState_ = function(textState) {

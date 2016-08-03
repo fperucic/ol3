@@ -24,7 +24,7 @@ goog.require('ol.source.Vector');
  * @api
  */
 ol.source.Cluster = function(options) {
-  goog.base(this, {
+  ol.source.Vector.call(this, {
     attributions: options.attributions,
     extent: options.extent,
     logo: options.logo,
@@ -70,7 +70,7 @@ ol.source.Cluster = function(options) {
   this.source_.on(ol.events.EventType.CHANGE,
       ol.source.Cluster.prototype.onSourceChange_, this);
 };
-goog.inherits(ol.source.Cluster, ol.source.Vector);
+ol.inherits(ol.source.Cluster, ol.source.Vector);
 
 
 /**
@@ -129,7 +129,7 @@ ol.source.Cluster.prototype.cluster_ = function() {
 
   for (var i = 0, ii = features.length; i < ii; i++) {
     var feature = features[i];
-    if (!(goog.getUid(feature).toString() in clustered)) {
+    if (!(ol.getUid(feature).toString() in clustered)) {
       var geometry = this.geometryFunction_(feature);
       if (geometry) {
         var coordinates = geometry.getCoordinates();
@@ -139,7 +139,7 @@ ol.source.Cluster.prototype.cluster_ = function() {
         var neighbors = this.source_.getFeaturesInExtent(extent);
         goog.asserts.assert(neighbors.length >= 1, 'at least one neighbor found');
         neighbors = neighbors.filter(function(neighbor) {
-          var uid = goog.getUid(neighbor).toString();
+          var uid = ol.getUid(neighbor).toString();
           if (!(uid in clustered)) {
             clustered[uid] = true;
             return true;

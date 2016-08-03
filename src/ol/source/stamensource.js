@@ -101,12 +101,12 @@ ol.source.Stamen = function(options) {
       'https://stamen-tiles-{a-d}.a.ssl.fastly.net/' + options.layer +
       '/{z}/{x}/{y}.' + layerConfig.extension;
 
-  goog.base(this, {
+  ol.source.XYZ.call(this, {
     attributions: ol.source.Stamen.ATTRIBUTIONS,
     cacheSize: options.cacheSize,
     crossOrigin: 'anonymous',
-    maxZoom: providerConfig.maxZoom,
-    minZoom: providerConfig.minZoom,
+    maxZoom: options.maxZoom != undefined ? options.maxZoom : providerConfig.maxZoom,
+    minZoom: options.minZoom != undefined ? options.minZoom : providerConfig.minZoom,
     opaque: layerConfig.opaque,
     reprojectionErrorThreshold: options.reprojectionErrorThreshold,
     tileLoadFunction: options.tileLoadFunction,
@@ -114,7 +114,7 @@ ol.source.Stamen = function(options) {
   });
 
 };
-goog.inherits(ol.source.Stamen, ol.source.XYZ);
+ol.inherits(ol.source.Stamen, ol.source.XYZ);
 
 
 /**

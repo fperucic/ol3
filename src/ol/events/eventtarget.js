@@ -5,6 +5,7 @@ goog.require('ol.Disposable');
 goog.require('ol.events');
 goog.require('ol.events.Event');
 
+
 /**
  * @classdesc
  * A simplified implementation of the W3C DOM Level 2 EventTarget interface.
@@ -25,7 +26,7 @@ goog.require('ol.events.Event');
  */
 ol.events.EventTarget = function() {
 
-  goog.base(this);
+  ol.Disposable.call(this);
 
   /**
    * @private
@@ -35,17 +36,23 @@ ol.events.EventTarget = function() {
 
   /**
    * @private
-   * @type {!Object.<string, Array.<ol.events.ListenerFunctionType>>}
+   * @type {!Object.<string, number>}
+   */
+  this.dispatching_ = {};
+
+  /**
+   * @private
+   * @type {!Object.<string, Array.<ol.EventsListenerFunctionType>>}
    */
   this.listeners_ = {};
 
 };
-goog.inherits(ol.events.EventTarget, ol.Disposable);
+ol.inherits(ol.events.EventTarget, ol.Disposable);
 
 
 /**
  * @param {string} type Type.
- * @param {ol.events.ListenerFunctionType} listener Listener.
+ * @param {ol.EventsListenerFunctionType} listener Listener.
  */
 ol.events.EventTarget.prototype.addEventListener = function(type, listener) {
   var listeners = this.listeners_[type];
@@ -72,19 +79,25 @@ ol.events.EventTarget.prototype.dispatchEvent = function(event) {
   var listeners = this.listeners_[type];
   var propagate;
   if (listeners) {
-    if (!(type in this.pendingRemovals_)) {
+    if (!(type in this.dispatching_)) {
+      this.dispatching_[type] = 0;
       this.pendingRemovals_[type] = 0;
     }
+    ++this.dispatching_[type];
     for (var i = 0, ii = listeners.length; i < ii; ++i) {
       if (listeners[i].call(this, evt) === false || evt.propagationStopped) {
         propagate = false;
         break;
       }
     }
-    var pendingRemovals = this.pendingRemovals_[type];
-    delete this.pendingRemovals_[type];
-    while (pendingRemovals--) {
-      this.removeEventListener(type, ol.nullFunction);
+    --this.dispatching_[type];
+    if (this.dispatching_[type] === 0) {
+      var pendingRemovals = this.pendingRemovals_[type];
+      delete this.pendingRemovals_[type];
+      while (pendingRemovals--) {
+        this.removeEventListener(type, ol.nullFunction);
+      }
+      delete this.dispatching_[type];
     }
     return propagate;
   }
@@ -104,7 +117,7 @@ ol.events.EventTarget.prototype.disposeInternal = function() {
  * order that they will be called in.
  *
  * @param {string} type Type.
- * @return {Array.<ol.events.ListenerFunctionType>} Listeners.
+ * @return {Array.<ol.EventsListenerFunctionType>} Listeners.
  */
 ol.events.EventTarget.prototype.getListeners = function(type) {
   return this.listeners_[type];
@@ -125,7 +138,7 @@ ol.events.EventTarget.prototype.hasListener = function(opt_type) {
 
 /**
  * @param {string} type Type.
- * @param {ol.events.ListenerFunctionType} listener Listener.
+ * @param {ol.EventsListenerFunctionType} listener Listener.
  */
 ol.events.EventTarget.prototype.removeEventListener = function(type, listener) {
   var listeners = this.listeners_[type];

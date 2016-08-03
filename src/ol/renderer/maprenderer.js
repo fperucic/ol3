@@ -2,7 +2,7 @@ goog.provide('ol.RendererType');
 goog.provide('ol.renderer.Map');
 
 goog.require('goog.asserts');
-goog.require('goog.vec.Mat4');
+goog.require('ol.transform');
 goog.require('ol');
 goog.require('ol.Disposable');
 goog.require('ol.events');
@@ -12,13 +12,11 @@ goog.require('ol.functions');
 goog.require('ol.layer.Layer');
 goog.require('ol.renderer.Layer');
 goog.require('ol.style.IconImageCache');
-goog.require('ol.vec.Mat4');
 
 
 /**
  * Available renderers: `'canvas'`, `'dom'` or `'webgl'`.
  * @enum {string}
- * @api stable
  */
 ol.RendererType = {
   CANVAS: 'canvas',
@@ -36,7 +34,7 @@ ol.RendererType = {
  */
 ol.renderer.Map = function(container, map) {
 
-  goog.base(this);
+  ol.Disposable.call(this);
 
 
   /**
@@ -53,12 +51,12 @@ ol.renderer.Map = function(container, map) {
 
   /**
    * @private
-   * @type {Object.<string, ol.events.Key>}
+   * @type {Object.<string, ol.EventsKey>}
    */
   this.layerRendererListeners_ = {};
 
 };
-goog.inherits(ol.renderer.Map, ol.Disposable);
+ol.inherits(ol.renderer.Map, ol.Disposable);
 
 
 /**
@@ -67,26 +65,29 @@ goog.inherits(ol.renderer.Map, ol.Disposable);
  */
 ol.renderer.Map.prototype.calculateMatrices2D = function(frameState) {
   var viewState = frameState.viewState;
-  var coordinateToPixelMatrix = frameState.coordinateToPixelMatrix;
-  goog.asserts.assert(coordinateToPixelMatrix,
-      'frameState has a coordinateToPixelMatrix');
-  ol.vec.Mat4.makeTransform2D(coordinateToPixelMatrix,
+  var coordinateToPixelTransform = frameState.coordinateToPixelTransform;
+  var pixelToCoordinateTransform = frameState.pixelToCoordinateTransform;
+  goog.asserts.assert(coordinateToPixelTransform,
+      'frameState has a coordinateToPixelTransform');
+
+  ol.transform.compose(coordinateToPixelTransform,
       frameState.size[0] / 2, frameState.size[1] / 2,
       1 / viewState.resolution, -1 / viewState.resolution,
       -viewState.rotation,
       -viewState.center[0], -viewState.center[1]);
-  var inverted = goog.vec.Mat4.invert(
-      coordinateToPixelMatrix, frameState.pixelToCoordinateMatrix);
-  goog.asserts.assert(inverted, 'matrix could be inverted');
+
+  ol.transform.invert(
+      ol.transform.setFromArray(pixelToCoordinateTransform, coordinateToPixelTransform));
 };
 
 
 /**
+ * @abstract
  * @param {ol.layer.Layer} layer Layer.
  * @protected
  * @return {ol.renderer.Layer} layerRenderer Layer renderer.
  */
-ol.renderer.Map.prototype.createLayerRenderer = goog.abstractMethod;
+ol.renderer.Map.prototype.createLayerRenderer = function(layer) {};
 
 
 /**
@@ -136,8 +137,8 @@ ol.renderer.Map.prototype.forEachFeatureAtCoordinate = function(coordinate, fram
    */
   function forEachFeatureAtCoordinate(feature, layer) {
     goog.asserts.assert(feature !== undefined, 'received a feature');
-    var key = goog.getUid(feature).toString();
-    var managed = frameState.layerStates[goog.getUid(layer)].managed;
+    var key = ol.getUid(feature).toString();
+    var managed = frameState.layerStates[ol.getUid(layer)].managed;
     if (!(key in frameState.skippedFeatureUids && !managed)) {
       return callback.call(thisArg, feature, managed ? layer : null);
     }
@@ -244,7 +245,7 @@ ol.renderer.Map.prototype.hasFeatureAtCoordinate = function(coordinate, frameSta
  * @return {ol.renderer.Layer} Layer renderer.
  */
 ol.renderer.Map.prototype.getLayerRenderer = function(layer) {
-  var layerKey = goog.getUid(layer).toString();
+  var layerKey = ol.getUid(layer).toString();
   if (layerKey in this.layerRenderers_) {
     return this.layerRenderers_[layerKey];
   } else {
@@ -288,9 +289,10 @@ ol.renderer.Map.prototype.getMap = function() {
 
 
 /**
+ * @abstract
  * @return {string} Type
  */
-ol.renderer.Map.prototype.getType = goog.abstractMethod;
+ol.renderer.Map.prototype.getType = function() {};
 
 
 /**
@@ -373,8 +375,8 @@ ol.renderer.Map.prototype.scheduleRemoveUnusedLayerRenderers = function(frameSta
 
 
 /**
- * @param {ol.layer.LayerState} state1 First layer state.
- * @param {ol.layer.LayerState} state2 Second layer state.
+ * @param {ol.LayerState} state1 First layer state.
+ * @param {ol.LayerState} state2 Second layer state.
  * @return {number} The zIndex difference.
  */
 ol.renderer.Map.sortByZIndex = function(state1, state2) {

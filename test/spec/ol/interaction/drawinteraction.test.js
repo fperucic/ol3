@@ -62,7 +62,7 @@ describe('ol.interaction.Draw', function() {
     it('creates a new interaction', function() {
       var draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.POINT
+        type: 'Point'
       });
       expect(draw).to.be.a(ol.interaction.Draw);
       expect(draw).to.be.a(ol.interaction.Interaction);
@@ -76,7 +76,7 @@ describe('ol.interaction.Draw', function() {
       var draw = new ol.interaction.Draw({
         source: source,
         geometryName: 'the_geom',
-        type: ol.geom.GeometryType.POINT
+        type: 'Point'
       });
       map.addInteraction(draw);
     });
@@ -96,7 +96,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       var draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.POINT,
+        type: 'Point',
         clickTolerance: 6
       });
       map.addInteraction(draw);
@@ -125,7 +125,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.POINT
+        type: 'Point'
       });
       map.addInteraction(draw);
     });
@@ -161,8 +161,8 @@ describe('ol.interaction.Draw', function() {
     it('triggers draw events', function() {
       var ds = sinon.spy();
       var de = sinon.spy();
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWSTART, ds);
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWEND, de);
+      ol.events.listen(draw, 'drawstart', ds);
+      ol.events.listen(draw, 'drawend', de);
       simulateEvent('pointermove', 10, 20);
       simulateEvent('pointerdown', 10, 20);
       simulateEvent('pointerup', 10, 20);
@@ -178,13 +178,13 @@ describe('ol.interaction.Draw', function() {
         end: 0,
         addfeature: 0
       };
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWEND,
+      ol.events.listen(draw, 'drawend',
           function() {
             expect(receivedEvents.end).to.be(0);
             expect(receivedEvents.addfeature).to.be(0);
             ++receivedEvents.end;
           });
-      source.on(ol.source.VectorEventType.ADDFEATURE, function() {
+      source.on('addfeature', function() {
         expect(receivedEvents.end).to.be(1);
         expect(receivedEvents.addfeature).to.be(0);
         receivedEvents.addfeature++;
@@ -203,7 +203,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       map.addInteraction(new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.MULTI_POINT
+        type: 'MultiPoint'
       }));
     });
 
@@ -226,7 +226,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.LINE_STRING
+        type: 'LineString'
       });
       map.addInteraction(draw);
     });
@@ -307,8 +307,8 @@ describe('ol.interaction.Draw', function() {
     it('triggers draw events', function() {
       var ds = sinon.spy();
       var de = sinon.spy();
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWSTART, ds);
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWEND, de);
+      ol.events.listen(draw, 'drawstart', ds);
+      ol.events.listen(draw, 'drawend', de);
 
       // first point
       simulateEvent('pointermove', 10, 20);
@@ -333,12 +333,61 @@ describe('ol.interaction.Draw', function() {
 
   });
 
+  describe('drawing with a finishCondition', function() {
+    beforeEach(function() {
+      var draw = new ol.interaction.Draw({
+        source: source,
+        type: 'LineString',
+        finishCondition: function(event) {
+          if (ol.array.equals(event.coordinate,[30,-20])) {
+            return true;
+          }
+          return false;
+        }
+      });
+      map.addInteraction(draw);
+    });
+
+    it('draws a linestring failing to finish it first, the finishes it', function() {
+      var features;
+
+      // first point
+      simulateEvent('pointermove', 10, 20);
+      simulateEvent('pointerdown', 10, 20);
+      simulateEvent('pointerup', 10, 20);
+
+      // second point
+      simulateEvent('pointermove', 40, 30);
+      simulateEvent('pointerdown', 40, 30);
+      simulateEvent('pointerup', 40, 30);
+
+      // try to finish on this point
+      simulateEvent('pointerdown', 40, 30);
+      simulateEvent('pointerup', 40, 30);
+
+      features = source.getFeatures();
+      expect(features).to.have.length(0);
+
+      // third point
+      simulateEvent('pointermove', 30, 20);
+      simulateEvent('pointerdown', 30, 20);
+      simulateEvent('pointerup', 30, 20);
+
+      //  finish on this point
+      simulateEvent('pointerdown', 30, 20);
+      simulateEvent('pointerup', 30, 20);
+
+      features = source.getFeatures();
+      expect(features).to.have.length(1);
+    });
+  });
+
   describe('drawing multi-linestrings', function() {
 
     beforeEach(function() {
       map.addInteraction(new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.MULTI_LINE_STRING
+        type: 'MultiLineString'
       }));
     });
 
@@ -372,7 +421,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.POLYGON
+        type: 'Polygon'
       });
       map.addInteraction(draw);
     });
@@ -465,8 +514,8 @@ describe('ol.interaction.Draw', function() {
     it('triggers draw events', function() {
       var ds = sinon.spy();
       var de = sinon.spy();
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWSTART, ds);
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWEND, de);
+      ol.events.listen(draw, 'drawstart', ds);
+      ol.events.listen(draw, 'drawend', de);
 
       // first point
       simulateEvent('pointermove', 10, 20);
@@ -501,7 +550,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       map.addInteraction(new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.MULTI_POLYGON
+        type: 'MultiPolygon'
       }));
     });
 
@@ -578,7 +627,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.CIRCLE
+        type: 'Circle'
       });
       map.addInteraction(draw);
     });
@@ -605,8 +654,8 @@ describe('ol.interaction.Draw', function() {
     it('triggers draw events', function() {
       var ds = sinon.spy();
       var de = sinon.spy();
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWSTART, ds);
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWEND, de);
+      ol.events.listen(draw, 'drawstart', ds);
+      ol.events.listen(draw, 'drawend', de);
 
       // first point
       simulateEvent('pointermove', 10, 20);
@@ -631,7 +680,7 @@ describe('ol.interaction.Draw', function() {
 
     beforeEach(function() {
       interaction = new ol.interaction.Draw({
-        type: ol.geom.GeometryType.LINE_STRING
+        type: 'LineString'
       });
 
       expect(interaction.getActive()).to.be(true);
@@ -700,7 +749,7 @@ describe('ol.interaction.Draw', function() {
 
     beforeEach(function() {
       interaction = new ol.interaction.Draw({
-        type: ol.geom.GeometryType.LINE_STRING
+        type: 'LineString'
       });
       expect(interaction.getActive()).to.be(true);
     });
@@ -754,7 +803,7 @@ describe('ol.interaction.Draw', function() {
     it('creates a regular polygon in Circle mode', function() {
       var draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.CIRCLE,
+        type: 'Circle',
         geometryFunction:
             ol.interaction.Draw.createRegularPolygon(4, Math.PI / 4)
       });
@@ -787,7 +836,7 @@ describe('ol.interaction.Draw', function() {
     beforeEach(function() {
       draw = new ol.interaction.Draw({
         source: source,
-        type: ol.geom.GeometryType.LINE_STRING
+        type: 'LineString'
       });
       map.addInteraction(draw);
       feature = new ol.Feature(
@@ -803,7 +852,7 @@ describe('ol.interaction.Draw', function() {
 
     it('dispatches a drawstart event', function() {
       var spy = sinon.spy();
-      ol.events.listen(draw, ol.interaction.DrawEventType.DRAWSTART, spy);
+      ol.events.listen(draw, 'drawstart', spy);
       draw.extend(feature);
       expect(spy.callCount).to.be(1);
     });
@@ -811,13 +860,13 @@ describe('ol.interaction.Draw', function() {
   });
 });
 
+goog.require('ol.array');
 goog.require('ol.events');
 goog.require('ol.Feature');
 goog.require('ol.Map');
 goog.require('ol.MapBrowserPointerEvent');
 goog.require('ol.View');
 goog.require('ol.geom.Circle');
-goog.require('ol.geom.GeometryType');
 goog.require('ol.geom.LineString');
 goog.require('ol.geom.MultiLineString');
 goog.require('ol.geom.MultiPoint');
@@ -825,9 +874,7 @@ goog.require('ol.geom.MultiPolygon');
 goog.require('ol.geom.Point');
 goog.require('ol.geom.Polygon');
 goog.require('ol.interaction.Draw');
-goog.require('ol.interaction.DrawEventType');
 goog.require('ol.interaction.Interaction');
 goog.require('ol.layer.Vector');
 goog.require('ol.pointer.PointerEvent');
 goog.require('ol.source.Vector');
-goog.require('ol.source.VectorEventType');

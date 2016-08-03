@@ -1,5 +1,3 @@
-goog.provide('ol.FeatureLoader');
-goog.provide('ol.FeatureUrlFunction');
 goog.provide('ol.featureloader');
 
 goog.require('goog.asserts');
@@ -9,38 +7,6 @@ goog.require('ol.format.FormatType');
 goog.require('ol.proj');
 goog.require('ol.proj.Projection');
 goog.require('ol.xml');
-
-
-/**
- * {@link ol.source.Vector} sources use a function of this type to load
- * features.
- *
- * This function takes an {@link ol.Extent} representing the area to be loaded,
- * a `{number}` representing the resolution (map units per pixel) and an
- * {@link ol.proj.Projection} for the projection  as arguments. `this` within
- * the function is bound to the {@link ol.source.Vector} it's called from.
- *
- * The function is responsible for loading the features and adding them to the
- * source.
- * @api
- * @typedef {function(this:ol.source.Vector, ol.Extent, number,
- *                    ol.proj.Projection)}
- */
-ol.FeatureLoader;
-
-
-/**
- * {@link ol.source.Vector} sources use a function of this type to get the url
- * to load features from.
- *
- * This function takes an {@link ol.Extent} representing the area to be loaded,
- * a `{number}` representing the resolution (map units per pixel) and an
- * {@link ol.proj.Projection} for the projection  as arguments and returns a
- * `{string}` representing the URL.
- * @api
- * @typedef {function(ol.Extent, number, ol.proj.Projection) : string}
- */
-ol.FeatureUrlFunction;
 
 
 /**
@@ -65,7 +31,7 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, failure) {
       function(extent, resolution, projection) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET',
-            goog.isFunction(url) ? url(extent, resolution, projection) : url,
+            typeof url === 'function' ? url(extent, resolution, projection) : url,
             true);
         if (format.getType() == ol.format.FormatType.ARRAY_BUFFER) {
           xhr.responseType = 'arraybuffer';
@@ -75,7 +41,8 @@ ol.featureloader.loadFeaturesXhr = function(url, format, success, failure) {
          * @private
          */
         xhr.onload = function(event) {
-          if (xhr.status >= 200 && xhr.status < 300) {
+          // status will be 0 for file:// urls
+          if (!xhr.status || xhr.status >= 200 && xhr.status < 300) {
             var type = format.getType();
             /** @type {Document|Node|Object|string|undefined} */
             var source;

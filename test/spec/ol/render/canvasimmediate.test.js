@@ -165,7 +165,7 @@ describe('ol.render.canvas.Immediate', function() {
         if (instruction.args) {
           parts.push('args: [' + instruction.args.map(function(arg) {
             if (typeof arg === 'number') {
-              return arg.toFixed(9)
+              return arg.toFixed(9);
             } else {
               return arg;
             }
@@ -198,10 +198,9 @@ describe('ol.render.canvas.Immediate', function() {
       };
 
       var transform = [
-        0.0004088332670837288, 0, 0, 0,
-        0, -0.0004088332670837288, 0, 0,
-        0, 0, 1, 0,
-        4480.991370439071, 1529.5752568707105, 0, 1
+        0.0004088332670837288, 0,
+        0, -0.0004088332670837288,
+        4480.991370439071, 1529.5752568707105
       ];
 
       var extent = [

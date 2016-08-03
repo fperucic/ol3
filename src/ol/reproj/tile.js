@@ -1,5 +1,4 @@
 goog.provide('ol.reproj.Tile');
-goog.provide('ol.reproj.TileFunctionType');
 
 goog.require('goog.asserts');
 goog.require('ol.Tile');
@@ -12,12 +11,6 @@ goog.require('ol.object');
 goog.require('ol.proj');
 goog.require('ol.reproj');
 goog.require('ol.reproj.Triangulation');
-
-
-/**
- * @typedef {function(number, number, number, number) : ol.Tile}
- */
-ol.reproj.TileFunctionType;
 
 
 /**
@@ -35,7 +28,7 @@ ol.reproj.TileFunctionType;
  * @param {ol.TileCoord} wrappedTileCoord Coordinate of the tile wrapped in X.
  * @param {number} pixelRatio Pixel ratio.
  * @param {number} gutter Gutter of the source tiles.
- * @param {ol.reproj.TileFunctionType} getTileFunction
+ * @param {ol.ReprojTileFunctionType} getTileFunction
  *     Function returning source tiles (z, x, y, pixelRatio).
  * @param {number=} opt_errorThreshold Acceptable reprojection error (in px).
  * @param {boolean=} opt_renderEdges Render reprojection edges.
@@ -45,7 +38,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
     pixelRatio, gutter, getTileFunction,
     opt_errorThreshold,
     opt_renderEdges) {
-  goog.base(this, tileCoord, ol.TileState.IDLE);
+  ol.Tile.call(this, tileCoord, ol.TileState.IDLE);
 
   /**
    * @private
@@ -103,7 +96,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
 
   /**
    * @private
-   * @type {Array.<ol.events.Key>}
+   * @type {Array.<ol.EventsKey>}
    */
   this.sourcesListenerKeys_ = null;
 
@@ -209,7 +202,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
     }
   }
 };
-goog.inherits(ol.reproj.Tile, ol.Tile);
+ol.inherits(ol.reproj.Tile, ol.Tile);
 
 
 /**
@@ -219,7 +212,7 @@ ol.reproj.Tile.prototype.disposeInternal = function() {
   if (this.state == ol.TileState.LOADING) {
     this.unlistenSources_();
   }
-  goog.base(this, 'disposeInternal');
+  ol.Tile.prototype.disposeInternal.call(this);
 };
 
 
@@ -229,7 +222,7 @@ ol.reproj.Tile.prototype.disposeInternal = function() {
 ol.reproj.Tile.prototype.getImage = function(opt_context) {
   if (opt_context !== undefined) {
     var image;
-    var key = goog.getUid(opt_context);
+    var key = ol.getUid(opt_context);
     if (key in this.canvasByContext_) {
       return this.canvasByContext_[key];
     } else if (ol.object.isEmpty(this.canvasByContext_)) {
@@ -265,8 +258,8 @@ ol.reproj.Tile.prototype.reproject_ = function() {
   } else {
     var z = this.wrappedTileCoord_[0];
     var size = this.targetTileGrid_.getTileSize(z);
-    var width = goog.isNumber(size) ? size : size[0];
-    var height = goog.isNumber(size) ? size : size[1];
+    var width = typeof size === 'number' ? size : size[0];
+    var height = typeof size === 'number' ? size : size[1];
     var targetResolution = this.targetTileGrid_.getResolution(z);
     var sourceResolution = this.sourceTileGrid_.getResolution(this.sourceZ_);
 

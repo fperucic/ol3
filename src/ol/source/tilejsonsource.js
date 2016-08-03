@@ -35,7 +35,7 @@ ol.source.TileJSON = function(options) {
    */
   this.tileJSON_ = null;
 
-  goog.base(this, {
+  ol.source.TileImage.call(this, {
     attributions: options.attributions,
     cacheSize: options.cacheSize,
     crossOrigin: options.crossOrigin,
@@ -58,7 +58,7 @@ ol.source.TileJSON = function(options) {
   }
 
 };
-goog.inherits(ol.source.TileJSON, ol.source.TileImage);
+ol.inherits(ol.source.TileJSON, ol.source.TileImage);
 
 
 /**
@@ -67,7 +67,8 @@ goog.inherits(ol.source.TileJSON, ol.source.TileImage);
  */
 ol.source.TileJSON.prototype.onXHRLoad_ = function(event) {
   var client = /** @type {XMLHttpRequest} */ (event.target);
-  if (client.status >= 200 && client.status < 300) {
+  // status will be 0 for file:// urls
+  if (!client.status || client.status >= 200 && client.status < 300) {
     var response;
     try {
       response = /** @type {TileJSON} */(JSON.parse(client.responseText));

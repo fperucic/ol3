@@ -220,7 +220,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XY Point geometries', function() {
-        var layout = ol.geom.GeometryLayout.XY;
+        var layout = 'XY';
         var point = new ol.geom.Point([1, 2], layout);
         var features = [new ol.Feature(point)];
         var node = format.writeFeaturesNode(features);
@@ -240,7 +240,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZ Point geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var point = new ol.geom.Point([1, 2, 3], layout);
         var features = [new ol.Feature(point)];
         var node = format.writeFeaturesNode(features);
@@ -269,7 +269,7 @@ describe('ol.format.KML', function() {
               return [coordinate[0] / 2, coordinate[1] / 2];
             });
 
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var point = new ol.geom.Point([1, 2, 3], layout).transform(
             'EPSG:4326', 'double');
         var features = [new ol.Feature(point)];
@@ -297,7 +297,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYM Point geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYM;
+        var layout = 'XYM';
         var point = new ol.geom.Point([1, 2, 100], layout);
         var features = [new ol.Feature(point)];
         var node = format.writeFeaturesNode(features);
@@ -317,7 +317,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZM Point geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZM;
+        var layout = 'XYZM';
         var point = new ol.geom.Point([1, 2, 3, 100], layout);
         var features = [new ol.Feature(point)];
         var node = format.writeFeaturesNode(features);
@@ -359,7 +359,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XY LineString geometries', function() {
-        var layout = ol.geom.GeometryLayout.XY;
+        var layout = 'XY';
         var lineString = new ol.geom.LineString([[1, 2], [3, 4]], layout);
         var features = [new ol.Feature(lineString)];
         var node = format.writeFeaturesNode(features);
@@ -379,7 +379,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZ LineString geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var lineString = new ol.geom.LineString(
             [[1, 2, 3], [4, 5, 6]], layout);
         var features = [new ol.Feature(lineString)];
@@ -400,7 +400,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYM LineString geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYM;
+        var layout = 'XYM';
         var lineString = new ol.geom.LineString(
             [[1, 2, 100], [3, 4, 200]], layout);
         var features = [new ol.Feature(lineString)];
@@ -421,7 +421,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZM LineString geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZM;
+        var layout = 'XYZM';
         var lineString = new ol.geom.LineString(
             [[1, 2, 3, 100], [4, 5, 6, 200]], layout);
         var features = [new ol.Feature(lineString)];
@@ -460,7 +460,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XY LinearRing geometries', function() {
-        var layout = ol.geom.GeometryLayout.XY;
+        var layout = 'XY';
         var linearRing = new ol.geom.LinearRing(
             [[1, 2], [3, 4], [1, 2]], layout);
         var features = [new ol.Feature(linearRing)];
@@ -481,7 +481,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZ LinearRing geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var linearRing = new ol.geom.LinearRing(
             [[1, 2, 3], [4, 5, 6], [1, 2, 3]], layout);
         var features = [new ol.Feature(linearRing)];
@@ -502,7 +502,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYM LinearRing geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYM;
+        var layout = 'XYM';
         var linearRing = new ol.geom.LinearRing(
             [[1, 2, 100], [3, 4, 200], [1, 2, 100]], layout);
         var features = [new ol.Feature(linearRing)];
@@ -523,7 +523,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZM LinearRing geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZM;
+        var layout = 'XYZM';
         var linearRing = new ol.geom.LinearRing(
             [[1, 2, 3, 100], [4, 5, 6, 200], [1, 2, 3, 100]], layout);
         var features = [new ol.Feature(linearRing)];
@@ -571,7 +571,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XY Polygon geometries', function() {
-        var layout = ol.geom.GeometryLayout.XY;
+        var layout = 'XY';
         var polygon = new ol.geom.Polygon(
             [[[0, 0], [0, 2], [2, 2], [2, 0], [0, 0]]], layout);
         var features = [new ol.Feature(polygon)];
@@ -596,7 +596,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZ Polygon geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var polygon = new ol.geom.Polygon(
             [[[0, 0, 1], [0, 2, 2], [2, 2, 3], [2, 0, 4], [0, 0, 5]]], layout);
         var features = [new ol.Feature(polygon)];
@@ -623,7 +623,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYM Polygon geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYM;
+        var layout = 'XYM';
         var polygon = new ol.geom.Polygon(
             [[[0, 0, 1], [0, 2, 1], [2, 2, 1], [2, 0, 1], [0, 0, 1]]], layout);
         var features = [new ol.Feature(polygon)];
@@ -650,7 +650,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write XYZM Polygon geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZM;
+        var layout = 'XYZM';
         var polygon = new ol.geom.Polygon(
             [[[0, 0, 1, 1], [0, 2, 2, 1], [2, 2, 3, 1],
               [2, 0, 4, 1], [0, 0, 5, 1]]], layout);
@@ -711,7 +711,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write complex Polygon geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var polygon = new ol.geom.Polygon(
             [[[0, 0, 1], [0, 5, 1], [5, 5, 2], [5, 0, 3]],
              [[1, 1, 0], [1, 2, 0], [2, 2, 0], [2, 1, 0]],
@@ -783,7 +783,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write MultiPoint geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var multiPoint = new ol.geom.MultiPoint(
             [[1, 2, 3], [4, 5, 6]], layout);
         var features = [new ol.Feature(multiPoint)];
@@ -843,7 +843,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write MultiLineString geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var multiLineString = new ol.geom.MultiLineString(
             [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]], layout);
         var features = [new ol.Feature(multiLineString)];
@@ -912,7 +912,7 @@ describe('ol.format.KML', function() {
       });
 
       it('can write MultiPolygon geometries', function() {
-        var layout = ol.geom.GeometryLayout.XYZ;
+        var layout = 'XYZ';
         var multiPolygon = new ol.geom.MultiPolygon(
             [[[[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]],
              [[[3, 0, 0], [3, 1, 0], [4, 1, 0], [4, 0, 0]]]], layout);
@@ -1022,6 +1022,41 @@ describe('ol.format.KML', function() {
         expect(gs[0]).to.be.an(ol.geom.GeometryCollection);
       });
 
+      it('can write GeometryCollection geometries', function() {
+        var collection = new ol.geom.GeometryCollection([
+          new ol.geom.Point([1,2]),
+          new ol.geom.LineString([[1,2],[3,4]]),
+          new ol.geom.Polygon([[[1,2],[3,4],[3,2],[1,2]]])
+        ]);
+        var features = [new ol.Feature(collection)];
+        var node = format.writeFeaturesNode(features);
+        var text =
+            '<kml xmlns="http://www.opengis.net/kml/2.2"' +
+            ' xmlns:gx="http://www.google.com/kml/ext/2.2"' +
+            ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+            ' xsi:schemaLocation="http://www.opengis.net/kml/2.2' +
+            ' https://developers.google.com/kml/schema/kml22gx.xsd">' +
+            '  <Placemark>' +
+            '    <MultiGeometry>' +
+            '      <Point>' +
+            '        <coordinates>1,2</coordinates>' +
+            '      </Point>' +
+            '      <LineString>' +
+            '        <coordinates>1,2 3,4</coordinates>' +
+            '      </LineString>' +
+            '      <Polygon>' +
+            '        <outerBoundaryIs>' +
+            '          <LinearRing>' +
+            '            <coordinates>1,2 3,4 3,2 1,2</coordinates>' +
+            '          </LinearRing>' +
+            '        </outerBoundaryIs>' +
+            '      </Polygon>' +
+            '    </MultiGeometry>' +
+            '  </Placemark>' +
+            '</kml>';
+        expect(node).to.xmleql(ol.xml.parse(text));
+      });
+
       it('can read gx:Track', function() {
         var text =
             '<kml xmlns="http://earth.google.com/kml/2.2"' +
@@ -1103,7 +1138,7 @@ describe('ol.format.KML', function() {
         expect(flatCoordinates[11]).to.be.eql(Date.UTC(2014, 1, 6, 0, 0, 0));
         expect(flatCoordinates[15]).to.be.eql(Date.UTC(2014, 1, 6, 19, 39, 3));
         expect(flatCoordinates[19]).to.be.eql(
-            Date.UTC(2014, 1, 6, 19, 39, 10) + 3 * 60
+            Date.UTC(2014, 1, 6, 16, 39, 10)
         );
       });
 
@@ -1737,12 +1772,12 @@ describe('ol.format.KML', function() {
         var style = new ol.style.Style({
           image: new ol.style.Icon({
             anchor: [0.25, 36],
-            anchorOrigin: ol.style.IconOrigin.TOP_LEFT,
+            anchorOrigin: 'top-left',
             anchorXUnits: 'fraction',
             anchorYUnits: 'pixels',
             crossOrigin: 'anonymous',
             offset: [96, 96],
-            offsetOrigin: ol.style.IconOrigin.TOP_LEFT,
+            offsetOrigin: 'top-left',
             rotation: 45,
             scale: 0.5,
             size: [48, 48],
@@ -2486,7 +2521,7 @@ describe('ol.format.KML', function() {
     describe('error handling', function() {
 
       it('should ignore invalid coordinates', function() {
-        var doc = goog.dom.xml.loadXml('<coordinates>INVALID</coordinates>');
+        var doc = new DOMParser().parseFromString('<coordinates>INVALID</coordinates>', 'application/xml');
         var node = doc.firstChild;
         expect(ol.format.KML.readFlatCoordinates_(node)).to.be(undefined);
       });
@@ -2670,6 +2705,19 @@ describe('ol.format.KML', function() {
       expect(components[1]).to.be.an(ol.geom.MultiPolygon);
     });
 
+    it('reads style and icon', function() {
+      var f = features[0];
+      var styleFunction = f.getStyleFunction();
+      expect(styleFunction).not.to.be(undefined);
+      var styleArray = styleFunction.call(f, 0);
+      expect(styleArray).to.be.an(Array);
+      var style = styleArray[0];
+      expect(style).to.be.an(ol.style.Style);
+      var imageStyle = style.getImage();
+      expect(imageStyle).to.be.an(ol.style.Icon);
+      expect(imageStyle.getSrc()).to.eql('http://maps.google.com/mapfiles/kml/shapes/star.png');
+    });
+
   });
 
   describe('#JSONExport', function() {
@@ -2795,16 +2843,37 @@ describe('ol.format.KML', function() {
 
   });
 
+  describe('#readNetworkLinksFile', function() {
+
+    var nl;
+    before(function(done) {
+      afterLoadText('spec/ol/format/kml/networklinks.kml', function(xml) {
+        try {
+          nl = format.readNetworkLinks(xml);
+        } catch (e) {
+          done(e);
+        }
+        done();
+      });
+    });
+
+    it('returns an array of network links', function() {
+      expect(nl).to.have.length(2);
+      expect(nl[0].name).to.be('bar');
+      expect(nl[0].href.replace(window.location.href, '')).to.be('/bar/bar.kml');
+      expect(nl[1].href).to.be('http://foo.com/foo.kml');
+    });
+
+  });
+
 });
 
 
 goog.require('ol.array');
-goog.require('goog.dom.xml');
 goog.require('ol.Feature');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.format.KML');
 goog.require('ol.geom.GeometryCollection');
-goog.require('ol.geom.GeometryLayout');
 goog.require('ol.geom.LineString');
 goog.require('ol.geom.LinearRing');
 goog.require('ol.geom.MultiLineString');
@@ -2815,7 +2884,6 @@ goog.require('ol.geom.Polygon');
 goog.require('ol.style.Circle');
 goog.require('ol.style.Fill');
 goog.require('ol.style.Icon');
-goog.require('ol.style.IconOrigin');
 goog.require('ol.proj');
 goog.require('ol.proj.Projection');
 goog.require('ol.style.Stroke');

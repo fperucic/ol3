@@ -1,7 +1,6 @@
 goog.provide('ol.interaction.Select');
 goog.provide('ol.interaction.SelectEvent');
 goog.provide('ol.interaction.SelectEventType');
-goog.provide('ol.interaction.SelectFilterFunction');
 
 goog.require('goog.asserts');
 goog.require('ol.functions');
@@ -32,17 +31,6 @@ ol.interaction.SelectEventType = {
 
 
 /**
- * A function that takes an {@link ol.Feature} or {@link ol.render.Feature} and
- * an {@link ol.layer.Layer} and returns `true` if the feature may be selected
- * or `false` otherwise.
- * @typedef {function((ol.Feature|ol.render.Feature), ol.layer.Layer):
- *     boolean}
- * @api
- */
-ol.interaction.SelectFilterFunction;
-
-
-/**
  * @classdesc
  * Events emitted by {@link ol.interaction.Select} instances are instances of
  * this type.
@@ -57,7 +45,7 @@ ol.interaction.SelectFilterFunction;
  * @constructor
  */
 ol.interaction.SelectEvent = function(type, selected, deselected, mapBrowserEvent) {
-  goog.base(this, type);
+  ol.events.Event.call(this, type);
 
   /**
    * Selected features array.
@@ -80,7 +68,7 @@ ol.interaction.SelectEvent = function(type, selected, deselected, mapBrowserEven
    */
   this.mapBrowserEvent = mapBrowserEvent;
 };
-goog.inherits(ol.interaction.SelectEvent, ol.events.Event);
+ol.inherits(ol.interaction.SelectEvent, ol.events.Event);
 
 
 /**
@@ -103,7 +91,7 @@ goog.inherits(ol.interaction.SelectEvent, ol.events.Event);
  */
 ol.interaction.Select = function(opt_options) {
 
-  goog.base(this, {
+  ol.interaction.Interaction.call(this, {
     handleEvent: ol.interaction.Select.handleEvent
   });
 
@@ -111,28 +99,28 @@ ol.interaction.Select = function(opt_options) {
 
   /**
    * @private
-   * @type {ol.events.ConditionType}
+   * @type {ol.EventsConditionType}
    */
   this.condition_ = options.condition ?
       options.condition : ol.events.condition.singleClick;
 
   /**
    * @private
-   * @type {ol.events.ConditionType}
+   * @type {ol.EventsConditionType}
    */
   this.addCondition_ = options.addCondition ?
       options.addCondition : ol.events.condition.never;
 
   /**
    * @private
-   * @type {ol.events.ConditionType}
+   * @type {ol.EventsConditionType}
    */
   this.removeCondition_ = options.removeCondition ?
       options.removeCondition : ol.events.condition.never;
 
   /**
    * @private
-   * @type {ol.events.ConditionType}
+   * @type {ol.EventsConditionType}
    */
   this.toggleCondition_ = options.toggleCondition ?
       options.toggleCondition : ol.events.condition.shiftKeyOnly;
@@ -145,7 +133,7 @@ ol.interaction.Select = function(opt_options) {
 
   /**
    * @private
-   * @type {ol.interaction.SelectFilterFunction}
+   * @type {ol.SelectFilterFunction}
    */
   this.filter_ = options.filter ? options.filter :
       ol.functions.TRUE;
@@ -170,7 +158,7 @@ ol.interaction.Select = function(opt_options) {
 
   var layerFilter;
   if (options.layers) {
-    if (goog.isFunction(options.layers)) {
+    if (typeof options.layers === 'function') {
       /**
        * @param {ol.layer.Layer} layer Layer.
        * @return {boolean} Include.
@@ -214,7 +202,7 @@ ol.interaction.Select = function(opt_options) {
       this.removeFeature_, this);
 
 };
-goog.inherits(ol.interaction.Select, ol.interaction.Interaction);
+ol.inherits(ol.interaction.Select, ol.interaction.Interaction);
 
 
 /**
@@ -223,7 +211,7 @@ goog.inherits(ol.interaction.Select, ol.interaction.Interaction);
  * @private
  */
 ol.interaction.Select.prototype.addFeatureLayerAssociation_ = function(feature, layer) {
-  var key = goog.getUid(feature);
+  var key = ol.getUid(feature);
   this.featureLayerAssociation_[key] = layer;
 };
 
@@ -250,7 +238,7 @@ ol.interaction.Select.prototype.getFeatures = function() {
 ol.interaction.Select.prototype.getLayer = function(feature) {
   goog.asserts.assertInstanceof(feature, ol.Feature,
       'feature should be an ol.Feature');
-  var key = goog.getUid(feature);
+  var key = ol.getUid(feature);
   return /** @type {ol.layer.Vector} */ (this.featureLayerAssociation_[key]);
 };
 
@@ -275,11 +263,11 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
   var features = this.featureOverlay_.getSource().getFeaturesCollection();
   var deselected = [];
   var selected = [];
-  var change = false;
   if (set) {
     // Replace the currently selected feature(s) with the feature(s) at the
     // pixel, or clear the selected feature(s) if there is no feature at
     // the pixel.
+    ol.object.clear(this.featureLayerAssociation_);
     map.forEachFeatureAtPixel(mapBrowserEvent.pixel,
         /**
          * @param {ol.Feature|ol.render.Feature} feature Feature.
@@ -293,26 +281,15 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
             return !this.multi_;
           }
         }, this, this.layerFilter_);
-    if (selected.length > 0 && features.getLength() == 1 &&
-        features.item(0) == selected[0]) {
-      // No change
+    if (selected.length > 0 && features.getLength() == 1 && features.item(0) == selected[0]) {
+      // No change; an already selected feature is selected again
+      selected.length = 0;
     } else {
-      change = true;
       if (features.getLength() !== 0) {
         deselected = Array.prototype.concat(features.getArray());
         features.clear();
       }
       features.extend(selected);
-      // Modify object this.featureLayerAssociation_
-      if (selected.length === 0) {
-        ol.object.clear(this.featureLayerAssociation_);
-      } else {
-        if (deselected.length > 0) {
-          deselected.forEach(function(feature) {
-            this.removeFeatureLayerAssociation_(feature);
-          }, this);
-        }
-      }
     }
   } else {
     // Modify the currently selected feature(s).
@@ -341,11 +318,8 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
       features.remove(deselected[i]);
     }
     features.extend(selected);
-    if (selected.length > 0 || deselected.length > 0) {
-      change = true;
-    }
   }
-  if (change) {
+  if (selected.length > 0 || deselected.length > 0) {
     this.dispatchEvent(
         new ol.interaction.SelectEvent(ol.interaction.SelectEventType.SELECT,
             selected, deselected, mapBrowserEvent));
@@ -367,7 +341,7 @@ ol.interaction.Select.prototype.setMap = function(map) {
   if (currentMap) {
     selectedFeatures.forEach(currentMap.unskipFeature, currentMap);
   }
-  goog.base(this, 'setMap', map);
+  ol.interaction.Interaction.prototype.setMap.call(this, map);
   this.featureOverlay_.setMap(map);
   if (map) {
     selectedFeatures.forEach(map.skipFeature, map);
@@ -376,7 +350,7 @@ ol.interaction.Select.prototype.setMap = function(map) {
 
 
 /**
- * @return {ol.style.StyleFunction} Styles.
+ * @return {ol.StyleFunction} Styles.
  */
 ol.interaction.Select.getDefaultStyleFunction = function() {
   var styles = ol.style.createDefaultEditingStyles();
@@ -426,6 +400,6 @@ ol.interaction.Select.prototype.removeFeature_ = function(evt) {
  * @private
  */
 ol.interaction.Select.prototype.removeFeatureLayerAssociation_ = function(feature) {
-  var key = goog.getUid(feature);
+  var key = ol.getUid(feature);
   delete this.featureLayerAssociation_[key];
 };

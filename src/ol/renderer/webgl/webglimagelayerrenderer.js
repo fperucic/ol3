@@ -1,10 +1,7 @@
 goog.provide('ol.renderer.webgl.ImageLayer');
 
 goog.require('goog.asserts');
-goog.require('goog.vec.Mat4');
-goog.require('goog.webgl');
-goog.require('ol.Coordinate');
-goog.require('ol.Extent');
+goog.require('ol.transform');
 goog.require('ol.ImageBase');
 goog.require('ol.ViewHint');
 goog.require('ol.dom');
@@ -14,7 +11,7 @@ goog.require('ol.layer.Image');
 goog.require('ol.proj');
 goog.require('ol.renderer.webgl.Layer');
 goog.require('ol.source.ImageVector');
-goog.require('ol.vec.Mat4');
+goog.require('ol.webgl');
 goog.require('ol.webgl.Context');
 
 
@@ -26,7 +23,7 @@ goog.require('ol.webgl.Context');
  */
 ol.renderer.webgl.ImageLayer = function(mapRenderer, imageLayer) {
 
-  goog.base(this, mapRenderer, imageLayer);
+  ol.renderer.webgl.Layer.call(this, mapRenderer, imageLayer);
 
   /**
    * The last rendered image.
@@ -43,12 +40,12 @@ ol.renderer.webgl.ImageLayer = function(mapRenderer, imageLayer) {
 
   /**
    * @private
-   * @type {?goog.vec.Mat4.Number}
+   * @type {?ol.Transform}
    */
   this.hitTransformationMatrix_ = null;
 
 };
-goog.inherits(ol.renderer.webgl.ImageLayer, ol.renderer.webgl.Layer);
+ol.inherits(ol.renderer.webgl.ImageLayer, ol.renderer.webgl.Layer);
 
 
 /**
@@ -66,7 +63,7 @@ ol.renderer.webgl.ImageLayer.prototype.createTexture_ = function(image) {
   var gl = this.mapRenderer.getGL();
 
   return ol.webgl.Context.createTexture(
-      gl, imageElement, goog.webgl.CLAMP_TO_EDGE, goog.webgl.CLAMP_TO_EDGE);
+      gl, imageElement, ol.webgl.CLAMP_TO_EDGE, ol.webgl.CLAMP_TO_EDGE);
 };
 
 
@@ -138,17 +135,18 @@ ol.renderer.webgl.ImageLayer.prototype.prepareFrame = function(frameState, layer
         image = image_;
         texture = this.createTexture_(image_);
         if (this.texture) {
+          /**
+           * @param {WebGLRenderingContext} gl GL.
+           * @param {WebGLTexture} texture Texture.
+           */
+          var postRenderFunction = function(gl, texture) {
+            if (!gl.isContextLost()) {
+              gl.deleteTexture(texture);
+            }
+          }.bind(null, gl, this.texture);
           frameState.postRenderFunctions.push(
-              /** @type {ol.PostRenderFunction} */ (goog.partial(
-                  /**
-                   * @param {WebGLRenderingContext} gl GL.
-                   * @param {WebGLTexture} texture Texture.
-                   */
-                  function(gl, texture) {
-                    if (!gl.isContextLost()) {
-                      gl.deleteTexture(texture);
-                    }
-                  }, gl, this.texture)));
+            /** @type {ol.PostRenderFunction} */ (postRenderFunction)
+          );
         }
       }
     }
@@ -166,9 +164,9 @@ ol.renderer.webgl.ImageLayer.prototype.prepareFrame = function(frameState, layer
 
     // Translate and scale to flip the Y coord.
     var texCoordMatrix = this.texCoordMatrix;
-    goog.vec.Mat4.makeIdentity(texCoordMatrix);
-    goog.vec.Mat4.scale(texCoordMatrix, 1, -1, 1);
-    goog.vec.Mat4.translate(texCoordMatrix, 0, -1, 0);
+    ol.transform.reset(texCoordMatrix);
+    ol.transform.scale(texCoordMatrix, 1, -1);
+    ol.transform.translate(texCoordMatrix, 0, -1);
 
     this.image_ = image;
     this.texture = texture;
@@ -198,20 +196,18 @@ ol.renderer.webgl.ImageLayer.prototype.updateProjectionMatrix_ = function(canvas
   var canvasExtentHeight = canvasHeight * viewResolution;
 
   var projectionMatrix = this.projectionMatrix;
-  goog.vec.Mat4.makeIdentity(projectionMatrix);
-  goog.vec.Mat4.scale(projectionMatrix,
+  ol.transform.reset(projectionMatrix);
+  ol.transform.scale(projectionMatrix,
       pixelRatio * 2 / canvasExtentWidth,
-      pixelRatio * 2 / canvasExtentHeight, 1);
-  goog.vec.Mat4.rotateZ(projectionMatrix, -viewRotation);
-  goog.vec.Mat4.translate(projectionMatrix,
+      pixelRatio * 2 / canvasExtentHeight);
+  ol.transform.rotate(projectionMatrix, -viewRotation);
+  ol.transform.translate(projectionMatrix,
       imageExtent[0] - viewCenter[0],
-      imageExtent[1] - viewCenter[1],
-      0);
-  goog.vec.Mat4.scale(projectionMatrix,
+      imageExtent[1] - viewCenter[1]);
+  ol.transform.scale(projectionMatrix,
       (imageExtent[2] - imageExtent[0]) / 2,
-      (imageExtent[3] - imageExtent[1]) / 2,
-      1);
-  goog.vec.Mat4.translate(projectionMatrix, 1, 1, 0);
+      (imageExtent[3] - imageExtent[1]) / 2);
+  ol.transform.translate(projectionMatrix, 1, 1);
 
 };
 
@@ -237,9 +233,8 @@ ol.renderer.webgl.ImageLayer.prototype.forEachLayerAtPixel = function(pixel, fra
   if (this.getLayer().getSource() instanceof ol.source.ImageVector) {
     // for ImageVector sources use the original hit-detection logic,
     // so that for example also transparent polygons are detected
-    var coordinate = pixel.slice();
-    ol.vec.Mat4.multVec2(
-        frameState.pixelToCoordinateMatrix, coordinate, coordinate);
+    var coordinate = ol.transform.apply(
+        frameState.pixelToCoordinateTransform, pixel.slice());
     var hasFeature = this.forEachFeatureAtCoordinate(
         coordinate, frameState, ol.functions.TRUE, this);
 
@@ -257,9 +252,8 @@ ol.renderer.webgl.ImageLayer.prototype.forEachLayerAtPixel = function(pixel, fra
           frameState.size, imageSize);
     }
 
-    var pixelOnFrameBuffer = [0, 0];
-    ol.vec.Mat4.multVec2(
-        this.hitTransformationMatrix_, pixel, pixelOnFrameBuffer);
+    var pixelOnFrameBuffer = ol.transform.apply(
+        this.hitTransformationMatrix_, pixel.slice());
 
     if (pixelOnFrameBuffer[0] < 0 || pixelOnFrameBuffer[0] > imageSize[0] ||
         pixelOnFrameBuffer[1] < 0 || pixelOnFrameBuffer[1] > imageSize[1]) {
@@ -290,37 +284,31 @@ ol.renderer.webgl.ImageLayer.prototype.forEachLayerAtPixel = function(pixel, fra
  * pixel on the map.
  * @param {ol.Size} mapSize The map size.
  * @param {ol.Size} imageSize The image size.
- * @return {goog.vec.Mat4.Number} The transformation matrix.
+ * @return {ol.Transform} The transformation matrix.
  * @private
  */
 ol.renderer.webgl.ImageLayer.prototype.getHitTransformationMatrix_ = function(mapSize, imageSize) {
   // the first matrix takes a map pixel, flips the y-axis and scales to
   // a range between -1 ... 1
-  var mapCoordMatrix = goog.vec.Mat4.createNumber();
-  goog.vec.Mat4.makeIdentity(mapCoordMatrix);
-  goog.vec.Mat4.translate(mapCoordMatrix, -1, -1, 0);
-  goog.vec.Mat4.scale(mapCoordMatrix, 2 / mapSize[0], 2 / mapSize[1], 1);
-  goog.vec.Mat4.translate(mapCoordMatrix, 0, mapSize[1], 0);
-  goog.vec.Mat4.scale(mapCoordMatrix, 1, -1, 1);
+  var mapCoordTransform = ol.transform.create();
+  ol.transform.translate(mapCoordTransform, -1, -1);
+  ol.transform.scale(mapCoordTransform, 2 / mapSize[0], 2 / mapSize[1]);
+  ol.transform.translate(mapCoordTransform, 0, mapSize[1]);
+  ol.transform.scale(mapCoordTransform, 1, -1);
 
   // the second matrix is the inverse of the projection matrix used in the
   // shader for drawing
-  var projectionMatrixInv = goog.vec.Mat4.createNumber();
-  goog.vec.Mat4.invert(this.projectionMatrix, projectionMatrixInv);
+  var projectionMatrixInv = ol.transform.invert(this.projectionMatrix.slice());
 
   // the third matrix scales to the image dimensions and flips the y-axis again
-  var imageCoordMatrix = goog.vec.Mat4.createNumber();
-  goog.vec.Mat4.makeIdentity(imageCoordMatrix);
-  goog.vec.Mat4.translate(imageCoordMatrix, 0, imageSize[1], 0);
-  goog.vec.Mat4.scale(imageCoordMatrix, 1, -1, 1);
-  goog.vec.Mat4.scale(imageCoordMatrix, imageSize[0] / 2, imageSize[1] / 2, 1);
-  goog.vec.Mat4.translate(imageCoordMatrix, 1, 1, 0);
+  var transform = ol.transform.create();
+  ol.transform.translate(transform, 0, imageSize[1]);
+  ol.transform.scale(transform, 1, -1);
+  ol.transform.scale(transform, imageSize[0] / 2, imageSize[1] / 2);
+  ol.transform.translate(transform, 1, 1);
 
-  var transformMatrix = goog.vec.Mat4.createNumber();
-  goog.vec.Mat4.multMat(
-      imageCoordMatrix, projectionMatrixInv, transformMatrix);
-  goog.vec.Mat4.multMat(
-      transformMatrix, mapCoordMatrix, transformMatrix);
+  ol.transform.multiply(transform, projectionMatrixInv);
+  ol.transform.multiply(transform, mapCoordTransform);
 
-  return transformMatrix;
+  return transform;
 };

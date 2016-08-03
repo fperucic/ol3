@@ -18,22 +18,18 @@
       "externs/esrijson.js",
       "externs/example.js",
       "externs/geojson.js",
-      "externs/jspdf.js",
       "externs/jquery-1.9.js",
       "externs/proj4js.js",
       "externs/tilejson.js",
       "externs/topojson.js"
     ],
     "define": [
-      "goog.dom.ASSUME_STANDARDS_MODE=true",
       "goog.DEBUG=false"
     ],
     "jscomp_error": [
       "*"
     ],
     "jscomp_off": [
-      "unnecessaryCasts",
-      "useOfGoogBase",
       "lintChecks",
       "analyzerChecks"
     ],

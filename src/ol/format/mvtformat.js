@@ -33,7 +33,7 @@ goog.require('ol.render.Feature');
  */
 ol.format.MVT = function(opt_options) {
 
-  goog.base(this);
+  ol.format.Feature.call(this);
 
   var options = opt_options ? opt_options : {};
 
@@ -74,7 +74,7 @@ ol.format.MVT = function(opt_options) {
   this.layers_ = options.layers ? options.layers : null;
 
 };
-goog.inherits(ol.format.MVT, ol.format.Feature);
+ol.inherits(ol.format.MVT, ol.format.Feature);
 
 
 /**
@@ -95,6 +95,7 @@ ol.format.MVT.prototype.getType = function() {
 ol.format.MVT.prototype.readFeature_ = function(
     rawFeature, layer, opt_options) {
   var feature = new this.featureClass_();
+  var id = rawFeature.id;
   var values = rawFeature.properties;
   values[this.layerName_] = layer;
   var geometry = ol.format.Feature.transformWithOptions(
@@ -104,6 +105,7 @@ ol.format.MVT.prototype.readFeature_ = function(
     goog.asserts.assertInstanceof(geometry, ol.geom.Geometry);
     values[this.geometryName_] = geometry;
   }
+  feature.setId(id);
   feature.setProperties(values);
   feature.setGeometryName(this.geometryName_);
   return feature;
@@ -147,6 +149,7 @@ ol.format.MVT.prototype.readRenderFeature_ = function(rawFeature, layer) {
 
 /**
  * @inheritDoc
+ * @api
  */
 ol.format.MVT.prototype.readFeatures = function(source, opt_options) {
   goog.asserts.assertInstanceof(source, ArrayBuffer);
@@ -180,6 +183,7 @@ ol.format.MVT.prototype.readFeatures = function(source, opt_options) {
 
 /**
  * @inheritDoc
+ * @api
  */
 ol.format.MVT.prototype.readProjection = function(source) {
   return this.defaultDataProjection;

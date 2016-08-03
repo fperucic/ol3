@@ -4,7 +4,6 @@ goog.provide('ol.TileState');
 goog.require('ol.events');
 goog.require('ol.events.EventTarget');
 goog.require('ol.events.EventType');
-goog.require('ol.TileCoord');
 
 
 /**
@@ -31,7 +30,7 @@ ol.TileState = {
  */
 ol.Tile = function(tileCoord, state) {
 
-  goog.base(this);
+  ol.events.EventTarget.call(this);
 
   /**
    * @type {ol.TileCoord}
@@ -61,7 +60,7 @@ ol.Tile = function(tileCoord, state) {
   this.key = '';
 
 };
-goog.inherits(ol.Tile, ol.events.EventTarget);
+ol.inherits(ol.Tile, ol.events.EventTarget);
 
 
 /**
@@ -74,18 +73,18 @@ ol.Tile.prototype.changed = function() {
 
 /**
  * Get the HTML image element for this tile (may be a Canvas, Image, or Video).
- * @function
+ * @abstract
  * @param {Object=} opt_context Object.
  * @return {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} Image.
  */
-ol.Tile.prototype.getImage = goog.abstractMethod;
+ol.Tile.prototype.getImage = function(opt_context) {};
 
 
 /**
  * @return {string} Key.
  */
 ol.Tile.prototype.getKey = function() {
-  return goog.getUid(this).toString();
+  return this.key + '/' + this.tileCoord;
 };
 
 
@@ -108,6 +107,10 @@ ol.Tile.prototype.getState = function() {
 
 
 /**
- * FIXME empty description for jsdoc
+ * Load the image or retry if loading previously failed.
+ * Loading is taken care of by the tile queue, and calling this method is
+ * only needed for preloading or for reloading in case of an error.
+ * @abstract
+ * @api
  */
-ol.Tile.prototype.load = goog.abstractMethod;
+ol.Tile.prototype.load = function() {};

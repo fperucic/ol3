@@ -9,10 +9,7 @@ goog.require('goog.asserts');
 goog.require('ol');
 goog.require('ol.Collection');
 goog.require('ol.CollectionEventType');
-goog.require('ol.Extent');
 goog.require('ol.Feature');
-goog.require('ol.FeatureLoader');
-goog.require('ol.LoadingStrategy');
 goog.require('ol.ObjectEventType');
 goog.require('ol.array');
 goog.require('ol.events');
@@ -79,7 +76,7 @@ ol.source.Vector = function(opt_options) {
 
   var options = opt_options || {};
 
-  goog.base(this, {
+  ol.source.Source.call(this, {
     attributions: options.attributions,
     logo: options.logo,
     projection: undefined,
@@ -150,7 +147,7 @@ ol.source.Vector = function(opt_options) {
   this.idIndex_ = {};
 
   /**
-   * A lookup of features without id (keyed by goog.getUid(feature)).
+   * A lookup of features without id (keyed by ol.getUid(feature)).
    * @private
    * @type {Object.<string, ol.Feature>}
    */
@@ -158,7 +155,7 @@ ol.source.Vector = function(opt_options) {
 
   /**
    * @private
-   * @type {Object.<string, Array.<ol.events.Key>>}
+   * @type {Object.<string, Array.<ol.EventsKey>>}
    */
   this.featureChangeKeys_ = {};
 
@@ -186,7 +183,7 @@ ol.source.Vector = function(opt_options) {
   }
 
 };
-goog.inherits(ol.source.Vector, ol.source.Source);
+ol.inherits(ol.source.Vector, ol.source.Source);
 
 
 /**
@@ -208,7 +205,7 @@ ol.source.Vector.prototype.addFeature = function(feature) {
  * @protected
  */
 ol.source.Vector.prototype.addFeatureInternal = function(feature) {
-  var featureKey = goog.getUid(feature).toString();
+  var featureKey = ol.getUid(feature).toString();
 
   if (!this.addToIndex_(featureKey, feature)) {
     return;
@@ -298,7 +295,7 @@ ol.source.Vector.prototype.addFeaturesInternal = function(features) {
 
   for (i = 0, length = features.length; i < length; i++) {
     feature = features[i];
-    featureKey = goog.getUid(feature).toString();
+    featureKey = ol.getUid(feature).toString();
     if (this.addToIndex_(featureKey, feature)) {
       newFeatures.push(feature);
     }
@@ -306,7 +303,7 @@ ol.source.Vector.prototype.addFeaturesInternal = function(features) {
 
   for (i = 0, length = newFeatures.length; i < length; i++) {
     feature = newFeatures[i];
-    featureKey = goog.getUid(feature).toString();
+    featureKey = ol.getUid(feature).toString();
     this.setupChangeEvents_(featureKey, feature);
 
     var geometry = feature.getGeometry();
@@ -612,10 +609,13 @@ ol.source.Vector.prototype.getFeaturesInExtent = function(extent) {
  * This method is not available when the source is configured with
  * `useSpatialIndex` set to `false`.
  * @param {ol.Coordinate} coordinate Coordinate.
+ * @param {function(ol.Feature):boolean=} opt_filter Feature filter function.
+ *     The filter function will receive one argument, the {@link ol.Feature feature}
+ *     and it should return a boolean value. By default, no filtering is made.
  * @return {ol.Feature} Closest feature.
  * @api stable
  */
-ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate) {
+ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate, opt_filter) {
   // Find the closest feature using branch and bound.  We start searching an
   // infinite extent, and find the distance from the first feature found.  This
   // becomes the closest feature.  We then compute a smaller extent which any
@@ -632,28 +632,31 @@ ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate) 
   goog.asserts.assert(this.featuresRtree_,
       'getClosestFeatureToCoordinate does not work with useSpatialIndex set ' +
       'to false');
+  var filter = opt_filter ? opt_filter : ol.functions.TRUE;
   this.featuresRtree_.forEachInExtent(extent,
       /**
        * @param {ol.Feature} feature Feature.
        */
       function(feature) {
-        var geometry = feature.getGeometry();
-        goog.asserts.assert(geometry,
-            'feature geometry is defined and not null');
-        var previousMinSquaredDistance = minSquaredDistance;
-        minSquaredDistance = geometry.closestPointXY(
-            x, y, closestPoint, minSquaredDistance);
-        if (minSquaredDistance < previousMinSquaredDistance) {
-          closestFeature = feature;
-          // This is sneaky.  Reduce the extent that it is currently being
-          // searched while the R-Tree traversal using this same extent object
-          // is still in progress.  This is safe because the new extent is
-          // strictly contained by the old extent.
-          var minDistance = Math.sqrt(minSquaredDistance);
-          extent[0] = x - minDistance;
-          extent[1] = y - minDistance;
-          extent[2] = x + minDistance;
-          extent[3] = y + minDistance;
+        if (filter(feature)) {
+          var geometry = feature.getGeometry();
+          goog.asserts.assert(geometry,
+              'feature geometry is defined and not null');
+          var previousMinSquaredDistance = minSquaredDistance;
+          minSquaredDistance = geometry.closestPointXY(
+              x, y, closestPoint, minSquaredDistance);
+          if (minSquaredDistance < previousMinSquaredDistance) {
+            closestFeature = feature;
+            // This is sneaky.  Reduce the extent that it is currently being
+            // searched while the R-Tree traversal using this same extent object
+            // is still in progress.  This is safe because the new extent is
+            // strictly contained by the old extent.
+            var minDistance = Math.sqrt(minSquaredDistance);
+            extent[0] = x - minDistance;
+            extent[1] = y - minDistance;
+            extent[2] = x + minDistance;
+            extent[3] = y + minDistance;
+          }
         }
       });
   return closestFeature;
@@ -718,7 +721,7 @@ ol.source.Vector.prototype.getUrl = function() {
  */
 ol.source.Vector.prototype.handleFeatureChange_ = function(event) {
   var feature = /** @type {ol.Feature} */ (event.target);
-  var featureKey = goog.getUid(feature).toString();
+  var featureKey = ol.getUid(feature).toString();
   var geometry = feature.getGeometry();
   if (!geometry) {
     if (!(featureKey in this.nullGeometryFeatures_)) {
@@ -817,7 +820,7 @@ ol.source.Vector.prototype.loadFeatures = function(
  * @api stable
  */
 ol.source.Vector.prototype.removeFeature = function(feature) {
-  var featureKey = goog.getUid(feature).toString();
+  var featureKey = ol.getUid(feature).toString();
   if (featureKey in this.nullGeometryFeatures_) {
     delete this.nullGeometryFeatures_[featureKey];
   } else {
@@ -836,7 +839,7 @@ ol.source.Vector.prototype.removeFeature = function(feature) {
  * @protected
  */
 ol.source.Vector.prototype.removeFeatureInternal = function(feature) {
-  var featureKey = goog.getUid(feature).toString();
+  var featureKey = ol.getUid(feature).toString();
   goog.asserts.assert(featureKey in this.featureChangeKeys_,
       'featureKey exists in featureChangeKeys');
   this.featureChangeKeys_[featureKey].forEach(ol.events.unlistenByKey);
@@ -885,7 +888,7 @@ ol.source.Vector.prototype.removeFromIdIndex_ = function(feature) {
  */
 ol.source.VectorEvent = function(type, opt_feature) {
 
-  goog.base(this, type);
+  ol.events.Event.call(this, type);
 
   /**
    * The feature being added or removed.
@@ -895,4 +898,4 @@ ol.source.VectorEvent = function(type, opt_feature) {
   this.feature = opt_feature;
 
 };
-goog.inherits(ol.source.VectorEvent, ol.events.Event);
+ol.inherits(ol.source.VectorEvent, ol.events.Event);

@@ -79,16 +79,6 @@ ol.ENABLE_IMAGE = true;
 
 
 /**
- * @define {boolean} Enable Closure named colors (`goog.color.names`).
- *     Enabling these colors adds about 3KB uncompressed / 1.5KB compressed to
- *     the final build size.  Default is `false`. This setting has no effect
- *     with Canvas renderer, which uses its own names, whether this is true or
- *     false.
- */
-ol.ENABLE_NAMED_COLORS = false;
-
-
-/**
  * @define {boolean} Enable integration with the Proj4js library.  Default is
  *     `true`.
  */
@@ -261,9 +251,10 @@ ol.WEBGL_EXTENSIONS; // value is set in `ol.has`
  * @function
  * @api
  */
-ol.inherits =
-    goog.inherits;
-// note that the newline above is necessary to satisfy the linter
+ol.inherits = function(childCtor, parentCtor) {
+  childCtor.prototype = Object.create(parentCtor.prototype);
+  childCtor.prototype.constructor = childCtor;
+};
 
 
 /**
@@ -274,4 +265,35 @@ ol.inherits =
 ol.nullFunction = function() {};
 
 
-ol.global = Function('return this')();
+/**
+ * Gets a unique ID for an object. This mutates the object so that further calls
+ * with the same object as a parameter returns the same value. Adapted from
+ * goog.getUid.
+ *
+ * @param {Object} obj The object to get the unique ID for.
+ * @return {number} The unique ID for the object.
+ */
+ol.getUid = function(obj) {
+  return obj.ol_uid ||
+      (obj.ol_uid = ++ol.uidCounter_);
+};
+
+
+/**
+ * Counter for getUid.
+ * @type {number}
+ * @private
+ */
+ol.uidCounter_ = 0;
+
+
+/**
+ * @see https://github.com/tc39/proposal-global
+ */
+if (typeof window !== 'undefined') {
+  ol.global = window;
+} else if (typeof global !== 'undefined') {
+  ol.global = global;
+} else if (typeof self !== 'undefined') {
+  ol.global = self;
+}

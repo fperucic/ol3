@@ -2,7 +2,7 @@ goog.provide('ol.renderer.dom.VectorLayer');
 
 goog.require('goog.asserts');
 goog.require('ol.events');
-goog.require('goog.vec.Mat4');
+goog.require('ol.transform');
 goog.require('ol.ViewHint');
 goog.require('ol.dom');
 goog.require('ol.extent');
@@ -13,7 +13,6 @@ goog.require('ol.render.canvas.Immediate');
 goog.require('ol.render.canvas.ReplayGroup');
 goog.require('ol.renderer.dom.Layer');
 goog.require('ol.renderer.vector');
-goog.require('ol.vec.Mat4');
 
 
 /**
@@ -36,7 +35,7 @@ ol.renderer.dom.VectorLayer = function(vectorLayer) {
   target.style.maxWidth = 'none';
   target.style.position = 'absolute';
 
-  goog.base(this, vectorLayer, target);
+  ol.renderer.dom.Layer.call(this, vectorLayer, target);
 
   /**
    * @private
@@ -76,18 +75,18 @@ ol.renderer.dom.VectorLayer = function(vectorLayer) {
 
   /**
    * @private
-   * @type {goog.vec.Mat4.Number}
+   * @type {ol.Transform}
    */
-  this.transform_ = goog.vec.Mat4.createNumber();
+  this.transform_ = ol.transform.create();
 
   /**
    * @private
-   * @type {goog.vec.Mat4.Number}
+   * @type {ol.Transform}
    */
-  this.elementTransform_ = goog.vec.Mat4.createNumber();
+  this.elementTransform_ = ol.transform.create();
 
 };
-goog.inherits(ol.renderer.dom.VectorLayer, ol.renderer.dom.Layer);
+ol.inherits(ol.renderer.dom.VectorLayer, ol.renderer.dom.Layer);
 
 
 /**
@@ -120,11 +119,9 @@ ol.renderer.dom.VectorLayer.prototype.composeFrame = function(frameState, layerS
   var imageWidth = viewWidth * pixelRatio;
   var imageHeight = viewHeight * pixelRatio;
 
-  var transform = ol.vec.Mat4.makeTransform2D(this.transform_,
-      pixelRatio * viewWidth / 2,
-      pixelRatio * viewHeight / 2,
-      pixelRatio / viewResolution,
-      -pixelRatio / viewResolution,
+  var transform = ol.transform.compose(this.transform_,
+      pixelRatio * viewWidth / 2, pixelRatio * viewHeight / 2,
+      pixelRatio / viewResolution, -pixelRatio / viewResolution,
       -viewRotation,
       -viewCenter[0], -viewCenter[1]);
 
@@ -134,10 +131,9 @@ ol.renderer.dom.VectorLayer.prototype.composeFrame = function(frameState, layerS
   context.canvas.width = imageWidth;
   context.canvas.height = imageHeight;
 
-  var elementTransform = ol.vec.Mat4.makeTransform2D(this.elementTransform_,
-      0, 0,
-      1 / pixelRatio, 1 / pixelRatio,
-      0,
+  var elementTransform = ol.transform.reset(this.elementTransform_);
+  ol.transform.scale(elementTransform, 1 / pixelRatio, 1 / pixelRatio);
+  ol.transform.translate(elementTransform,
       -(imageWidth - viewWidth) / 2 * pixelRatio,
       -(imageHeight - viewHeight) / 2 * pixelRatio);
   ol.dom.transformElement2D(context.canvas, elementTransform, 6);
@@ -162,7 +158,7 @@ ol.renderer.dom.VectorLayer.prototype.composeFrame = function(frameState, layerS
 /**
  * @param {ol.render.EventType} type Event type.
  * @param {olx.FrameState} frameState Frame state.
- * @param {goog.vec.Mat4.Number} transform Transform.
+ * @param {ol.Transform} transform Transform.
  * @private
  */
 ol.renderer.dom.VectorLayer.prototype.dispatchEvent_ = function(type, frameState, transform) {
@@ -172,8 +168,7 @@ ol.renderer.dom.VectorLayer.prototype.dispatchEvent_ = function(type, frameState
     var render = new ol.render.canvas.Immediate(
         context, frameState.pixelRatio, frameState.extent, transform,
         frameState.viewState.rotation);
-    var event = new ol.render.Event(type, layer, render, frameState,
-        context, null);
+    var event = new ol.render.Event(type, render, frameState, context, null);
     layer.dispatchEvent(event);
   }
 };
@@ -199,7 +194,7 @@ ol.renderer.dom.VectorLayer.prototype.forEachFeatureAtCoordinate = function(coor
          */
         function(feature) {
           goog.asserts.assert(feature !== undefined, 'received a feature');
-          var key = goog.getUid(feature).toString();
+          var key = ol.getUid(feature).toString();
           if (!(key in features)) {
             features[key] = true;
             return callback.call(thisArg, feature, layer);

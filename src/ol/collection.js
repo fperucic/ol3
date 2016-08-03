@@ -40,11 +40,10 @@ ol.CollectionEventType = {
  * @implements {oli.CollectionEvent}
  * @param {ol.CollectionEventType} type Type.
  * @param {*=} opt_element Element.
- * @param {Object=} opt_target Target.
  */
-ol.CollectionEvent = function(type, opt_element, opt_target) {
+ol.CollectionEvent = function(type, opt_element) {
 
-  goog.base(this, type, opt_target);
+  ol.events.Event.call(this, type);
 
   /**
    * The element that is added to or removed from the collection.
@@ -54,7 +53,7 @@ ol.CollectionEvent = function(type, opt_element, opt_target) {
   this.element = opt_element;
 
 };
-goog.inherits(ol.CollectionEvent, ol.events.Event);
+ol.inherits(ol.CollectionEvent, ol.events.Event);
 
 
 /**
@@ -82,7 +81,7 @@ ol.CollectionProperty = {
  */
 ol.Collection = function(opt_array) {
 
-  goog.base(this);
+  ol.Object.call(this);
 
   /**
    * @private
@@ -93,7 +92,7 @@ ol.Collection = function(opt_array) {
   this.updateLength_();
 
 };
-goog.inherits(ol.Collection, ol.Object);
+ol.inherits(ol.Collection, ol.Object);
 
 
 /**
@@ -182,7 +181,7 @@ ol.Collection.prototype.insertAt = function(index, elem) {
   this.array_.splice(index, 0, elem);
   this.updateLength_();
   this.dispatchEvent(
-      new ol.CollectionEvent(ol.CollectionEventType.ADD, elem, this));
+      new ol.CollectionEvent(ol.CollectionEventType.ADD, elem));
 };
 
 
@@ -240,7 +239,7 @@ ol.Collection.prototype.removeAt = function(index) {
   this.array_.splice(index, 1);
   this.updateLength_();
   this.dispatchEvent(
-      new ol.CollectionEvent(ol.CollectionEventType.REMOVE, prev, this));
+      new ol.CollectionEvent(ol.CollectionEventType.REMOVE, prev));
   return prev;
 };
 
@@ -257,9 +256,9 @@ ol.Collection.prototype.setAt = function(index, elem) {
     var prev = this.array_[index];
     this.array_[index] = elem;
     this.dispatchEvent(
-        new ol.CollectionEvent(ol.CollectionEventType.REMOVE, prev, this));
+        new ol.CollectionEvent(ol.CollectionEventType.REMOVE, prev));
     this.dispatchEvent(
-        new ol.CollectionEvent(ol.CollectionEventType.ADD, elem, this));
+        new ol.CollectionEvent(ol.CollectionEventType.ADD, elem));
   } else {
     var j;
     for (j = n; j < index; ++j) {

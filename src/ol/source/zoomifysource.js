@@ -3,7 +3,6 @@ goog.provide('ol.source.Zoomify');
 goog.require('goog.asserts');
 goog.require('ol');
 goog.require('ol.ImageTile');
-goog.require('ol.TileCoord');
 goog.require('ol.TileState');
 goog.require('ol.dom');
 goog.require('ol.extent');
@@ -119,7 +118,7 @@ ol.source.Zoomify = function(opt_options) {
     }
   }
 
-  goog.base(this, {
+  ol.source.TileImage.call(this, {
     attributions: options.attributions,
     cacheSize: options.cacheSize,
     crossOrigin: options.crossOrigin,
@@ -131,7 +130,7 @@ ol.source.Zoomify = function(opt_options) {
   });
 
 };
-goog.inherits(ol.source.Zoomify, ol.source.TileImage);
+ol.inherits(ol.source.Zoomify, ol.source.TileImage);
 
 
 /**
@@ -147,7 +146,7 @@ goog.inherits(ol.source.Zoomify, ol.source.TileImage);
 ol.source.ZoomifyTile_ = function(
     tileCoord, state, src, crossOrigin, tileLoadFunction) {
 
-  goog.base(this, tileCoord, state, src, crossOrigin, tileLoadFunction);
+  ol.ImageTile.call(this, tileCoord, state, src, crossOrigin, tileLoadFunction);
 
   /**
    * @private
@@ -157,7 +156,7 @@ ol.source.ZoomifyTile_ = function(
   this.zoomifyImageByContext_ = {};
 
 };
-goog.inherits(ol.source.ZoomifyTile_, ol.ImageTile);
+ol.inherits(ol.source.ZoomifyTile_, ol.ImageTile);
 
 
 /**
@@ -166,11 +165,11 @@ goog.inherits(ol.source.ZoomifyTile_, ol.ImageTile);
 ol.source.ZoomifyTile_.prototype.getImage = function(opt_context) {
   var tileSize = ol.DEFAULT_TILE_SIZE;
   var key = opt_context !== undefined ?
-      goog.getUid(opt_context).toString() : '';
+      ol.getUid(opt_context).toString() : '';
   if (key in this.zoomifyImageByContext_) {
     return this.zoomifyImageByContext_[key];
   } else {
-    var image = goog.base(this, 'getImage', opt_context);
+    var image = ol.ImageTile.prototype.getImage.call(this, opt_context);
     if (this.state == ol.TileState.LOADED) {
       if (image.width == tileSize && image.height == tileSize) {
         this.zoomifyImageByContext_[key] = image;

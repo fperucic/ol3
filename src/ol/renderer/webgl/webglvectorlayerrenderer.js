@@ -5,10 +5,10 @@ goog.require('ol.events');
 goog.require('ol.ViewHint');
 goog.require('ol.extent');
 goog.require('ol.layer.Vector');
+goog.require('ol.transform');
 goog.require('ol.render.webgl.ReplayGroup');
 goog.require('ol.renderer.vector');
 goog.require('ol.renderer.webgl.Layer');
-goog.require('ol.vec.Mat4');
 
 
 /**
@@ -19,7 +19,7 @@ goog.require('ol.vec.Mat4');
  */
 ol.renderer.webgl.VectorLayer = function(mapRenderer, vectorLayer) {
 
-  goog.base(this, mapRenderer, vectorLayer);
+  ol.renderer.webgl.Layer.call(this, mapRenderer, vectorLayer);
 
   /**
    * @private
@@ -60,12 +60,12 @@ ol.renderer.webgl.VectorLayer = function(mapRenderer, vectorLayer) {
   /**
    * The last layer state.
    * @private
-   * @type {?ol.layer.LayerState}
+   * @type {?ol.LayerState}
    */
   this.layerState_ = null;
 
 };
-goog.inherits(ol.renderer.webgl.VectorLayer, ol.renderer.webgl.Layer);
+ol.inherits(ol.renderer.webgl.VectorLayer, ol.renderer.webgl.Layer);
 
 
 /**
@@ -95,7 +95,7 @@ ol.renderer.webgl.VectorLayer.prototype.disposeInternal = function() {
     replayGroup.getDeleteResourcesFunction(context)();
     this.replayGroup_ = null;
   }
-  goog.base(this, 'disposeInternal');
+  ol.renderer.webgl.Layer.prototype.disposeInternal.call(this);
 };
 
 
@@ -122,7 +122,7 @@ ol.renderer.webgl.VectorLayer.prototype.forEachFeatureAtCoordinate = function(co
          */
         function(feature) {
           goog.asserts.assert(feature !== undefined, 'received a feature');
-          var key = goog.getUid(feature).toString();
+          var key = ol.getUid(feature).toString();
           if (!(key in features)) {
             features[key] = true;
             return callback.call(thisArg, feature, layer);
@@ -154,9 +154,8 @@ ol.renderer.webgl.VectorLayer.prototype.hasFeatureAtCoordinate = function(coordi
  * @inheritDoc
  */
 ol.renderer.webgl.VectorLayer.prototype.forEachLayerAtPixel = function(pixel, frameState, callback, thisArg) {
-  var coordinate = pixel.slice();
-  ol.vec.Mat4.multVec2(
-      frameState.pixelToCoordinateMatrix, coordinate, coordinate);
+  var coordinate = ol.transform.apply(
+      frameState.pixelToCoordinateTransform, pixel.slice());
   var hasFeature = this.hasFeatureAtCoordinate(coordinate, frameState);
 
   if (hasFeature) {

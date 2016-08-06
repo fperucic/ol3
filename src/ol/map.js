@@ -1409,6 +1409,7 @@ ol.Map.prototype.setView = function(view) {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @api
  */
 ol.Map.prototype.skipFeature = function(feature) {
   var featureUid = ol.getUid(feature).toString();
@@ -1447,6 +1448,7 @@ ol.Map.prototype.updateSize = function() {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @api
  */
 ol.Map.prototype.unskipFeature = function(feature) {
   var featureUid = ol.getUid(feature).toString();

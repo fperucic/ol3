@@ -14,7 +14,6 @@ goog.require('ol.extent');
 goog.require('ol.geom.Polygon');
 goog.require('ol.geom.SimpleGeometry');
 goog.require('ol.proj');
-goog.require('ol.proj.METERS_PER_UNIT');
 goog.require('ol.proj.Units');
 
 
@@ -222,7 +221,7 @@ ol.View.prototype.animate = function(var_args) {
       start: start,
       complete: false,
       anchor: options.anchor,
-      duration: options.duration || 1000,
+      duration: options.duration !== undefined ? options.duration : 1000,
       easing: options.easing || ol.easing.inAndOut
     });
 
@@ -238,7 +237,7 @@ ol.View.prototype.animate = function(var_args) {
             this.maxResolution_, options.zoom - this.minZoom_, 0);
       resolution = animation.targetResolution;
     } else if (options.resolution) {
-      animation.sourceResolution = this.getResolution();
+      animation.sourceResolution = resolution;
       animation.targetResolution = options.resolution;
       resolution = animation.targetResolution;
     }
@@ -271,7 +270,8 @@ ol.View.prototype.getAnimating = function() {
 /**
  * Cancel any ongoing animations.
  */
-ol.View.prototype.cancelAnimations_ = function() {
+ol.View.prototype.cancelAnimations = function() {
+  this.setHint(ol.View.Hint.ANIMATING, -this.getHints()[ol.View.Hint.ANIMATING]);
   for (var i = 0, ii = this.animations_.length; i < ii; ++i) {
     var series = this.animations_[i];
     if (series[0].callback) {
@@ -279,7 +279,6 @@ ol.View.prototype.cancelAnimations_ = function() {
     }
   }
   this.animations_.length = 0;
-  this.setHint(ol.View.Hint.ANIMATING, -this.getHints()[ol.View.Hint.ANIMATING]);
 };
 
 /**
@@ -304,8 +303,8 @@ ol.View.prototype.updateAnimations_ = function() {
         continue;
       }
       var elapsed = now - animation.start;
-      var fraction = elapsed / animation.duration;
-      if (fraction > 1) {
+      var fraction = animation.duration > 0 ? elapsed / animation.duration : 1;
+      if (fraction >= 1) {
         animation.complete = true;
         fraction = 1;
       } else {
@@ -345,14 +344,16 @@ ol.View.prototype.updateAnimations_ = function() {
       }
     }
     if (seriesComplete) {
+      this.animations_[i] = null;
       this.setHint(ol.View.Hint.ANIMATING, -1);
-      var completed = this.animations_.pop();
-      var callback = completed[0].callback;
+      var callback = series[0].callback;
       if (callback) {
         callback(true);
       }
     }
   }
+  // prune completed series
+  this.animations_ = this.animations_.filter(Boolean);
   if (more && this.updateAnimationKey_ === undefined) {
     this.updateAnimationKey_ = requestAnimationFrame(this.updateAnimations_);
   }
@@ -669,21 +670,35 @@ ol.View.prototype.getZoom = function() {
  * The size is pixel dimensions of the box to fit the extent into.
  * In most cases you will want to use the map size, that is `map.getSize()`.
  * Takes care of the map angle.
- * @param {ol.geom.SimpleGeometry|ol.Extent} geometry Geometry.
- * @param {ol.Size} size Box pixel size.
+ * @param {ol.geom.SimpleGeometry|ol.Extent} geometryOrExtent The geometry or
+ *     extent to fit the view to.
  * @param {olx.view.FitOptions=} opt_options Options.
- * @api
+ * @api stable
  */
-ol.View.prototype.fit = function(geometry, size, opt_options) {
-  if (!(geometry instanceof ol.geom.SimpleGeometry)) {
-    ol.asserts.assert(Array.isArray(geometry),
-        24); // Invalid extent or geometry provided as `geometry`
-    ol.asserts.assert(!ol.extent.isEmpty(geometry),
-        25); // Cannot fit empty extent provided as `geometry`
-    geometry = ol.geom.Polygon.fromExtent(geometry);
-  }
-
+ol.View.prototype.fit = function(geometryOrExtent, opt_options) {
   var options = opt_options || {};
+  var size = options.size;
+  if (!size) {
+    size = [100, 100];
+    var selector = '.ol-viewport[data-view="' + ol.getUid(this) + '"]';
+    var element = document.querySelector(selector);
+    if (element) {
+      var metrics = getComputedStyle(element);
+      size[0] = parseInt(metrics.width, 10);
+      size[1] = parseInt(metrics.height, 10);
+    }
+  }
+  /** @type {ol.geom.SimpleGeometry} */
+  var geometry;
+  if (!(geometryOrExtent instanceof ol.geom.SimpleGeometry)) {
+    ol.asserts.assert(Array.isArray(geometryOrExtent),
+        24); // Invalid extent or geometry provided as `geometry`
+    ol.asserts.assert(!ol.extent.isEmpty(geometryOrExtent),
+        25); // Cannot fit empty extent provided as `geometry`
+    geometry = ol.geom.Polygon.fromExtent(geometryOrExtent);
+  } else {
+    geometry = geometryOrExtent;
+  }
 
   var padding = options.padding !== undefined ? options.padding : [0, 0, 0, 0];
   var constrainResolution = options.constrainResolution !== undefined ?
@@ -733,7 +748,6 @@ ol.View.prototype.fit = function(geometry, size, opt_options) {
     }
     resolution = constrainedResolution;
   }
-  this.setResolution(resolution);
 
   // calculate center
   sinAngle = -sinAngle; // go back to original rotation
@@ -743,8 +757,19 @@ ol.View.prototype.fit = function(geometry, size, opt_options) {
   centerRotY += (padding[0] - padding[2]) / 2 * resolution;
   var centerX = centerRotX * cosAngle - centerRotY * sinAngle;
   var centerY = centerRotY * cosAngle + centerRotX * sinAngle;
+  var center = [centerX, centerY];
 
-  this.setCenter([centerX, centerY]);
+  if (options.duration !== undefined) {
+    this.animate({
+      resolution: resolution,
+      center: center,
+      duration: options.duration,
+      easing: options.easing
+    });
+  } else {
+    this.setResolution(resolution);
+    this.setCenter(center);
+  }
 };
 
 
@@ -807,7 +832,7 @@ ol.View.prototype.rotate = function(rotation, opt_anchor) {
 ol.View.prototype.setCenter = function(center) {
   this.set(ol.View.Property.CENTER, center);
   if (this.getAnimating()) {
-    this.cancelAnimations_();
+    this.cancelAnimations();
   }
 };
 
@@ -823,6 +848,7 @@ ol.View.prototype.setHint = function(hint, delta) {
   this.hints_[hint] += delta;
   ol.DEBUG && console.assert(this.hints_[hint] >= 0,
       'Hint at %s must be positive, was %s', hint, this.hints_[hint]);
+  this.changed();
   return this.hints_[hint];
 };
 
@@ -836,7 +862,7 @@ ol.View.prototype.setHint = function(hint, delta) {
 ol.View.prototype.setResolution = function(resolution) {
   this.set(ol.View.Property.RESOLUTION, resolution);
   if (this.getAnimating()) {
-    this.cancelAnimations_();
+    this.cancelAnimations();
   }
 };
 
@@ -850,7 +876,7 @@ ol.View.prototype.setResolution = function(resolution) {
 ol.View.prototype.setRotation = function(rotation) {
   this.set(ol.View.Property.ROTATION, rotation);
   if (this.getAnimating()) {
-    this.cancelAnimations_();
+    this.cancelAnimations();
   }
 };
 

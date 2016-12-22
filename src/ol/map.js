@@ -7,14 +7,11 @@ goog.provide('ol.Map');
 goog.require('ol');
 goog.require('ol.Collection');
 goog.require('ol.MapBrowserEvent');
-goog.require('ol.MapBrowserEvent.EventType');
 goog.require('ol.MapBrowserEventHandler');
 goog.require('ol.MapEvent');
 goog.require('ol.Object');
-goog.require('ol.ObjectEventType');
 goog.require('ol.TileQueue');
 goog.require('ol.View');
-goog.require('ol.array');
 goog.require('ol.asserts');
 goog.require('ol.control');
 goog.require('ol.dom');
@@ -215,6 +212,12 @@ ol.Map = function(options) {
    * @type {?ol.EventsKey}
    */
   this.viewPropertyListenerKey_ = null;
+
+  /**
+   * @private
+   * @type {?ol.EventsKey}
+   */
+  this.viewChangeListenerKey_ = null;
 
   /**
    * @private
@@ -527,15 +530,6 @@ ol.Map.prototype.beforeRender = function(var_args) {
 
 
 /**
- * @param {ol.PreRenderFunction} preRenderFunction Pre-render function.
- * @return {boolean} Whether the preRenderFunction has been found and removed.
- */
-ol.Map.prototype.removePreRenderFunction = function(preRenderFunction) {
-  return ol.array.remove(this.preRenderFunctions_, preRenderFunction);
-};
-
-
-/**
  *
  * @inheritDoc
  */
@@ -573,31 +567,25 @@ ol.Map.prototype.disposeInternal = function() {
  *     the {@link ol.layer.Layer layer} of the feature and will be null for
  *     unmanaged layers. To stop detection, callback functions can return a
  *     truthy value.
- * @param {S=} opt_this Value to use as `this` when executing `callback`.
- * @param {(function(this: U, ol.layer.Layer): boolean)=} opt_layerFilter Layer
- *     filter function. The filter function will receive one argument, the
- *     {@link ol.layer.Layer layer-candidate} and it should return a boolean
- *     value. Only layers which are visible and for which this function returns
- *     `true` will be tested for features. By default, all visible layers will
- *     be tested.
- * @param {U=} opt_this2 Value to use as `this` when executing `layerFilter`.
+ * @param {olx.AtPixelOptions=} opt_options Optional options.
  * @return {T|undefined} Callback result, i.e. the return value of last
  * callback execution, or the first truthy callback return value.
- * @template S,T,U
+ * @template S,T
  * @api stable
  */
-ol.Map.prototype.forEachFeatureAtPixel = function(pixel, callback, opt_this, opt_layerFilter, opt_this2) {
+ol.Map.prototype.forEachFeatureAtPixel = function(pixel, callback, opt_options) {
   if (!this.frameState_) {
     return;
   }
   var coordinate = this.getCoordinateFromPixel(pixel);
-  var thisArg = opt_this !== undefined ? opt_this : null;
-  var layerFilter = opt_layerFilter !== undefined ?
-      opt_layerFilter : ol.functions.TRUE;
-  var thisArg2 = opt_this2 !== undefined ? opt_this2 : null;
+  opt_options = opt_options !== undefined ? opt_options : {};
+  var hitTolerance = opt_options.hitTolerance !== undefined ?
+    opt_options.hitTolerance * this.frameState_.pixelRatio : 0;
+  var layerFilter = opt_options.layerFilter !== undefined ?
+    opt_options.layerFilter : ol.functions.TRUE;
   return this.renderer_.forEachFeatureAtCoordinate(
-      coordinate, this.frameState_, callback, thisArg,
-      layerFilter, thisArg2);
+      coordinate, this.frameState_, hitTolerance, callback, null,
+      layerFilter, null);
 };
 
 
@@ -643,32 +631,28 @@ ol.Map.prototype.forEachLayerAtPixel = function(pixel, callback, opt_this, opt_l
  * Detect if features intersect a pixel on the viewport. Layers included in the
  * detection can be configured through `opt_layerFilter`.
  * @param {ol.Pixel} pixel Pixel.
- * @param {(function(this: U, ol.layer.Layer): boolean)=} opt_layerFilter Layer
- *     filter function. The filter function will receive one argument, the
- *     {@link ol.layer.Layer layer-candidate} and it should return a boolean
- *     value. Only layers which are visible and for which this function returns
- *     `true` will be tested for features. By default, all visible layers will
- *     be tested.
- * @param {U=} opt_this Value to use as `this` when executing `layerFilter`.
+ * @param {olx.AtPixelOptions=} opt_options Optional options.
  * @return {boolean} Is there a feature at the given pixel?
  * @template U
  * @api
  */
-ol.Map.prototype.hasFeatureAtPixel = function(pixel, opt_layerFilter, opt_this) {
+ol.Map.prototype.hasFeatureAtPixel = function(pixel, opt_options) {
   if (!this.frameState_) {
     return false;
   }
   var coordinate = this.getCoordinateFromPixel(pixel);
-  var layerFilter = opt_layerFilter !== undefined ?
-      opt_layerFilter : ol.functions.TRUE;
-  var thisArg = opt_this !== undefined ? opt_this : null;
+  opt_options = opt_options !== undefined ? opt_options : {};
+  var layerFilter = opt_options.layerFilter !== undefined ?
+      opt_options.layerFilter : ol.functions.TRUE;
+  var hitTolerance = opt_options.hitTolerance !== undefined ?
+    opt_options.hitTolerance * this.frameState_.pixelRatio : 0;
   return this.renderer_.hasFeatureAtCoordinate(
-      coordinate, this.frameState_, layerFilter, thisArg);
+      coordinate, this.frameState_, hitTolerance, layerFilter, null);
 };
 
 
 /**
- * Returns the geographical coordinate for a browser event.
+ * Returns the coordinate in view projection for a browser event.
  * @param {Event} event Event.
  * @return {ol.Coordinate} Coordinate.
  * @api stable
@@ -1102,10 +1086,18 @@ ol.Map.prototype.handleViewChanged_ = function() {
     ol.events.unlistenByKey(this.viewPropertyListenerKey_);
     this.viewPropertyListenerKey_ = null;
   }
+  if (this.viewChangeListenerKey_) {
+    ol.events.unlistenByKey(this.viewChangeListenerKey_);
+    this.viewChangeListenerKey_ = null;
+  }
   var view = this.getView();
   if (view) {
+    this.viewport_.setAttribute('data-view', ol.getUid(view));
     this.viewPropertyListenerKey_ = ol.events.listen(
-        view, ol.ObjectEventType.PROPERTYCHANGE,
+        view, ol.Object.EventType.PROPERTYCHANGE,
+        this.handleViewPropertyChanged_, this);
+    this.viewChangeListenerKey_ = ol.events.listen(
+        view, ol.events.EventType.CHANGE,
         this.handleViewPropertyChanged_, this);
   }
   this.render();
@@ -1124,7 +1116,7 @@ ol.Map.prototype.handleLayerGroupChanged_ = function() {
   if (layerGroup) {
     this.layerGroupPropertyListenerKeys_ = [
       ol.events.listen(
-          layerGroup, ol.ObjectEventType.PROPERTYCHANGE,
+          layerGroup, ol.Object.EventType.PROPERTYCHANGE,
           this.render, this),
       ol.events.listen(
           layerGroup, ol.events.EventType.CHANGE,
@@ -1221,7 +1213,6 @@ ol.Map.prototype.removeOverlay = function(overlay) {
  * @private
  */
 ol.Map.prototype.renderFrame_ = function(time) {
-
   var i, ii, viewState;
 
   var size = this.getSize();

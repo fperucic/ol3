@@ -77,7 +77,7 @@ ol.renderer.webgl.Map = function(container, map) {
    */
   this.gl_ = ol.webgl.getContext(this.canvas_, {
     antialias: true,
-    depth: false,
+    depth: true,
     failIfMajorPerformanceCaveat: true,
     preserveDrawingBuffer: false,
     stencil: true
@@ -502,7 +502,7 @@ ol.renderer.webgl.Map.prototype.renderFrame = function(frameState) {
 /**
  * @inheritDoc
  */
-ol.renderer.webgl.Map.prototype.forEachFeatureAtCoordinate = function(coordinate, frameState, callback, thisArg,
+ol.renderer.webgl.Map.prototype.forEachFeatureAtCoordinate = function(coordinate, frameState, hitTolerance, callback, thisArg,
         layerFilter, thisArg2) {
   var result;
 
@@ -522,7 +522,7 @@ ol.renderer.webgl.Map.prototype.forEachFeatureAtCoordinate = function(coordinate
         layerFilter.call(thisArg2, layer)) {
       var layerRenderer = this.getLayerRenderer(layer);
       result = layerRenderer.forEachFeatureAtCoordinate(
-          coordinate, frameState, callback, thisArg);
+          coordinate, frameState, hitTolerance, callback, thisArg);
       if (result) {
         return result;
       }
@@ -535,7 +535,7 @@ ol.renderer.webgl.Map.prototype.forEachFeatureAtCoordinate = function(coordinate
 /**
  * @inheritDoc
  */
-ol.renderer.webgl.Map.prototype.hasFeatureAtCoordinate = function(coordinate, frameState, layerFilter, thisArg) {
+ol.renderer.webgl.Map.prototype.hasFeatureAtCoordinate = function(coordinate, frameState, hitTolerance, layerFilter, thisArg) {
   var hasFeature = false;
 
   if (this.getGL().isContextLost()) {
@@ -584,7 +584,7 @@ ol.renderer.webgl.Map.prototype.forEachLayerAtPixel = function(pixel, frameState
     var layer = layerState.layer;
     if (ol.layer.Layer.visibleAtResolution(layerState, viewState.resolution) &&
         layerFilter.call(thisArg, layer)) {
-      var layerRenderer = this.getLayerRenderer(layer);
+      var layerRenderer = /** @type {ol.renderer.webgl.Layer} */ (this.getLayerRenderer(layer));
       result = layerRenderer.forEachLayerAtPixel(
           pixel, frameState, callback, thisArg);
       if (result) {

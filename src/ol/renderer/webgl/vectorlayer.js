@@ -73,11 +73,17 @@ ol.renderer.webgl.VectorLayer.prototype.composeFrame = function(frameState, laye
   this.layerState_ = layerState;
   var viewState = frameState.viewState;
   var replayGroup = this.replayGroup_;
+  var size = frameState.size;
+  var pixelRatio = frameState.pixelRatio;
+  var gl = this.mapRenderer.getGL();
   if (replayGroup && !replayGroup.isEmpty()) {
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(0, 0, size[0] * pixelRatio, size[1] * pixelRatio);
     replayGroup.replay(context,
         viewState.center, viewState.resolution, viewState.rotation,
-        frameState.size, frameState.pixelRatio, layerState.opacity,
+        size, pixelRatio, layerState.opacity,
         layerState.managed ? frameState.skippedFeatureUids : {});
+    gl.disable(gl.SCISSOR_TEST);
   }
 
 };
@@ -100,7 +106,7 @@ ol.renderer.webgl.VectorLayer.prototype.disposeInternal = function() {
 /**
  * @inheritDoc
  */
-ol.renderer.webgl.VectorLayer.prototype.forEachFeatureAtCoordinate = function(coordinate, frameState, callback, thisArg) {
+ol.renderer.webgl.VectorLayer.prototype.forEachFeatureAtCoordinate = function(coordinate, frameState, hitTolerance, callback, thisArg) {
   if (!this.replayGroup_ || !this.layerState_) {
     return undefined;
   } else {
@@ -148,13 +154,7 @@ ol.renderer.webgl.VectorLayer.prototype.hasFeatureAtCoordinate = function(coordi
 
 
 /**
- * @param {ol.Pixel} pixel Pixel.
- * @param {olx.FrameState} frameState FrameState.
- * @param {function(this: S, ol.layer.Layer, (Uint8ClampedArray|Uint8Array)): T} callback Layer
- *     callback.
- * @param {S} thisArg Value to use as `this` when executing `callback`.
- * @return {T|undefined} Callback result.
- * @template S,T,U
+ * @inheritDoc
  */
 ol.renderer.webgl.VectorLayer.prototype.forEachLayerAtPixel = function(pixel, frameState, callback, thisArg) {
   var coordinate = ol.transform.apply(
@@ -299,7 +299,7 @@ ol.renderer.webgl.VectorLayer.prototype.renderFeature = function(feature, resolu
   }
   var loading = false;
   if (Array.isArray(styles)) {
-    for (var i = 0, ii = styles.length; i < ii; ++i) {
+    for (var i = styles.length - 1, ii = 0; i >= ii; --i) {
       loading = ol.renderer.vector.renderFeature(
           replayGroup, feature, styles[i],
           ol.renderer.vector.getSquaredTolerance(resolution, pixelRatio),

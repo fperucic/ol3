@@ -2,6 +2,29 @@
 
 ### Next release
 
+#### Simplified `ol.View#fit()` API
+
+In most cases, it is no longer necessary to provide an `ol.Size` (previously the 2nd argument) to `ol.View#fit()`. By default, the size of the first map that uses the view will be used. If you want to specify a different size, it goes in the options now (previously the 3rd argument, now the 2nd).
+
+Most common use case - old API:
+```js
+map.getView().fit(extent, map.getSize());
+```
+Most common use case - new API:
+```js
+map.getView().fit(extent);
+```
+Advanced use - old API:
+```js
+map.getView().fit(extent, [200, 100], {padding: 10});
+```
+Advanced use - new API:
+```js
+map.getView().fit(extent, {size: [200, 100], padding 10});
+```
+
+### v3.20.0
+
 #### Use `view.animate()` instead of `map.beforeRender()` and `ol.animation` functions
 
 The `map.beforeRender()` and `ol.animation` functions have been deprecated in favor of a new `view.animate()` function.  Use of the deprecated functions will result in a warning during development.  These functions are subject to removal in an upcoming release.
@@ -34,6 +57,59 @@ view.animate({
   rotation: Math.PI
 });
 ```
+
+#### `ol.Map#forEachFeatureAtPixel` and `ol.Map#hasFeatureAtPixel` parameters have changed
+
+If you are using the layer filter of one of these methods, please note that you now have to pass in the layer filter via an `ol.AtPixelOptions` object. If you are not using the layer filter the usage has not changed.
+
+Old syntax:
+```js
+map.forEachFeatureAtPixel(pixel, callback, callbackThis, layerFilterFn, layerFilterThis);
+
+map.hasFeatureAtPixel(pixel, layerFilterFn, layerFilterThis);
+```
+
+New syntax:
+```js
+map.forEachFeatureAtPixel(pixel, callback.bind(callbackThis), {
+  layerFilter: layerFilterFn.bind(layerFilterThis)
+});
+
+map.hasFeatureAtPixel(pixel, {
+  layerFilter: layerFilterFn.bind(layerFilterThis)
+});
+```
+
+This change is due to the introduction of the `hitTolerance` parameter which can be passed in via this `ol.AtPixelOptions` object, too.
+
+#### Use `ol.proj.getPointResolution()` instead of `projection.getPointResolution()`
+
+The experimental `getPointResolution` method has been removed from `ol.Projection` instances.  Since the implementation of this method required an inverse transform (function for transforming projected coordinates to geographic coordinates) and `ol.Projection` instances are not constructed with forward or inverse transforms, it does not make sense that a projection instance can always calculate the point resolution.
+
+As a substitute for the `projection.getPointResolution()` function, a `ol.proj.getPointResolution()` function has been added.  To upgrade, you will need to change things like this:
+```js
+projection.getPointResolution(resolution, point);
+```
+
+into this:
+```js
+ol.proj.getPointResolution(projection, resolution, point);
+```
+
+Note that if you were previously creating a projection with a `getPointResolution` function in the constructor (or calling `projection.setGetPointResolution()` after construction), this function will be used by `ol.proj.getPointResolution()`.
+
+#### `ol.interaction.PinchZoom` no longer zooms to a whole-number zoom level after the gesture ends
+
+The old behavior of `ol.interaction.PinchZoom` was to zoom to the next integer zoom level after the user ends the gesture.
+
+Now the pinch zoom keeps the user selected zoom level even if it is a fractional zoom.
+
+To get the old behavior set the new `constrainResolution` parameter to `true` like this:
+```js
+new ol.interaction.PinchZoom({constrainResolution: true})
+```
+
+See the new `pinch-zoom` example for a complete implementation.
 
 ### v3.19.1
 

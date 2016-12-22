@@ -5,7 +5,6 @@ goog.require('ol.Collection');
 goog.require('ol.Map');
 goog.require('ol.MapEvent');
 goog.require('ol.Object');
-goog.require('ol.ObjectEventType');
 goog.require('ol.Overlay');
 goog.require('ol.View');
 goog.require('ol.control.Control');
@@ -166,7 +165,7 @@ ol.control.OverviewMap.prototype.setMap = function(map) {
 
   if (map) {
     this.listenerKeys.push(ol.events.listen(
-        map, ol.ObjectEventType.PROPERTYCHANGE,
+        map, ol.Object.EventType.PROPERTYCHANGE,
         this.handleMapPropertyChange_, this));
 
     // TODO: to really support map switching, this would need to be reworked
@@ -188,7 +187,7 @@ ol.control.OverviewMap.prototype.setMap = function(map) {
 
 /**
  * Handle map property changes.  This only deals with changes to the map's view.
- * @param {ol.ObjectEvent} event The propertychange event.
+ * @param {ol.Object.Event} event The propertychange event.
  * @private
  */
 ol.control.OverviewMap.prototype.handleMapPropertyChange_ = function(event) {
@@ -319,8 +318,6 @@ ol.control.OverviewMap.prototype.resetExtent_ = function() {
   var view = map.getView();
   var extent = view.calculateExtent(mapSize);
 
-  var ovmapSize = /** @type {ol.Size} */ (ovmap.getSize());
-
   var ovview = ovmap.getView();
 
   // get how many times the current map overview could hold different
@@ -330,7 +327,7 @@ ol.control.OverviewMap.prototype.resetExtent_ = function() {
       ol.OVERVIEWMAP_MAX_RATIO / ol.OVERVIEWMAP_MIN_RATIO) / Math.LN2;
   var ratio = 1 / (Math.pow(2, steps / 2) * ol.OVERVIEWMAP_MIN_RATIO);
   ol.extent.scaleFromCenter(extent, ratio);
-  ovview.fit(extent, ovmapSize);
+  ovview.fit(extent);
 };
 
 

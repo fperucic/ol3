@@ -85,10 +85,6 @@ Number of `tileSizes` and `resolutions` must be equal.
 
 Number of `origins` and `resolutions` must be equal.
 
-### 21
-
-Tile range for `extent` must not exceed tilegrid width and height.
-
 ### 22
 
 Either `tileSize` or `tileSizes` must be configured, never both.
@@ -141,10 +137,6 @@ Invalid `units`. `'degrees'`, `'imperial'`, `'nautical'`, `'metric'` or `'us'` r
 
 Invalid geometry layout. Must be `XY`, `XYZ`, `XYM` or `XYZM`.
 
-### 35
-
-Unknown GeoJSON object type. Expected `"Feature"` or `"FeatureCollection"`.
-
 ### 36
 
 Unknown SRS type. Expected `"name"` or `"EPSG"`.
@@ -168,10 +160,6 @@ Expected `feature` to have a geometry.
 ### 41
 
 Expected an `ol.style.Style` or an array of `ol.style.Style`.
-
-### 42
-
-Expected an `ol.Feature`, but got an `ol.RenderFeature`.
 
 ### 43
 
@@ -224,3 +212,7 @@ Hex color should have 3 or 6 digits.
 ### 55
 
 The `{-y}` placeholder requires a tile grid with extent.
+
+### 56
+
+`mapBrowserEvent` must originate from a pointer event.

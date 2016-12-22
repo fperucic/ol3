@@ -1,10 +1,9 @@
 goog.provide('ol.style.Style');
 
-goog.require('ol.geom.Geometry');
+goog.require('ol.asserts');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.style.Circle');
 goog.require('ol.style.Fill');
-goog.require('ol.style.Image');
 goog.require('ol.style.Stroke');
 
 
@@ -33,7 +32,7 @@ ol.style.Style = function(opt_options) {
    * @private
    * @type {!ol.StyleGeometryFunction}
    */
-  this.geometryFunction_ = ol.style.defaultGeometryFunction;
+  this.geometryFunction_ = ol.style.Style.defaultGeometryFunction;
 
   if (options.geometry !== undefined) {
     this.setGeometry(options.geometry);
@@ -69,6 +68,27 @@ ol.style.Style = function(opt_options) {
    */
   this.zIndex_ = options.zIndex;
 
+};
+
+
+/**
+ * Clones the style.
+ * @return {ol.style.Style} The cloned style.
+ * @api
+ */
+ol.style.Style.prototype.clone = function() {
+  var geometry = this.getGeometry();
+  if (geometry && geometry.clone) {
+    geometry = geometry.clone();
+  }
+  return new ol.style.Style({
+    geometry: geometry,
+    fill: this.getFill() ? this.getFill().clone() : undefined,
+    image: this.getImage() ? this.getImage().clone() : undefined,
+    stroke: this.getStroke() ? this.getStroke().clone() : undefined,
+    text: this.getText() ? this.getText().clone() : undefined,
+    zIndex: this.getZIndex()
+  });
 };
 
 
@@ -161,7 +181,7 @@ ol.style.Style.prototype.setGeometry = function(geometry) {
       return /** @type {ol.geom.Geometry} */ (feature.get(geometry));
     };
   } else if (!geometry) {
-    this.geometryFunction_ = ol.style.defaultGeometryFunction;
+    this.geometryFunction_ = ol.style.Style.defaultGeometryFunction;
   } else if (geometry !== undefined) {
     this.geometryFunction_ = function() {
       return /** @type {ol.geom.Geometry} */ (geometry);
@@ -190,7 +210,7 @@ ol.style.Style.prototype.setZIndex = function(zIndex) {
  *     A style function, a single style, or an array of styles.
  * @return {ol.StyleFunction} A style function.
  */
-ol.style.createStyleFunction = function(obj) {
+ol.style.Style.createFunction = function(obj) {
   var styleFunction;
 
   if (typeof obj === 'function') {
@@ -203,7 +223,7 @@ ol.style.createStyleFunction = function(obj) {
     if (Array.isArray(obj)) {
       styles = obj;
     } else {
-      ol.assert(obj instanceof ol.style.Style,
+      ol.asserts.assert(obj instanceof ol.style.Style,
           41); // Expected an `ol.style.Style` or an array of `ol.style.Style`
       styles = [obj];
     }
@@ -219,7 +239,7 @@ ol.style.createStyleFunction = function(obj) {
  * @type {Array.<ol.style.Style>}
  * @private
  */
-ol.style.defaultStyle_ = null;
+ol.style.Style.default_ = null;
 
 
 /**
@@ -227,13 +247,13 @@ ol.style.defaultStyle_ = null;
  * @param {number} resolution Resolution.
  * @return {Array.<ol.style.Style>} Style.
  */
-ol.style.defaultStyleFunction = function(feature, resolution) {
+ol.style.Style.defaultFunction = function(feature, resolution) {
   // We don't use an immediately-invoked function
   // and a closure so we don't get an error at script evaluation time in
   // browsers that do not support Canvas. (ol.style.Circle does
   // canvas.getContext('2d') at construction time, which will cause an.error
   // in such browsers.)
-  if (!ol.style.defaultStyle_) {
+  if (!ol.style.Style.default_) {
     var fill = new ol.style.Fill({
       color: 'rgba(255,255,255,0.4)'
     });
@@ -241,7 +261,7 @@ ol.style.defaultStyleFunction = function(feature, resolution) {
       color: '#3399CC',
       width: 1.25
     });
-    ol.style.defaultStyle_ = [
+    ol.style.Style.default_ = [
       new ol.style.Style({
         image: new ol.style.Circle({
           fill: fill,
@@ -253,7 +273,7 @@ ol.style.defaultStyleFunction = function(feature, resolution) {
       })
     ];
   }
-  return ol.style.defaultStyle_;
+  return ol.style.Style.default_;
 };
 
 
@@ -261,7 +281,7 @@ ol.style.defaultStyleFunction = function(feature, resolution) {
  * Default styles for editing features.
  * @return {Object.<ol.geom.GeometryType, Array.<ol.style.Style>>} Styles
  */
-ol.style.createDefaultEditingStyles = function() {
+ol.style.Style.createDefaultEditing = function() {
   /** @type {Object.<ol.geom.GeometryType, Array.<ol.style.Style>>} */
   var styles = {};
   var white = [255, 255, 255, 1];
@@ -334,6 +354,6 @@ ol.style.createDefaultEditingStyles = function() {
  *     for.
  * @return {ol.geom.Geometry|ol.render.Feature|undefined} Geometry to render.
  */
-ol.style.defaultGeometryFunction = function(feature) {
+ol.style.Style.defaultGeometryFunction = function(feature) {
   return feature.getGeometry();
 };

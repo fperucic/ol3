@@ -13,7 +13,6 @@ var map = new ol.Map({
       source: new ol.source.OSM()
     })
   ],
-  renderer: common.getRendererFromQueryString(),
   target: 'map',
   view: new ol.View({
     projection: 'EPSG:3857',
@@ -64,7 +63,7 @@ function setProjection(code, name, proj4def, bbox) {
 
 function search(query) {
   resultSpan.innerHTML = 'Searching ...';
-  fetch('http://epsg.io/?format=json&q=' + query).then(function(response) {
+  fetch('https://epsg.io/?format=json&q=' + query).then(function(response) {
     return response.json();
   }).then(function(json) {
     var results = json['results'];

@@ -38,34 +38,6 @@ ol.TileRange = function(minX, maxX, minY, maxY) {
 
 
 /**
- * @param {...ol.TileCoord} var_args Tile coordinates.
- * @return {!ol.TileRange} Bounding tile box.
- */
-ol.TileRange.boundingTileRange = function(var_args) {
-  var tileCoord0 = /** @type {ol.TileCoord} */ (arguments[0]);
-  var tileCoord0Z = tileCoord0[0];
-  var tileCoord0X = tileCoord0[1];
-  var tileCoord0Y = tileCoord0[2];
-  var tileRange = new ol.TileRange(tileCoord0X, tileCoord0X,
-                                   tileCoord0Y, tileCoord0Y);
-  var i, ii, tileCoord, tileCoordX, tileCoordY, tileCoordZ;
-  for (i = 1, ii = arguments.length; i < ii; ++i) {
-    tileCoord = /** @type {ol.TileCoord} */ (arguments[i]);
-    tileCoordZ = tileCoord[0];
-    tileCoordX = tileCoord[1];
-    tileCoordY = tileCoord[2];
-    ol.assert(tileCoordZ == tileCoord0Z,
-        23); // The passed `ol.TileCoord`s must all have the same `z` value
-    tileRange.minX = Math.min(tileRange.minX, tileCoordX);
-    tileRange.maxX = Math.max(tileRange.maxX, tileCoordX);
-    tileRange.minY = Math.min(tileRange.minY, tileCoordY);
-    tileRange.maxY = Math.max(tileRange.maxY, tileCoordY);
-  }
-  return tileRange;
-};
-
-
-/**
  * @param {number} minX Minimum X.
  * @param {number} maxX Maximum X.
  * @param {number} minY Minimum Y.

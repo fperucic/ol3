@@ -13,7 +13,7 @@ var layers = [
   new ol.layer.Image({
     extent: [-13884991, 2870341, -7455066, 6338219],
     source: new ol.source.ImageWMS({
-      url: 'http://demo.boundlessgeo.com/geoserver/wms',
+      url: 'https://ahocevar.com/geoserver/wms',
       params: {'LAYERS': 'topp:states'},
       serverType: 'geoserver'
     })
@@ -22,7 +22,6 @@ var layers = [
 var map = new ol.Map({
   layers: layers,
   target: 'map',
-  renderer: common.getRendererFromQueryString(),
   view: new ol.View({
     center: [-10997148, 4569099],
     zoom: 4

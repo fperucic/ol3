@@ -1,6 +1,8 @@
 goog.provide('ol.structs.PriorityQueue');
 
-goog.require('ol.object');
+goog.require('ol');
+goog.require('ol.asserts');
+goog.require('ol.obj');
 
 
 /**
@@ -60,7 +62,7 @@ ol.structs.PriorityQueue = function(priorityFunction, keyFunction) {
 ol.structs.PriorityQueue.DROP = Infinity;
 
 
-if (goog.DEBUG) {
+if (ol.DEBUG) {
   /**
    * FIXME empty description for jsdoc
    */
@@ -89,7 +91,7 @@ if (goog.DEBUG) {
 ol.structs.PriorityQueue.prototype.clear = function() {
   this.elements_.length = 0;
   this.priorities_.length = 0;
-  ol.object.clear(this.queuedElements_);
+  ol.obj.clear(this.queuedElements_);
 };
 
 
@@ -99,7 +101,7 @@ ol.structs.PriorityQueue.prototype.clear = function() {
  */
 ol.structs.PriorityQueue.prototype.dequeue = function() {
   var elements = this.elements_;
-  goog.DEBUG && console.assert(elements.length > 0,
+  ol.DEBUG && console.assert(elements.length > 0,
       'must have elements in order to be able to dequeue');
   var priorities = this.priorities_;
   var element = elements[0];
@@ -112,7 +114,7 @@ ol.structs.PriorityQueue.prototype.dequeue = function() {
     this.siftUp_(0);
   }
   var elementKey = this.keyFunction_(element);
-  goog.DEBUG && console.assert(elementKey in this.queuedElements_,
+  ol.DEBUG && console.assert(elementKey in this.queuedElements_,
       'key %s is not listed as queued', elementKey);
   delete this.queuedElements_[elementKey];
   return element;
@@ -125,7 +127,7 @@ ol.structs.PriorityQueue.prototype.dequeue = function() {
  * @return {boolean} The element was added to the queue.
  */
 ol.structs.PriorityQueue.prototype.enqueue = function(element) {
-  ol.assert(!(this.keyFunction_(element) in this.queuedElements_),
+  ol.asserts.assert(!(this.keyFunction_(element) in this.queuedElements_),
       31); // Tried to enqueue an `element` that was already added to the queue
   var priority = this.priorityFunction_(element);
   if (priority != ol.structs.PriorityQueue.DROP) {

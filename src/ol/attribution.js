@@ -2,6 +2,7 @@ goog.provide('ol.Attribution');
 
 goog.require('ol.TileRange');
 goog.require('ol.math');
+goog.require('ol.tilegrid');
 
 
 /**
@@ -14,7 +15,7 @@ goog.require('ol.math');
  *       attributions: [
  *         new ol.Attribution({
  *           html: 'All maps &copy; ' +
- *               '<a href="http://www.opencyclemap.org/">OpenCycleMap</a>'
+ *               '<a href="https://www.opencyclemap.org/">OpenCycleMap</a>'
  *         }),
  *         ol.source.OSM.ATTRIBUTION
  *       ],

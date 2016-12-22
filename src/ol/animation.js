@@ -1,12 +1,13 @@
 goog.provide('ol.animation');
 
 goog.require('ol');
-goog.require('ol.ViewHint');
+goog.require('ol.View');
 goog.require('ol.coordinate');
 goog.require('ol.easing');
 
 
 /**
+ * Deprecated (use {@link ol.View#animate} instead).
  * Generate an animated transition that will "bounce" the resolution as it
  * approaches the final value.
  * @param {olx.animation.BounceOptions} options Bounce options.
@@ -14,6 +15,7 @@ goog.require('ol.easing');
  * @api
  */
 ol.animation.bounce = function(options) {
+  ol.DEBUG && console.warn('ol.animation.bounce() is deprecated.  Use view.animate() instead.');
   var resolution = options.resolution;
   var start = options.start ? options.start : Date.now();
   var duration = options.duration !== undefined ? options.duration : 1000;
@@ -28,14 +30,14 @@ ol.animation.bounce = function(options) {
       function(map, frameState) {
         if (frameState.time < start) {
           frameState.animate = true;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else if (frameState.time < start + duration) {
           var delta = easing((frameState.time - start) / duration);
           var deltaResolution = resolution - frameState.viewState.resolution;
           frameState.animate = true;
           frameState.viewState.resolution += delta * deltaResolution;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else {
           return false;
@@ -45,12 +47,14 @@ ol.animation.bounce = function(options) {
 
 
 /**
+ * Deprecated (use {@link ol.View#animate} instead).
  * Generate an animated transition while updating the view center.
  * @param {olx.animation.PanOptions} options Pan options.
  * @return {ol.PreRenderFunction} Pre-render function.
  * @api
  */
 ol.animation.pan = function(options) {
+  ol.DEBUG && console.warn('ol.animation.pan() is deprecated.  Use view.animate() instead.');
   var source = options.source;
   var start = options.start ? options.start : Date.now();
   var sourceX = source[0];
@@ -67,7 +71,7 @@ ol.animation.pan = function(options) {
       function(map, frameState) {
         if (frameState.time < start) {
           frameState.animate = true;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else if (frameState.time < start + duration) {
           var delta = 1 - easing((frameState.time - start) / duration);
@@ -76,7 +80,7 @@ ol.animation.pan = function(options) {
           frameState.animate = true;
           frameState.viewState.center[0] += delta * deltaX;
           frameState.viewState.center[1] += delta * deltaY;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else {
           return false;
@@ -86,12 +90,14 @@ ol.animation.pan = function(options) {
 
 
 /**
+ * Deprecated (use {@link ol.View#animate} instead).
  * Generate an animated transition while updating the view rotation.
  * @param {olx.animation.RotateOptions} options Rotate options.
  * @return {ol.PreRenderFunction} Pre-render function.
  * @api
  */
 ol.animation.rotate = function(options) {
+  ol.DEBUG && console.warn('ol.animation.rotate() is deprecated.  Use view.animate() instead.');
   var sourceRotation = options.rotation ? options.rotation : 0;
   var start = options.start ? options.start : Date.now();
   var duration = options.duration !== undefined ? options.duration : 1000;
@@ -109,7 +115,7 @@ ol.animation.rotate = function(options) {
       function(map, frameState) {
         if (frameState.time < start) {
           frameState.animate = true;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else if (frameState.time < start + duration) {
           var delta = 1 - easing((frameState.time - start) / duration);
@@ -123,7 +129,7 @@ ol.animation.rotate = function(options) {
             ol.coordinate.rotate(center, deltaRotation);
             ol.coordinate.add(center, anchor);
           }
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else {
           return false;
@@ -133,12 +139,14 @@ ol.animation.rotate = function(options) {
 
 
 /**
+ * Deprecated (use {@link ol.View#animate} instead).
  * Generate an animated transition while updating the view resolution.
  * @param {olx.animation.ZoomOptions} options Zoom options.
  * @return {ol.PreRenderFunction} Pre-render function.
  * @api
  */
 ol.animation.zoom = function(options) {
+  ol.DEBUG && console.warn('ol.animation.zoom() is deprecated.  Use view.animate() instead.');
   var sourceResolution = options.resolution;
   var start = options.start ? options.start : Date.now();
   var duration = options.duration !== undefined ? options.duration : 1000;
@@ -153,7 +161,7 @@ ol.animation.zoom = function(options) {
       function(map, frameState) {
         if (frameState.time < start) {
           frameState.animate = true;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else if (frameState.time < start + duration) {
           var delta = 1 - easing((frameState.time - start) / duration);
@@ -161,7 +169,7 @@ ol.animation.zoom = function(options) {
               sourceResolution - frameState.viewState.resolution;
           frameState.animate = true;
           frameState.viewState.resolution += delta * deltaResolution;
-          frameState.viewHints[ol.ViewHint.ANIMATING] += 1;
+          frameState.viewHints[ol.View.Hint.ANIMATING] += 1;
           return true;
         } else {
           return false;

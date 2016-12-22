@@ -1,4 +1,5 @@
 /* global resemble:false */
+/* eslint-disable openlayers-internal/no-missing-requires */
 
 // FIXME remove afterLoadXml as it uses the wrong XML parser on IE9
 
@@ -382,7 +383,12 @@
 
   function resembleCanvas(canvas, referenceImage, tolerance, done) {
     if (showMap) {
-      document.body.appendChild(canvas);
+      var wrapper = document.createElement('div');
+      wrapper.style.width = canvas.width + 'px';
+      wrapper.style.height = canvas.height + 'px';
+      wrapper.appendChild(canvas);
+      document.body.appendChild(wrapper);
+      document.body.appendChild(document.createTextNode(referenceImage));
     }
 
     resemble(referenceImage)
@@ -460,6 +466,7 @@
 
   var features = {
     ArrayBuffer: typeof ArrayBuffer === 'function',
+    'ArrayBuffer.isView': typeof ArrayBuffer === 'function' && ArrayBuffer.isView,
     Uint8ClampedArray: ('Uint8ClampedArray' in global)
   };
 

@@ -1,12 +1,12 @@
 goog.provide('ol.interaction.Select');
 
 goog.require('ol');
-goog.require('ol.functions');
-goog.require('ol.Collection');
+goog.require('ol.CollectionEventType');
 goog.require('ol.array');
 goog.require('ol.events');
 goog.require('ol.events.Event');
 goog.require('ol.events.condition');
+goog.require('ol.functions');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.interaction.Interaction');
 goog.require('ol.layer.Vector');
@@ -31,7 +31,7 @@ goog.require('ol.style.Style');
  * @extends {ol.interaction.Interaction}
  * @param {olx.interaction.SelectOptions=} opt_options Options.
  * @fires ol.interaction.Select.Event
- * @api stable
+ * @api
  */
 ol.interaction.Select = function(opt_options) {
 
@@ -136,9 +136,9 @@ ol.interaction.Select = function(opt_options) {
   this.featureLayerAssociation_ = {};
 
   var features = this.featureOverlay_.getSource().getFeaturesCollection();
-  ol.events.listen(features, ol.Collection.EventType.ADD,
+  ol.events.listen(features, ol.CollectionEventType.ADD,
       this.addFeature_, this);
-  ol.events.listen(features, ol.Collection.EventType.REMOVE,
+  ol.events.listen(features, ol.CollectionEventType.REMOVE,
       this.removeFeature_, this);
 
 };
@@ -159,7 +159,7 @@ ol.interaction.Select.prototype.addFeatureLayerAssociation_ = function(feature, 
 /**
  * Get the selected features.
  * @return {ol.Collection.<ol.Feature>} Features collection.
- * @api stable
+ * @api
  */
 ol.interaction.Select.prototype.getFeatures = function() {
   return this.featureOverlay_.getSource().getFeaturesCollection();
@@ -280,7 +280,7 @@ ol.interaction.Select.handleEvent = function(mapBrowserEvent) {
   }
   if (selected.length > 0 || deselected.length > 0) {
     this.dispatchEvent(
-        new ol.interaction.Select.Event(ol.interaction.Select.EventType.SELECT,
+        new ol.interaction.Select.Event(ol.interaction.Select.EventType_.SELECT,
             selected, deselected, mapBrowserEvent));
   }
   return ol.events.condition.pointerMove(mapBrowserEvent);
@@ -303,7 +303,8 @@ ol.interaction.Select.prototype.setHitTolerance = function(hitTolerance) {
  * Remove the interaction from its current map, if any,  and attach it to a new
  * map, if any. Pass `null` to just remove the interaction from the current map.
  * @param {ol.Map} map Map.
- * @api stable
+ * @override
+ * @api
  */
 ol.interaction.Select.prototype.setMap = function(map) {
   var currentMap = this.getMap();
@@ -378,7 +379,7 @@ ol.interaction.Select.prototype.removeFeatureLayerAssociation_ = function(featur
  * Events emitted by {@link ol.interaction.Select} instances are instances of
  * this type.
  *
- * @param {ol.interaction.Select.EventType} type The event type.
+ * @param {ol.interaction.Select.EventType_} type The event type.
  * @param {Array.<ol.Feature>} selected Selected features.
  * @param {Array.<ol.Feature>} deselected Deselected features.
  * @param {ol.MapBrowserEvent} mapBrowserEvent Associated
@@ -416,8 +417,9 @@ ol.inherits(ol.interaction.Select.Event, ol.events.Event);
 
 /**
  * @enum {string}
+ * @private
  */
-ol.interaction.Select.EventType = {
+ol.interaction.Select.EventType_ = {
   /**
    * Triggered when feature(s) has been (de)selected.
    * @event ol.interaction.Select.Event#select

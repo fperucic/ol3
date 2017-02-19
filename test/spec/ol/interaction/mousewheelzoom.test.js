@@ -69,7 +69,7 @@ describe('ol.interaction.MouseWheelZoom', function() {
       var origHasFirefox = ol.has.FIREFOX;
       ol.has.FIREFOX = true;
       map.once('postrender', function() {
-        expect(interaction.mode_).to.be(ol.interaction.MouseWheelZoom.Mode.TRACKPAD);
+        expect(interaction.mode_).to.be(ol.interaction.MouseWheelZoom.Mode_.TRACKPAD);
         ol.has.FIREFOX = origHasFirefox;
         done();
       });
@@ -88,7 +88,7 @@ describe('ol.interaction.MouseWheelZoom', function() {
       var origHasFirefox = ol.has.FIREFOX;
       ol.has.FIREFOX = false;
       map.once('postrender', function() {
-        expect(interaction.mode_).to.be(ol.interaction.MouseWheelZoom.Mode.TRACKPAD);
+        expect(interaction.mode_).to.be(ol.interaction.MouseWheelZoom.Mode_.TRACKPAD);
         ol.has.FIREFOX = origHasFirefox;
         done();
       });
@@ -106,8 +106,8 @@ describe('ol.interaction.MouseWheelZoom', function() {
     it('works in DOM_DELTA_LINE mode (wheel)', function(done) {
       var spy = sinon.spy(ol.interaction.Interaction, 'zoomByDelta');
       map.once('postrender', function() {
-        expect(spy.getCall(0).args[2]).to.be(-1);
-        expect(spy.getCall(0).args[3]).to.eql([0, 0]);
+        expect(spy.getCall(0).args[1]).to.be(-1);
+        expect(spy.getCall(0).args[2]).to.eql([0, 0]);
         ol.interaction.Interaction.zoomByDelta.restore();
         done();
       });
@@ -127,8 +127,8 @@ describe('ol.interaction.MouseWheelZoom', function() {
       ol.has.SAFARI = true;
       var spy = sinon.spy(ol.interaction.Interaction, 'zoomByDelta');
       map.once('postrender', function() {
-        expect(spy.getCall(0).args[2]).to.be(-1);
-        expect(spy.getCall(0).args[3]).to.eql([0, 0]);
+        expect(spy.getCall(0).args[1]).to.be(-1);
+        expect(spy.getCall(0).args[2]).to.eql([0, 0]);
         ol.interaction.Interaction.zoomByDelta.restore();
         ol.has.SAFARI = origHasSafari;
         done();
@@ -148,8 +148,8 @@ describe('ol.interaction.MouseWheelZoom', function() {
       ol.has.SAFARI = false;
       var spy = sinon.spy(ol.interaction.Interaction, 'zoomByDelta');
       map.once('postrender', function() {
-        expect(spy.getCall(0).args[2]).to.be(-1);
-        expect(spy.getCall(0).args[3]).to.eql([0, 0]);
+        expect(spy.getCall(0).args[1]).to.be(-1);
+        expect(spy.getCall(0).args[2]).to.eql([0, 0]);
         ol.interaction.Interaction.zoomByDelta.restore();
         ol.has.SAFARI = origHasSafari;
         done();

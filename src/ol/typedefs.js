@@ -284,8 +284,8 @@ ol.ImageLoadFunctionType;
 
 
 /**
- * @typedef {{x: number, xunits: (ol.style.Icon.AnchorUnits|undefined),
- *            y: number, yunits: (ol.style.Icon.AnchorUnits|undefined)}}
+ * @typedef {{x: number, xunits: (ol.style.IconAnchorUnits|undefined),
+ *            y: number, yunits: (ol.style.IconAnchorUnits|undefined)}}
  */
 ol.KMLVec2_;
 
@@ -360,7 +360,7 @@ ol.MapOptionsInternal;
 /**
  * An array representing an affine 2d transformation for use with
  * {@link ol.transform} functions. The array has 6 elements.
- * @typedef {Array.<number>}
+ * @typedef {!Array.<number>}
  */
 ol.Transform;
 
@@ -370,7 +370,8 @@ ol.Transform;
  *            feature: ol.Feature,
  *            geometry: ol.geom.SimpleGeometry,
  *            index: (number),
- *            segment: Array.<ol.Extent>}}
+ *            segment: Array.<ol.Extent>,
+ *            featureSegments: (Array.<ol.ModifySegmentDataType>|undefined)}}
  */
 ol.ModifySegmentDataType;
 

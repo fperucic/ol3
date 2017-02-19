@@ -2,7 +2,6 @@ goog.provide('ol.MapBrowserEvent');
 
 goog.require('ol');
 goog.require('ol.MapEvent');
-goog.require('ol.events.EventType');
 
 
 /**
@@ -28,21 +27,21 @@ ol.MapBrowserEvent = function(type, map, browserEvent, opt_dragging,
    * The original browser event.
    * @const
    * @type {Event}
-   * @api stable
+   * @api
    */
   this.originalEvent = browserEvent;
 
   /**
    * The map pixel relative to the viewport corresponding to the original browser event.
    * @type {ol.Pixel}
-   * @api stable
+   * @api
    */
   this.pixel = map.getEventPixel(browserEvent);
 
   /**
    * The coordinate in view projection corresponding to the original browser event.
    * @type {ol.Coordinate}
-   * @api stable
+   * @api
    */
   this.coordinate = map.getCoordinateFromPixel(this.pixel);
 
@@ -51,7 +50,7 @@ ol.MapBrowserEvent = function(type, map, browserEvent, opt_dragging,
    * `POINTERDRAG` and `POINTERMOVE` events. Default is `false`.
    *
    * @type {boolean}
-   * @api stable
+   * @api
    */
   this.dragging = opt_dragging !== undefined ? opt_dragging : false;
 
@@ -63,7 +62,7 @@ ol.inherits(ol.MapBrowserEvent, ol.MapEvent);
  * Prevents the default browser action.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/event.preventDefault
  * @override
- * @api stable
+ * @api
  */
 ol.MapBrowserEvent.prototype.preventDefault = function() {
   ol.MapEvent.prototype.preventDefault.call(this);
@@ -75,62 +74,9 @@ ol.MapBrowserEvent.prototype.preventDefault = function() {
  * Prevents further propagation of the current event.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/event.stopPropagation
  * @override
- * @api stable
+ * @api
  */
 ol.MapBrowserEvent.prototype.stopPropagation = function() {
   ol.MapEvent.prototype.stopPropagation.call(this);
   this.originalEvent.stopPropagation();
-};
-
-
-/**
- * Constants for event names.
- * @enum {string}
- */
-ol.MapBrowserEvent.EventType = {
-
-  /**
-   * A true single click with no dragging and no double click. Note that this
-   * event is delayed by 250 ms to ensure that it is not a double click.
-   * @event ol.MapBrowserEvent#singleclick
-   * @api stable
-   */
-  SINGLECLICK: 'singleclick',
-
-  /**
-   * A click with no dragging. A double click will fire two of this.
-   * @event ol.MapBrowserEvent#click
-   * @api stable
-   */
-  CLICK: ol.events.EventType.CLICK,
-
-  /**
-   * A true double click, with no dragging.
-   * @event ol.MapBrowserEvent#dblclick
-   * @api stable
-   */
-  DBLCLICK: ol.events.EventType.DBLCLICK,
-
-  /**
-   * Triggered when a pointer is dragged.
-   * @event ol.MapBrowserEvent#pointerdrag
-   * @api
-   */
-  POINTERDRAG: 'pointerdrag',
-
-  /**
-   * Triggered when a pointer is moved. Note that on touch devices this is
-   * triggered when the map is panned, so is not the same as mousemove.
-   * @event ol.MapBrowserEvent#pointermove
-   * @api stable
-   */
-  POINTERMOVE: 'pointermove',
-
-  POINTERDOWN: 'pointerdown',
-  POINTERUP: 'pointerup',
-  POINTEROVER: 'pointerover',
-  POINTEROUT: 'pointerout',
-  POINTERENTER: 'pointerenter',
-  POINTERLEAVE: 'pointerleave',
-  POINTERCANCEL: 'pointercancel'
 };

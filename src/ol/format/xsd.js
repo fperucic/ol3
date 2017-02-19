@@ -1,6 +1,5 @@
 goog.provide('ol.format.XSD');
 
-goog.require('ol');
 goog.require('ol.xml');
 goog.require('ol.string');
 
@@ -154,9 +153,6 @@ ol.format.XSD.writeDecimalTextNode = function(node, decimal) {
  * @param {number} nonNegativeInteger Non negative integer.
  */
 ol.format.XSD.writeNonNegativeIntegerTextNode = function(node, nonNegativeInteger) {
-  ol.DEBUG && console.assert(nonNegativeInteger >= 0, 'value should be more than 0');
-  ol.DEBUG && console.assert(nonNegativeInteger == (nonNegativeInteger | 0),
-      'value should be an integer value');
   var string = nonNegativeInteger.toString();
   node.appendChild(ol.xml.DOCUMENT.createTextNode(string));
 };

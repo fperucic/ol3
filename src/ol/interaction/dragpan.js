@@ -1,7 +1,7 @@
 goog.provide('ol.interaction.DragPan');
 
 goog.require('ol');
-goog.require('ol.View');
+goog.require('ol.ViewHint');
 goog.require('ol.coordinate');
 goog.require('ol.easing');
 goog.require('ol.events.condition');
@@ -16,7 +16,7 @@ goog.require('ol.interaction.Pointer');
  * @constructor
  * @extends {ol.interaction.Pointer}
  * @param {olx.interaction.DragPanOptions=} opt_options Options.
- * @api stable
+ * @api
  */
 ol.interaction.DragPan = function(opt_options) {
 
@@ -38,6 +38,11 @@ ol.interaction.DragPan = function(opt_options) {
    * @type {ol.Pixel}
    */
   this.lastCentroid = null;
+
+  /**
+   * @type {number}
+   */
+  this.lastPointersCount_;
 
   /**
    * @private
@@ -62,27 +67,33 @@ ol.inherits(ol.interaction.DragPan, ol.interaction.Pointer);
  * @private
  */
 ol.interaction.DragPan.handleDragEvent_ = function(mapBrowserEvent) {
-  ol.DEBUG && console.assert(this.targetPointers.length >= 1,
-      'the length of this.targetPointers should be more than 1');
+  var targetPointers = this.targetPointers;
   var centroid =
-      ol.interaction.Pointer.centroid(this.targetPointers);
-  if (this.kinetic_) {
-    this.kinetic_.update(centroid[0], centroid[1]);
-  }
-  if (this.lastCentroid) {
-    var deltaX = this.lastCentroid[0] - centroid[0];
-    var deltaY = centroid[1] - this.lastCentroid[1];
-    var map = mapBrowserEvent.map;
-    var view = map.getView();
-    var viewState = view.getState();
-    var center = [deltaX, deltaY];
-    ol.coordinate.scale(center, viewState.resolution);
-    ol.coordinate.rotate(center, viewState.rotation);
-    ol.coordinate.add(center, viewState.center);
-    center = view.constrainCenter(center);
-    view.setCenter(center);
+      ol.interaction.Pointer.centroid(targetPointers);
+  if (targetPointers.length == this.lastPointersCount_) {
+    if (this.kinetic_) {
+      this.kinetic_.update(centroid[0], centroid[1]);
+    }
+    if (this.lastCentroid) {
+      var deltaX = this.lastCentroid[0] - centroid[0];
+      var deltaY = centroid[1] - this.lastCentroid[1];
+      var map = mapBrowserEvent.map;
+      var view = map.getView();
+      var viewState = view.getState();
+      var center = [deltaX, deltaY];
+      ol.coordinate.scale(center, viewState.resolution);
+      ol.coordinate.rotate(center, viewState.rotation);
+      ol.coordinate.add(center, viewState.center);
+      center = view.constrainCenter(center);
+      view.setCenter(center);
+    }
+  } else if (this.kinetic_) {
+    // reset so we don't overestimate the kinetic energy after
+    // after one finger down, tiny drag, second finger down
+    this.kinetic_.begin();
   }
   this.lastCentroid = centroid;
+  this.lastPointersCount_ = targetPointers.length;
 };
 
 
@@ -111,9 +122,14 @@ ol.interaction.DragPan.handleUpEvent_ = function(mapBrowserEvent) {
         easing: ol.easing.easeOut
       });
     }
-    view.setHint(ol.View.Hint.INTERACTING, -1);
+    view.setHint(ol.ViewHint.INTERACTING, -1);
     return false;
   } else {
+    if (this.kinetic_) {
+      // reset so we don't overestimate the kinetic energy after
+      // after one finger up, tiny drag, second finger up
+      this.kinetic_.begin();
+    }
     this.lastCentroid = null;
     return true;
   }
@@ -132,10 +148,12 @@ ol.interaction.DragPan.handleDownEvent_ = function(mapBrowserEvent) {
     var view = map.getView();
     this.lastCentroid = null;
     if (!this.handlingDownUpSequence) {
-      view.setHint(ol.View.Hint.INTERACTING, 1);
+      view.setHint(ol.ViewHint.INTERACTING, 1);
     }
     // stop any current animation
-    view.setCenter(mapBrowserEvent.frameState.viewState.center);
+    if (view.getHints()[ol.ViewHint.ANIMATING]) {
+      view.setCenter(mapBrowserEvent.frameState.viewState.center);
+    }
     if (this.kinetic_) {
       this.kinetic_.begin();
     }

@@ -33,75 +33,72 @@ goog.require('ol.proj.proj4');
  * @constructor
  * @param {olx.ProjectionOptions} options Projection options.
  * @struct
- * @api stable
+ * @api
  */
 ol.proj.Projection = function(options) {
-
-  /**
-   * @private
-   * @type {string}
-   */
+ /**
+  * @private
+  * @type {string}
+  */
   this.code_ = options.code;
 
-  /**
-   * @private
-   * @type {ol.proj.Units}
-   */
+ /**
+  * @private
+  * @type {ol.proj.Units}
+  */
   this.units_ = /** @type {ol.proj.Units} */ (options.units);
 
-  /**
-   * @private
-   * @type {ol.Extent}
-   */
+ /**
+  * @private
+  * @type {ol.Extent}
+  */
   this.extent_ = options.extent !== undefined ? options.extent : null;
 
-  /**
-   * @private
-   * @type {ol.Extent}
-   */
+ /**
+  * @private
+  * @type {ol.Extent}
+  */
   this.worldExtent_ = options.worldExtent !== undefined ?
-      options.worldExtent : null;
+     options.worldExtent : null;
 
-  /**
-   * @private
-   * @type {string}
-   */
+ /**
+  * @private
+  * @type {string}
+  */
   this.axisOrientation_ = options.axisOrientation !== undefined ?
-      options.axisOrientation : 'enu';
+     options.axisOrientation : 'enu';
 
-  /**
-   * @private
-   * @type {boolean}
-   */
+ /**
+  * @private
+  * @type {boolean}
+  */
   this.global_ = options.global !== undefined ? options.global : false;
 
-  /**
-   * @private
-   * @type {boolean}
-   */
+ /**
+  * @private
+  * @type {boolean}
+  */
   this.canWrapX_ = !!(this.global_ && this.extent_);
 
-  /**
-  * @private
-  * @type {function(number, ol.Coordinate):number|undefined}
-  */
+ /**
+ * @private
+ * @type {function(number, ol.Coordinate):number|undefined}
+ */
   this.getPointResolutionFunc_ = options.getPointResolution;
 
-  /**
-   * @private
-   * @type {ol.tilegrid.TileGrid}
-   */
+ /**
+  * @private
+  * @type {ol.tilegrid.TileGrid}
+  */
   this.defaultTileGrid_ = null;
 
-  /**
-   * @private
-   * @type {number|undefined}
-   */
+ /**
+  * @private
+  * @type {number|undefined}
+  */
   this.metersPerUnit_ = options.metersPerUnit;
 
   var code = options.code;
-  ol.DEBUG && console.assert(code !== undefined,
-      'Option "code" is required for constructing instance');
   if (ol.ENABLE_PROJ4JS) {
     var proj4js = ol.proj.proj4.get();
     if (typeof proj4js == 'function') {
@@ -119,7 +116,6 @@ ol.proj.Projection = function(options) {
       }
     }
   }
-
 };
 
 
@@ -134,7 +130,7 @@ ol.proj.Projection.prototype.canWrapX = function() {
 /**
  * Get the code for this projection, e.g. 'EPSG:4326'.
  * @return {string} Code.
- * @api stable
+ * @api
  */
 ol.proj.Projection.prototype.getCode = function() {
   return this.code_;
@@ -144,7 +140,7 @@ ol.proj.Projection.prototype.getCode = function() {
 /**
  * Get the validity extent for this projection.
  * @return {ol.Extent} Extent.
- * @api stable
+ * @api
  */
 ol.proj.Projection.prototype.getExtent = function() {
   return this.extent_;
@@ -154,7 +150,7 @@ ol.proj.Projection.prototype.getExtent = function() {
 /**
  * Get the units of this projection.
  * @return {ol.proj.Units} Units.
- * @api stable
+ * @api
  */
 ol.proj.Projection.prototype.getUnits = function() {
   return this.units_;
@@ -166,7 +162,7 @@ ol.proj.Projection.prototype.getUnits = function() {
  * not configured with `metersPerUnit` or a units identifier, the return is
  * `undefined`.
  * @return {number|undefined} Meters.
- * @api stable
+ * @api
  */
 ol.proj.Projection.prototype.getMetersPerUnit = function() {
   return this.metersPerUnit_ || ol.proj.Units.METERS_PER_UNIT[this.units_];
@@ -201,7 +197,7 @@ ol.proj.Projection.prototype.getAxisOrientation = function() {
 /**
  * Is this projection a global projection which spans the whole world?
  * @return {boolean} Whether the projection is global.
- * @api stable
+ * @api
  */
 ol.proj.Projection.prototype.isGlobal = function() {
   return this.global_;
@@ -211,7 +207,7 @@ ol.proj.Projection.prototype.isGlobal = function() {
 /**
 * Set if the projection is a global projection which spans the whole world
 * @param {boolean} global Whether the projection is global.
-* @api stable
+* @api
 */
 ol.proj.Projection.prototype.setGlobal = function(global) {
   this.global_ = global;
@@ -238,7 +234,7 @@ ol.proj.Projection.prototype.setDefaultTileGrid = function(tileGrid) {
 /**
  * Set the validity extent for this projection.
  * @param {ol.Extent} extent Extent.
- * @api stable
+ * @api
  */
 ol.proj.Projection.prototype.setExtent = function(extent) {
   this.extent_ = extent;

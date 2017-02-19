@@ -2,6 +2,7 @@ goog.provide('ol.test.View');
 
 goog.require('ol');
 goog.require('ol.View');
+goog.require('ol.ViewHint');
 goog.require('ol.extent');
 goog.require('ol.geom.LineString');
 goog.require('ol.geom.Point');
@@ -311,7 +312,7 @@ describe('ol.View', function() {
 
       expect(view.getHints()).to.eql([0, 0]);
 
-      view.setHint(ol.View.Hint.INTERACTING, 1);
+      view.setHint(ol.ViewHint.INTERACTING, 1);
       expect(view.getHints()).to.eql([0, 1]);
     });
 
@@ -325,7 +326,7 @@ describe('ol.View', function() {
         expect(view.getHints()).to.eql([0, 1]);
         done();
       });
-      view.setHint(ol.View.Hint.INTERACTING, 1);
+      view.setHint(ol.ViewHint.INTERACTING, 1);
     });
 
   });
@@ -405,6 +406,26 @@ describe('ol.View', function() {
       });
     });
 
+    it('avoids going under minResolution', function(done) {
+      var maxZoom = 14;
+      var view = new ol.View({
+        center: [0, 0],
+        zoom: 0,
+        maxZoom: maxZoom
+      });
+
+      var minResolution = view.getMinResolution();
+      view.animate({
+        resolution: minResolution,
+        duration: 10
+      }, function(complete) {
+        expect(complete).to.be(true);
+        expect(view.getResolution()).to.be(minResolution);
+        expect(view.getZoom()).to.be(maxZoom);
+        done();
+      });
+    });
+
     it('calls a callback when animation completes', function(done) {
       var view = new ol.View({
         center: [0, 0],
@@ -477,7 +498,7 @@ describe('ol.View', function() {
       function decrement() {
         --count;
         if (count === 0) {
-          expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(0);
+          expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(0);
           done();
         }
       }
@@ -485,19 +506,19 @@ describe('ol.View', function() {
         center: [1, 2],
         duration: 25
       }, decrement);
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(1);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(1);
 
       view.animate({
         zoom: 1,
         duration: 25
       }, decrement);
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(2);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(2);
 
       view.animate({
         rotate: Math.PI,
         duration: 25
       }, decrement);
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(3);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(3);
 
     });
 
@@ -512,23 +533,23 @@ describe('ol.View', function() {
         center: [1, 2],
         duration: 25
       });
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(1);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(1);
 
       view.animate({
         zoom: 1,
         duration: 25
       });
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(2);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(2);
 
       view.animate({
         rotate: Math.PI,
         duration: 25
       });
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(3);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(3);
 
       // cancel animations
       view.setCenter([10, 20]);
-      expect(view.getHints()[ol.View.Hint.ANIMATING]).to.be(0);
+      expect(view.getHints()[ol.ViewHint.ANIMATING]).to.be(0);
 
     });
 
@@ -557,7 +578,7 @@ describe('ol.View', function() {
           duration: 25
         }, function() {
           expect(calls).to.be(1);
-          expect(view.getZoom()).to.roughlyEqual(2, 1e-8);
+          expect(view.getZoom()).to.be(2);
           expect(view.getAnimating()).to.be(false);
           done();
         });
@@ -598,7 +619,7 @@ describe('ol.View', function() {
         duration: 25
       }, function() {
         ++calls;
-        expect(view.getResolution()).to.roughlyEqual(2, 1e-8);
+        expect(view.getResolution()).to.be(2);
         onAnimateEnd();
       });
 
@@ -882,6 +903,27 @@ describe('ol.View', function() {
     });
   });
 
+  describe('#getSizeFromViewport_()', function() {
+    var map, target;
+    beforeEach(function() {
+      target = document.createElement('div');
+      target.style.width = '200px';
+      target.style.height = '150px';
+      map = new ol.Map({
+        target: target
+      });
+      document.body.appendChild(target);
+    });
+    afterEach(function() {
+      map.setTarget(null);
+      document.body.removeChild(target);
+    });
+    it('calculates the size correctly', function() {
+      var size = map.getView().getSizeFromViewport_();
+      expect(size).to.eql([200, 150]);
+    });
+  });
+
   describe('fit', function() {
 
     var originalRequestAnimationFrame = window.requestAnimationFrame;
@@ -945,6 +987,21 @@ describe('ol.View', function() {
       expect(view.getZoom()).to.be(6);
       expect(view.getCenter()[0]).to.be(5900);
       expect(view.getCenter()[1]).to.be(46100);
+
+      view.fit(
+          new ol.geom.Circle([6000, 46000], 1000),
+          {size: [200, 200], constrainResolution: false});
+      expect(view.getResolution()).to.be(10);
+      expect(view.getCenter()[0]).to.be(6000);
+      expect(view.getCenter()[1]).to.be(46000);
+
+      view.setRotation(Math.PI / 8);
+      view.fit(
+          new ol.geom.Circle([6000, 46000], 1000),
+          {size: [200, 200], constrainResolution: false});
+      expect(view.getResolution()).to.roughlyEqual(10, 1e-9);
+      expect(view.getCenter()[0]).to.roughlyEqual(6000, 1e-9);
+      expect(view.getCenter()[1]).to.roughlyEqual(46000, 1e-9);
 
       view.setRotation(Math.PI / 4);
       view.fit(

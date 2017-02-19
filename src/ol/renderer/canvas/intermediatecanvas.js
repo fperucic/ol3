@@ -9,6 +9,7 @@ goog.require('ol.transform');
 
 /**
  * @constructor
+ * @abstract
  * @extends {ol.renderer.canvas.Layer}
  * @param {ol.layer.Layer} layer Layer.
  */
@@ -27,12 +28,6 @@ ol.renderer.canvas.IntermediateCanvas = function(layer) {
    * @type {CanvasRenderingContext2D}
    */
   this.hitCanvasContext_ = null;
-
-  /**
-   * @protected
-   * @type {number}
-   */
-  this.renderedResolution;
 
 };
 ol.inherits(ol.renderer.canvas.IntermediateCanvas, ol.renderer.canvas.Layer);

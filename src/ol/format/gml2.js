@@ -5,6 +5,7 @@ goog.require('ol.extent');
 goog.require('ol.format.Feature');
 goog.require('ol.format.GMLBase');
 goog.require('ol.format.XSD');
+goog.require('ol.geom.Geometry');
 goog.require('ol.obj');
 goog.require('ol.proj');
 goog.require('ol.xml');
@@ -59,7 +60,6 @@ ol.format.GML2.prototype.readFlatCoordinates_ = function(node, objectStack) {
   var s = ol.xml.getAllTextContent(node, false).replace(/^\s*|\s*$/g, '');
   var context = /** @type {ol.XmlNodeStackItem} */ (objectStack[0]);
   var containerSrs = context['srsName'];
-  var containerDimension = node.parentNode.getAttribute('srsDimension');
   var axisOrientation = 'enu';
   if (containerSrs) {
     var proj = ol.proj.get(containerSrs);
@@ -67,24 +67,14 @@ ol.format.GML2.prototype.readFlatCoordinates_ = function(node, objectStack) {
       axisOrientation = proj.getAxisOrientation();
     }
   }
-  var coords = s.split(/[\s,]+/);
-  // The "dimension" attribute is from the GML 3.0.1 spec.
-  var dim = 2;
-  if (node.getAttribute('srsDimension')) {
-    dim = ol.format.XSD.readNonNegativeIntegerString(
-        node.getAttribute('srsDimension'));
-  } else if (node.getAttribute('dimension')) {
-    dim = ol.format.XSD.readNonNegativeIntegerString(
-        node.getAttribute('dimension'));
-  } else if (containerDimension) {
-    dim = ol.format.XSD.readNonNegativeIntegerString(containerDimension);
-  }
+  var coordsGroups = s.trim().split(/\s+/);
   var x, y, z;
   var flatCoordinates = [];
-  for (var i = 0, ii = coords.length; i < ii; i += dim) {
-    x = parseFloat(coords[i]);
-    y = parseFloat(coords[i + 1]);
-    z = (dim === 3) ? parseFloat(coords[i + 2]) : 0;
+  for (var i = 0, ii = coordsGroups.length; i < ii; i++) {
+    var coords = coordsGroups[i].split(/,+/);
+    x = parseFloat(coords[0]);
+    y = parseFloat(coords[1]);
+    z = (coords.length === 3) ? parseFloat(coords[2]) : 0;
     if (axisOrientation.substr(0, 2) === 'en') {
       flatCoordinates.push(x, y, z);
     } else {
@@ -363,6 +353,7 @@ ol.format.GML2.prototype.createCoordinatesNode_ = function(namespaceURI) {
  */
 ol.format.GML2.prototype.writeCoordinates_ = function(node, value, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   // only 2d for simple features profile
   var points = value.getCoordinates();
@@ -371,7 +362,7 @@ ol.format.GML2.prototype.writeCoordinates_ = function(node, value, objectStack) 
   var point;
   for (var i = 0; i < len; ++i) {
     point = points[i];
-    parts[i] = this.getCoords_(point, srsName);
+    parts[i] = this.getCoords_(point, srsName, hasZ);
   }
   ol.format.XSD.writeStringTextNode(node, parts.join(' '));
 };
@@ -399,6 +390,7 @@ ol.format.GML2.prototype.writeCurveSegments_ = function(node, line, objectStack)
  */
 ol.format.GML2.prototype.writeSurfaceOrPolygon_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   if (node.nodeName !== 'PolygonPatch' && srsName) {
     node.setAttribute('srsName', srsName);
@@ -406,7 +398,7 @@ ol.format.GML2.prototype.writeSurfaceOrPolygon_ = function(node, geometry, objec
   if (node.nodeName === 'Polygon' || node.nodeName === 'PolygonPatch') {
     var rings = geometry.getLinearRings();
     ol.xml.pushSerializeAndPop(
-        {node: node, srsName: srsName},
+        {node: node, hasZ: hasZ, srsName: srsName},
         ol.format.GML2.RING_SERIALIZERS_,
         this.RING_NODE_FACTORY_,
         rings, objectStack, undefined, this);
@@ -467,17 +459,25 @@ ol.format.GML2.prototype.writeRing_ = function(node, ring, objectStack) {
 /**
  * @param {Array.<number>} point Point geometry.
  * @param {string=} opt_srsName Optional srsName
+ * @param {boolean=} opt_hasZ whether the geometry has a Z coordinate (is 3D) or not.
  * @return {string} The coords string.
  * @private
  */
-ol.format.GML2.prototype.getCoords_ = function(point, opt_srsName) {
+ol.format.GML2.prototype.getCoords_ = function(point, opt_srsName, opt_hasZ) {
   var axisOrientation = 'enu';
   if (opt_srsName) {
     axisOrientation = ol.proj.get(opt_srsName).getAxisOrientation();
   }
-  return ((axisOrientation.substr(0, 2) === 'en') ?
+  var coords = ((axisOrientation.substr(0, 2) === 'en') ?
       point[0] + ',' + point[1] :
       point[1] + ',' + point[0]);
+  if (opt_hasZ) {
+    // For newly created points, Z can be undefined.
+    var z = point[2] || 0;
+    coords += ',' + z;
+  }
+
+  return coords;
 };
 
 
@@ -489,13 +489,14 @@ ol.format.GML2.prototype.getCoords_ = function(point, opt_srsName) {
  */
 ol.format.GML2.prototype.writeMultiCurveOrLineString_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   var curve = context['curve'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
   var lines = geometry.getLineStrings();
-  ol.xml.pushSerializeAndPop({node: node, srsName: srsName, curve: curve},
+  ol.xml.pushSerializeAndPop({node: node, hasZ: hasZ, srsName: srsName, curve: curve},
       ol.format.GML2.LINESTRINGORCURVEMEMBER_SERIALIZERS_,
       this.MULTIGEOMETRY_MEMBER_NODE_FACTORY_, lines,
       objectStack, undefined, this);
@@ -510,6 +511,7 @@ ol.format.GML2.prototype.writeMultiCurveOrLineString_ = function(node, geometry,
  */
 ol.format.GML2.prototype.writePoint_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
@@ -517,7 +519,7 @@ ol.format.GML2.prototype.writePoint_ = function(node, geometry, objectStack) {
   var coordinates = this.createCoordinatesNode_(node.namespaceURI);
   node.appendChild(coordinates);
   var point = geometry.getCoordinates();
-  var coord = this.getCoords_(point, srsName);
+  var coord = this.getCoords_(point, srsName, hasZ);
   ol.format.XSD.writeStringTextNode(coordinates, coord);
 };
 
@@ -531,12 +533,13 @@ ol.format.GML2.prototype.writePoint_ = function(node, geometry, objectStack) {
 ol.format.GML2.prototype.writeMultiPoint_ = function(node, geometry,
     objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
   var points = geometry.getPoints();
-  ol.xml.pushSerializeAndPop({node: node, srsName: srsName},
+  ol.xml.pushSerializeAndPop({node: node, hasZ: hasZ, srsName: srsName},
       ol.format.GML2.POINTMEMBER_SERIALIZERS_,
       ol.xml.makeSimpleNodeFactory('pointMember'), points,
       objectStack, undefined, this);
@@ -597,13 +600,14 @@ ol.format.GML2.prototype.writeLinearRing_ = function(node, geometry, objectStack
  */
 ol.format.GML2.prototype.writeMultiSurfaceOrPolygon_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   var surface = context['surface'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
   var polygons = geometry.getPolygons();
-  ol.xml.pushSerializeAndPop({node: node, srsName: srsName, surface: surface},
+  ol.xml.pushSerializeAndPop({node: node, hasZ: hasZ, srsName: srsName, surface: surface},
       ol.format.GML2.SURFACEORPOLYGONMEMBER_SERIALIZERS_,
       this.MULTIGEOMETRY_MEMBER_NODE_FACTORY_, polygons,
       objectStack, undefined, this);

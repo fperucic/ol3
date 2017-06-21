@@ -1,6 +1,3 @@
-/* global resemble:false */
-/* eslint-disable openlayers-internal/no-missing-requires */
-
 // FIXME remove afterLoadXml as it uses the wrong XML parser on IE9
 
 // helper functions for async testing and other utility functions.
@@ -465,8 +462,9 @@
   };
 
   var features = {
-    ArrayBuffer: typeof ArrayBuffer === 'function',
-    'ArrayBuffer.isView': typeof ArrayBuffer === 'function' && ArrayBuffer.isView,
+    ArrayBuffer: 'ArrayBuffer' in global,
+    'ArrayBuffer.isView': 'ArrayBuffer' in global && !!ArrayBuffer.isView,
+    FileReader: 'FileReader' in global,
     Uint8ClampedArray: ('Uint8ClampedArray' in global)
   };
 

@@ -849,8 +849,8 @@ describe('ol.format.KML', function() {
           var g = f.getGeometry();
           expect(g).to.be.an(ol.geom.MultiPolygon);
           expect(g.getCoordinates()).to.eql(
-            [[[[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]],
-             [[[3, 0, 0], [3, 1, 0], [4, 1, 0], [4, 0, 0]]]]);
+              [[[[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]],
+                [[[3, 0, 0], [3, 1, 0], [4, 1, 0], [4, 0, 0]]]]);
           expect(g.get('extrude')).to.be.an('array');
           expect(g.get('extrude')).to.have.length(2);
           expect(g.get('extrude')[0]).to.be(false);
@@ -864,8 +864,8 @@ describe('ol.format.KML', function() {
         it('can write MultiPolygon geometries', function() {
           var layout = 'XYZ';
           var multiPolygon = new ol.geom.MultiPolygon(
-            [[[[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]],
-             [[[3, 0, 0], [3, 1, 0], [4, 1, 0], [4, 0, 0]]]], layout);
+              [[[[0, 0, 0], [0, 1, 0], [1, 1, 0], [1, 0, 0]]],
+                [[[3, 0, 0], [3, 1, 0], [4, 1, 0], [4, 0, 0]]]], layout);
           var features = [new ol.Feature(multiPolygon)];
           var node = format.writeFeaturesNode(features);
           var text =
@@ -1580,7 +1580,29 @@ describe('ol.format.KML', function() {
           expect(fs).to.have.length(1);
           var f = fs[0];
           expect(f).to.be.an(ol.Feature);
+          expect(f.getProperties()).to.only.have.keys(['foo', 'geometry']);
           expect(f.get('foo')).to.be('bar');
+        });
+
+        it('can read ExtendedData with no values', function() {
+          var text =
+              '<kml xmlns="http://earth.google.com/kml/2.2">' +
+              '  <Placemark xmlns="http://earth.google.com/kml/2.2">' +
+              '    <ExtendedData>' +
+              '      <Data name="foo">' +
+              '        <value>200</value>' +
+              '      </Data>' +
+              '      <Data name="bar"/>' +
+              '    </ExtendedData>' +
+              '  </Placemark>' +
+              '</kml>';
+          var fs = format.readFeatures(text);
+          expect(fs).to.have.length(1);
+          var f = fs[0];
+          expect(f).to.be.an(ol.Feature);
+          expect(f.getProperties()).to.only.have.keys(['foo', 'bar', 'geometry']);
+          expect(f.get('foo')).to.be('200');
+          expect(f.get('bar')).to.be(undefined);
         });
 
         it('can read ExtendedData with displayName instead of name', function() {

@@ -1,8 +1,9 @@
-goog.provide('ol.test.format.MVT');
+
 
 goog.require('ol.Feature');
 goog.require('ol.ext.PBF');
 goog.require('ol.ext.vectortile.VectorTile');
+goog.require('ol.extent');
 goog.require('ol.format.MVT');
 goog.require('ol.geom.Point');
 goog.require('ol.render.Feature');
@@ -86,6 +87,13 @@ where('ArrayBuffer.isView').describe('ol.format.MVT', function() {
       });
       features = format.readFeatures(data);
       expect(features[0].getId()).to.be(2);
+    });
+
+    it('sets the extent of the last readFeatures call', function() {
+      var format = new ol.format.MVT();
+      format.readFeatures(data);
+      var extent = format.getLastExtent();
+      expect(ol.extent.getWidth(extent)).to.be(4096);
     });
 
   });

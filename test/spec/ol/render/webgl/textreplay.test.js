@@ -1,4 +1,4 @@
-goog.provide('ol.test.render.webgl.TextReplay');
+
 
 goog.require('ol.dom');
 goog.require('ol.render.webgl.TextReplay');
@@ -154,8 +154,8 @@ describe('ol.render.webgl.TextReplay', function() {
       expect(replay.originY).to.be(charInfo.offsetY);
       expect(replay.imageHeight).to.be(charInfo.image.height);
       expect(replay.imageWidth).to.be(charInfo.image.width);
-      expect(replay.anchorX).to.be(-widthX + 10);
-      expect(replay.anchorY).to.be(10);
+      expect(replay.anchorX).to.be(-widthX - 10);
+      expect(replay.anchorY).to.be(-10);
     });
 
     it('does not draw if text is empty', function() {

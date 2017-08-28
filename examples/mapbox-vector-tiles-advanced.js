@@ -1,4 +1,3 @@
-/* eslint-disable openlayers-internal/no-unused-requires */
 goog.require('ol.Map');
 goog.require('ol.View');
 goog.require('ol.format.MVT');
@@ -17,7 +16,7 @@ var key = 'pk.eyJ1IjoiYWhvY2V2YXIiLCJhIjoiRk1kMWZaSSJ9.E5BkluenyWQMsBLsuByrmg';
 
 // Calculation of resolutions that match zoom levels 1, 3, 5, 7, 9, 11, 13, 15.
 var resolutions = [];
-for (var i = 0; i <= 7; ++i) {
+for (var i = 0; i <= 8; ++i) {
   resolutions.push(156543.03392804097 / Math.pow(2, i * 2));
 }
 // Calculation of tile urls for zoom levels 1, 3, 5, 7, 9, 11, 13, 15.
@@ -44,10 +43,9 @@ var map = new ol.Map({
           resolutions: resolutions,
           tileSize: 512
         }),
-        tilePixelRatio: 8,
         tileUrlFunction: tileUrlFunction
       }),
-      style: createMapboxStreetsV6Style()
+      style: createMapboxStreetsV6Style(ol.style.Style, ol.style.Fill, ol.style.Stroke, ol.style.Icon, ol.style.Text)
     })
   ],
   target: 'map',
@@ -57,6 +55,3 @@ var map = new ol.Map({
     zoom: 2
   })
 });
-
-// ol.style.Fill, ol.style.Icon, ol.style.Stroke, ol.style.Style and
-// ol.style.Text are required for createMapboxStreetsV6Style()

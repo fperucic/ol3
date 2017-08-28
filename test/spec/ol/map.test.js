@@ -1,17 +1,22 @@
-goog.provide('ol.test.Map');
 
+
+goog.require('ol.Feature');
 goog.require('ol.Map');
 goog.require('ol.MapEvent');
 goog.require('ol.Overlay');
 goog.require('ol.View');
+goog.require('ol.geom.Point');
 goog.require('ol.has');
 goog.require('ol.interaction');
 goog.require('ol.interaction.DoubleClickZoom');
 goog.require('ol.interaction.Interaction');
 goog.require('ol.interaction.MouseWheelZoom');
+goog.require('ol.interaction.PinchZoom');
 goog.require('ol.layer.Tile');
+goog.require('ol.layer.Vector');
+goog.require('ol.renderer.canvas.IntermediateCanvas');
+goog.require('ol.source.Vector');
 goog.require('ol.source.XYZ');
-
 
 describe('ol.Map', function() {
 
@@ -179,6 +184,57 @@ describe('ol.Map', function() {
 
       view.setCenter(center);
       view.setZoom(zoom);
+    });
+
+  });
+
+  describe('#getFeaturesAtPixel', function() {
+
+    var target, map;
+    beforeEach(function() {
+      target = document.createElement('div');
+      target.style.width = target.style.height = '100px';
+      document.body.appendChild(target);
+      map = new ol.Map({
+        target: target,
+        layers: [new ol.layer.Vector({
+          source: new ol.source.Vector({
+            features: [new ol.Feature(new ol.geom.Point([0, 0]))]
+          })
+        })],
+        view: new ol.View({
+          center: [0, 0],
+          zoom: 2
+        })
+      });
+      map.renderSync();
+    });
+    afterEach(function() {
+      document.body.removeChild(target);
+    });
+
+    it('returns null if no feature was found', function() {
+      var features = map.getFeaturesAtPixel([0, 0]);
+      expect(features).to.be(null);
+    });
+
+    it('returns an array of found features', function() {
+      var features = map.getFeaturesAtPixel([50, 50]);
+      expect(features).to.be.an(Array);
+      expect(features[0]).to.be.an(ol.Feature);
+    });
+
+    it('respects options', function() {
+      var otherLayer = new ol.layer.Vector({
+        source: new ol.source.Vector
+      });
+      map.addLayer(otherLayer);
+      var features = map.getFeaturesAtPixel([50, 50], {
+        layerFilter: function(layer) {
+          return layer == otherLayer;
+        }
+      });
+      expect(features).to.be(null);
     });
 
   });

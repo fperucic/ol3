@@ -1,7 +1,7 @@
-goog.provide('ol.test.format.KML');
 
-goog.require('ol.array');
+
 goog.require('ol.Feature');
+goog.require('ol.array');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.format.KML');
 goog.require('ol.geom.GeometryCollection');
@@ -12,12 +12,14 @@ goog.require('ol.geom.MultiPoint');
 goog.require('ol.geom.MultiPolygon');
 goog.require('ol.geom.Point');
 goog.require('ol.geom.Polygon');
-goog.require('ol.style.Circle');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Icon');
 goog.require('ol.proj');
 goog.require('ol.proj.Projection');
 goog.require('ol.proj.transforms');
+goog.require('ol.style.Circle');
+goog.require('ol.style.Fill');
+goog.require('ol.style.Icon');
+goog.require('ol.style.IconAnchorUnits');
+goog.require('ol.style.IconOrigin');
 goog.require('ol.style.Stroke');
 goog.require('ol.style.Style');
 goog.require('ol.style.Text');
@@ -188,6 +190,33 @@ describe('ol.format.KML', function() {
               ' xsi:schemaLocation="http://www.opengis.net/kml/2.2' +
               ' https://developers.google.com/kml/schema/kml22gx.xsd">' +
               '  <Placemark/>' +
+              '</kml>';
+          expect(node).to.xmleql(ol.xml.parse(text));
+        });
+
+
+        it('can write properties', function() {
+          var lineString = new ol.geom.LineString([[1, 2], [3, 4]]);
+          lineString.set('extrude', false);
+          lineString.set('tessellate', true);
+          lineString.set('altitudeMode', 'clampToGround');
+          lineString.set('unsupportedProperty', 'foo');
+          var features = [new ol.Feature(lineString)];
+          var node = format.writeFeaturesNode(features);
+          var text =
+              '<kml xmlns="http://www.opengis.net/kml/2.2"' +
+              ' xmlns:gx="http://www.google.com/kml/ext/2.2"' +
+              ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+              ' xsi:schemaLocation="http://www.opengis.net/kml/2.2' +
+              ' https://developers.google.com/kml/schema/kml22gx.xsd">' +
+              '  <Placemark>' +
+              '    <LineString>' +
+              '      <extrude>0</extrude>' +
+              '      <tessellate>1</tessellate>' +
+              '      <altitudeMode>clampToGround</altitudeMode>' +
+              '      <coordinates>1,2 3,4</coordinates>' +
+              '    </LineString>' +
+              '  </Placemark>' +
               '</kml>';
           expect(node).to.xmleql(ol.xml.parse(text));
         });
@@ -412,6 +441,7 @@ describe('ol.format.KML', function() {
               '    <LineString>' +
               '      <coordinates>1,2,3 4,5,6</coordinates>' +
               '      <extrude>0</extrude>' +
+              '      <tessellate>1</tessellate>' +
               '      <altitudeMode>absolute</altitudeMode>' +
               '    </LineString>' +
               '  </Placemark>' +
@@ -424,6 +454,7 @@ describe('ol.format.KML', function() {
           expect(g).to.be.an(ol.geom.LineString);
           expect(g.getCoordinates()).to.eql([[1, 2, 3], [4, 5, 6]]);
           expect(g.get('extrude')).to.be(false);
+          expect(g.get('tessellate')).to.be(true);
           expect(g.get('altitudeMode')).to.be('absolute');
         });
 
@@ -964,6 +995,7 @@ describe('ol.format.KML', function() {
               '    <MultiGeometry>' +
               '      <LineString>' +
               '        <extrude>0</extrude>' +
+              '        <tessellate>0</tessellate>' +
               '        <altitudeMode>absolute</altitudeMode>' +
               '        <coordinates>1,2,3 4,5,6</coordinates>' +
               '      </LineString>' +
@@ -985,6 +1017,10 @@ describe('ol.format.KML', function() {
           expect(g.get('extrude')).to.have.length(2);
           expect(g.get('extrude')[0]).to.be(false);
           expect(g.get('extrude')[1]).to.be(undefined);
+          expect(g.get('tessellate')).to.be.an('array');
+          expect(g.get('tessellate')).to.have.length(2);
+          expect(g.get('tessellate')[0]).to.be(false);
+          expect(g.get('tessellate')[1]).to.be(undefined);
           expect(g.get('altitudeMode')).to.be.an('array');
           expect(g.get('altitudeMode')).to.have.length(2);
           expect(g.get('altitudeMode')[0]).to.be('absolute');
@@ -3300,7 +3336,7 @@ describe('ol.format.KML', function() {
         var nl = format.readNetworkLinks(text);
         expect(nl).to.have.length(2);
         expect(nl[0].name).to.be('bar');
-        expect(nl[0].href.replace(window.location.href, '')).to.be('bar/bar.kml');
+        expect(nl[0].href.replace(window.location.origin, '')).to.be('/bar/bar.kml');
         expect(nl[1].href).to.be('http://foo.com/foo.kml');
       });
 

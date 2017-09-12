@@ -1257,6 +1257,7 @@ ol.PluggableMap.prototype.setView = function(view) {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @api
  */
 ol.PluggableMap.prototype.skipFeature = function(feature) {
   var featureUid = ol.getUid(feature).toString();
@@ -1295,6 +1296,7 @@ ol.PluggableMap.prototype.updateSize = function() {
 
 /**
  * @param {ol.Feature} feature Feature.
+ * @api
  */
 ol.PluggableMap.prototype.unskipFeature = function(feature) {
   var featureUid = ol.getUid(feature).toString();

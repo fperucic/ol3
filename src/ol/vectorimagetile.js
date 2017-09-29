@@ -30,12 +30,13 @@ goog.require('ol.featureloader');
  *     instantiate for source tiles.
  * @param {function(this: ol.source.VectorTile, ol.events.Event)} handleTileChange
  *     Function to call when a source tile's state changes.
+ * @param {olx.TileOptions=} opt_options Tile options.
  */
 ol.VectorImageTile = function(tileCoord, state, src, format, tileLoadFunction,
     urlTileCoord, tileUrlFunction, sourceTileGrid, tileGrid, sourceTiles,
-    pixelRatio, projection, tileClass, handleTileChange) {
+    pixelRatio, projection, tileClass, handleTileChange, opt_options) {
 
-  ol.Tile.call(this, tileCoord, state);
+  ol.Tile.call(this, tileCoord, state, opt_options);
 
   /**
    * @private
@@ -94,6 +95,10 @@ ol.VectorImageTile = function(tileCoord, state, src, format, tileLoadFunction,
     sourceTileGrid.forEachTileCoord(extent, sourceZ, function(sourceTileCoord) {
       var sharedExtent = ol.extent.getIntersection(extent,
           sourceTileGrid.getTileCoordExtent(sourceTileCoord));
+      var sourceExtent = sourceTileGrid.getExtent();
+      if (sourceExtent) {
+        sharedExtent = ol.extent.getIntersection(sharedExtent, sourceExtent);
+      }
       if (ol.extent.getWidth(sharedExtent) / resolution >= 0.5 &&
           ol.extent.getHeight(sharedExtent) / resolution >= 0.5) {
         // only include source tile if overlap is at least 1 pixel
@@ -259,17 +264,23 @@ ol.VectorImageTile.prototype.load = function() {
  */
 ol.VectorImageTile.prototype.finishLoading_ = function() {
   var loaded = this.tileKeys.length;
+  var empty = 0;
   for (var i = loaded - 1; i >= 0; --i) {
     var state = this.getTile(this.tileKeys[i]).getState();
     if (state != ol.TileState.LOADED) {
       --loaded;
     }
+    if (state == ol.TileState.EMPTY) {
+      ++empty;
+    }
   }
   if (loaded == this.tileKeys.length) {
     this.loadListenerKeys_.forEach(ol.events.unlistenByKey);
     this.loadListenerKeys_.length = 0;
+    this.setState(ol.TileState.LOADED);
+  } else {
+    this.setState(empty == this.tileKeys.length ? ol.TileState.EMPTY : ol.TileState.ERROR);
   }
-  this.setState(loaded > 0 ? ol.TileState.LOADED : ol.TileState.EMPTY);
 };
 
 

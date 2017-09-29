@@ -3,7 +3,9 @@ goog.provide('ol.render.webgl.TextReplay');
 goog.require('ol');
 goog.require('ol.colorlike');
 goog.require('ol.dom');
+goog.require('ol.geom.GeometryType');
 goog.require('ol.has');
+goog.require('ol.render.replay');
 goog.require('ol.render.webgl');
 goog.require('ol.render.webgl.TextureReplay');
 goog.require('ol.style.AtlasManager');
@@ -117,9 +119,38 @@ ol.inherits(ol.render.webgl.TextReplay, ol.render.webgl.TextureReplay);
 /**
  * @inheritDoc
  */
-ol.render.webgl.TextReplay.prototype.drawText = function(flatCoordinates, offset,
-    end, stride, geometry, feature) {
+ol.render.webgl.TextReplay.prototype.drawText = function(geometry, feature) {
   if (this.text_) {
+    var flatCoordinates = null;
+    var offset = 0;
+    var end = 2;
+    var stride = 2;
+    switch (geometry.getType()) {
+      case ol.geom.GeometryType.POINT:
+      case ol.geom.GeometryType.MULTI_POINT:
+        flatCoordinates = geometry.getFlatCoordinates();
+        end = flatCoordinates.length;
+        stride = geometry.getStride();
+        break;
+      case ol.geom.GeometryType.CIRCLE:
+        flatCoordinates = /** @type {ol.geom.Circle} */ (geometry).getCenter();
+        break;
+      case ol.geom.GeometryType.LINE_STRING:
+        flatCoordinates = /** @type {ol.geom.LineString} */ (geometry).getFlatMidpoint();
+        break;
+      case ol.geom.GeometryType.MULTI_LINE_STRING:
+        flatCoordinates = /** @type {ol.geom.MultiLineString} */ (geometry).getFlatMidpoints();
+        end = flatCoordinates.length;
+        break;
+      case ol.geom.GeometryType.POLYGON:
+        flatCoordinates = /** @type {ol.geom.Polygon} */ (geometry).getFlatInteriorPoint();
+        break;
+      case ol.geom.GeometryType.MULTI_POLYGON:
+        flatCoordinates = /** @type {ol.geom.MultiPolygon} */ (geometry).getFlatInteriorPoints();
+        end = flatCoordinates.length;
+        break;
+      default:
+    }
     this.startIndices.push(this.indices.length);
     this.startIndicesFeature.push(feature);
 
@@ -348,8 +379,8 @@ ol.render.webgl.TextReplay.prototype.setTextStyle = function(textStyle) {
     state.font = textStyle.getFont() || ol.render.webgl.defaultFont;
     state.scale = textStyle.getScale() || 1;
     this.text_ = /** @type {string} */ (textStyle.getText());
-    var textAlign = ol.render.webgl.TextReplay.Align_[textStyle.getTextAlign()];
-    var textBaseline = ol.render.webgl.TextReplay.Align_[textStyle.getTextBaseline()];
+    var textAlign = ol.render.replay.TEXT_ALIGN[textStyle.getTextAlign()];
+    var textBaseline = ol.render.replay.TEXT_ALIGN[textStyle.getTextBaseline()];
     this.textAlign_ = textAlign === undefined ?
       ol.render.webgl.defaultTextAlign : textAlign;
     this.textBaseline_ = textBaseline === undefined ?
@@ -429,23 +460,4 @@ ol.render.webgl.TextReplay.prototype.getTextures = function(opt_all) {
  */
 ol.render.webgl.TextReplay.prototype.getHitDetectionTextures = function() {
   return this.textures_;
-};
-
-
-/**
- * @enum {number}
- * @private
- */
-ol.render.webgl.TextReplay.Align_ = {
-  left: 0,
-  end: 0,
-  center: 0.5,
-  right: 1,
-  start: 1,
-  top: 0,
-  middle: 0.5,
-  hanging: 0.2,
-  alphabetic: 0.8,
-  ideographic: 0.8,
-  bottom: 1
 };

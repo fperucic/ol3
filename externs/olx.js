@@ -273,9 +273,10 @@ olx.interaction.InteractionOptions;
 
 /**
  * Method called by the map to notify the interaction that a browser event was
- * dispatched to the map. The function may return `false` to prevent the
+ * dispatched to the map. If the function returns a falsy value,
  * propagation of the event to other interactions in the map's interactions
- * chain.
+ * chain will be prevented (this includes functions with no explicit return). See
+ * {@link https://developer.mozilla.org/en-US/docs/Glossary/Falsy}
  * @type {function(ol.MapBrowserEvent):boolean}
  * @api
  */
@@ -521,7 +522,8 @@ olx.AtPixelOptions.prototype.hitTolerance;
  *     insertFirst: (boolean|undefined),
  *     autoPan: (boolean|undefined),
  *     autoPanAnimation: (olx.OverlayPanOptions|undefined),
- *     autoPanMargin: (number|undefined)}}
+ *     autoPanMargin: (number|undefined),
+ *     className: (string|undefined)}}
  */
 olx.OverlayOptions;
 
@@ -623,6 +625,12 @@ olx.OverlayOptions.prototype.autoPanAnimation;
  */
 olx.OverlayOptions.prototype.autoPanMargin;
 
+/**
+ * CSS class name. Default is `ol-overlay-container ol-selectable`.
+ * @type {string|undefined}
+ * @api
+ */
+olx.OverlayOptions.prototype.className;
 
 /**
  * @typedef {{
@@ -1174,7 +1182,7 @@ olx.control;
  *     label: (string|Node|undefined),
  *     collapseLabel: (string|Node|undefined),
  *     render: (function(ol.MapEvent)|undefined),
- *     target: (Element|undefined)}}
+ *     target: (Element|string|undefined)}}
  */
 olx.control.AttributionOptions;
 
@@ -1188,8 +1196,9 @@ olx.control.AttributionOptions.prototype.className;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.AttributionOptions.prototype.target;
@@ -1349,7 +1358,7 @@ olx.control.DefaultsOptions.prototype.zoomOptions;
  *     labelActive: (string|Node|undefined),
  *     tipLabel: (string|undefined),
  *     keys: (boolean|undefined),
- *     target: (Element|undefined),
+ *     target: (Element|string|undefined),
  *     source: (Element|string|undefined)}}
  */
 olx.control.FullScreenOptions;
@@ -1399,8 +1408,9 @@ olx.control.FullScreenOptions.prototype.keys;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.FullScreenOptions.prototype.target;
@@ -1417,7 +1427,7 @@ olx.control.FullScreenOptions.prototype.source;
  *     coordinateFormat: (ol.CoordinateFormatType|undefined),
  *     projection: ol.ProjectionLike,
  *     render: (function(ol.MapEvent)|undefined),
- *     target: (Element|undefined),
+ *     target: (Element|string|undefined),
  *     undefinedHTML: (string|undefined)}}
  */
 olx.control.MousePositionOptions;
@@ -1457,8 +1467,9 @@ olx.control.MousePositionOptions.prototype.render;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.MousePositionOptions.prototype.target;
@@ -1479,7 +1490,7 @@ olx.control.MousePositionOptions.prototype.undefinedHTML;
  *     label: (string|Node|undefined),
  *     layers: (Array.<ol.layer.Layer>|ol.Collection.<ol.layer.Layer>|undefined),
  *     render: (function(ol.MapEvent)|undefined),
- *     target: (Element|undefined),
+ *     target: (Element|string|undefined),
  *     tipLabel: (string|undefined),
  *     view: (ol.View|undefined)}}
  */
@@ -1542,7 +1553,7 @@ olx.control.OverviewMapOptions.prototype.render;
 /**
  * Specify a target if you want the control to be rendered outside of the map's
  * viewport.
- * @type {Element|undefined}
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.OverviewMapOptions.prototype.target;
@@ -1569,7 +1580,7 @@ olx.control.OverviewMapOptions.prototype.view;
  * @typedef {{className: (string|undefined),
  *     minWidth: (number|undefined),
  *     render: (function(ol.MapEvent)|undefined),
- *     target: (Element|undefined),
+ *     target: (Element|string|undefined),
  *     units: (ol.control.ScaleLineUnits|string|undefined)}}
  */
 olx.control.ScaleLineOptions;
@@ -1601,8 +1612,9 @@ olx.control.ScaleLineOptions.prototype.render;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.ScaleLineOptions.prototype.target;
@@ -1621,7 +1633,7 @@ olx.control.ScaleLineOptions.prototype.units;
  *     className: (string|undefined),
  *     label: (string|Element|undefined),
  *     tipLabel: (string|undefined),
- *     target: (Element|undefined),
+ *     target: (Element|string|undefined),
  *     render: (function(ol.MapEvent)|undefined),
  *     resetNorth: (function()|undefined),
  *     autoHide: (boolean|undefined)}}
@@ -1689,8 +1701,9 @@ olx.control.RotateOptions.prototype.resetNorth;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.RotateOptions.prototype.target;
@@ -1704,7 +1717,7 @@ olx.control.RotateOptions.prototype.target;
  *     zoomInTipLabel: (string|undefined),
  *     zoomOutTipLabel: (string|undefined),
  *     delta: (number|undefined),
- *     target: (Element|undefined)}}
+ *     target: (Element|string|undefined)}}
  */
 olx.control.ZoomOptions;
 
@@ -1768,8 +1781,9 @@ olx.control.ZoomOptions.prototype.delta;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.ZoomOptions.prototype.target;
@@ -1828,7 +1842,7 @@ olx.control.ZoomSliderOptions.prototype.render;
 
 /**
  * @typedef {{className: (string|undefined),
- *     target: (Element|undefined),
+ *     target: (Element|string|undefined),
  *     label: (string|Node|undefined),
  *     tipLabel: (string|undefined),
  *     extent: (ol.Extent|undefined)}}
@@ -1845,8 +1859,9 @@ olx.control.ZoomToExtentOptions.prototype.className;
 
 
 /**
- * Target.
- * @type {Element|undefined}
+ * Specify a target if you want the control to be rendered outside of the map's
+ * viewport.
+ * @type {Element|string|undefined}
  * @api
  */
 olx.control.ZoomToExtentOptions.prototype.target;
@@ -1987,6 +2002,7 @@ olx.format.WriteOptions.prototype.decimals;
 /**
  * @typedef {{defaultDataProjection: ol.ProjectionLike,
  *     geometryName: (string|undefined),
+ *     extractGeometryName: (boolean|undefined),
  *     featureProjection: ol.ProjectionLike}}
  */
 olx.format.GeoJSONOptions;
@@ -2015,6 +2031,18 @@ olx.format.GeoJSONOptions.prototype.featureProjection;
  * @api
  */
 olx.format.GeoJSONOptions.prototype.geometryName;
+
+
+/**
+ * Certain GeoJSON providers include the geometry_name field in the feature
+ * geoJSON. If set to `true` the geoJSON reader will look for that field to
+ * set the geometry name. If both this field is set to `true` and a
+ * `geometryName` is provided, the `geometryName` will take precedence.
+ * Default is `false`.
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.format.GeoJSONOptions.prototype.extractGeometryName;
 
 
 /**
@@ -3131,6 +3159,7 @@ olx.interaction.DrawOptions.prototype.wrapX;
 /**
  * @typedef {{extent: (ol.Extent|undefined),
  *     boxStyle: (ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction|undefined),
+ *     pixelTolerance: (number|undefined),
  *     pointerStyle: (ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction|undefined),
  *     wrapX: (boolean|undefined)}}
  * @api
@@ -3151,6 +3180,14 @@ olx.interaction.ExtentOptions.prototype.extent;
  * @api
  */
 olx.interaction.ExtentOptions.prototype.boxStyle;
+
+/**
+ * Pixel tolerance for considering the pointer close enough to a segment or
+ * vertex for editing. Default is `10`.
+ * @type {number|undefined}
+ * @api
+ */
+olx.interaction.ExtentOptions.prototype.pixelTolerance;
 
 /**
  * Style for the cursor used to draw the extent.
@@ -4232,6 +4269,7 @@ olx.layer.TileOptions.prototype.zIndex;
  *     renderBuffer: (number|undefined),
  *     source: (ol.source.Vector|undefined),
  *     map: (ol.PluggableMap|undefined),
+ *     declutter: (boolean|undefined),
  *     style: (ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction|undefined),
  *     updateWhileAnimating: (boolean|undefined),
  *     updateWhileInteracting: (boolean|undefined),
@@ -4315,6 +4353,16 @@ olx.layer.VectorOptions.prototype.source;
 
 
 /**
+ * Declutter images and text. Decluttering is applied to all image and text
+ * styles, and the priority is defined by the z-index of the style. Lower
+ * z-index means higher priority. Default is `false`.
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.layer.VectorOptions.prototype.declutter;
+
+
+/**
  * Layer style. See {@link ol.style} for default style which will be used if
  * this is not defined.
  * @type {ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction|undefined}
@@ -4371,6 +4419,7 @@ olx.layer.VectorOptions.prototype.zIndex;
  *     renderMode: (ol.layer.VectorTileRenderType|string|undefined),
  *     renderOrder: (ol.RenderOrderFunction|undefined),
  *     source: (ol.source.VectorTile|undefined),
+ *     declutter: (boolean|undefined),
  *     style: (ol.style.Style|Array.<ol.style.Style>|ol.StyleFunction|undefined),
  *     updateWhileAnimating: (boolean|undefined),
  *     updateWhileInteracting: (boolean|undefined),
@@ -4404,7 +4453,8 @@ olx.layer.VectorTileOptions.prototype.renderBuffer;
  *  * `'vector'`: Vector tiles are rendered as vectors. Most accurate rendering
  *    even during animations, but slower performance than the other options.
  *
- * The default is `'hybrid'`.
+ * When `declutter` is set to `true`, `'hybrid'` will be used instead of
+ * `'image'`. The default is `'hybrid'`.
  * @type {ol.layer.VectorTileRenderType|string|undefined}
  * @api
  */
@@ -4478,6 +4528,17 @@ olx.layer.VectorTileOptions.prototype.preload;
  * @api
  */
 olx.layer.VectorTileOptions.prototype.source;
+
+
+/**
+ * Declutter images and text. Decluttering is applied to all image and text
+ * styles, and the priority is defined by the z-index of the style. Lower
+ * z-index means higher priority. When set to `true`, a `renderMode` of
+ * `'image'` will be overridden with `'hybrid'`. Default is `false`.
+ * @type {boolean|undefined}
+ * @api
+ */
+olx.layer.VectorTileOptions.prototype.declutter;
 
 
 /**
@@ -5492,7 +5553,7 @@ olx.source.OSMOptions.prototype.wrapX;
 
 
 /**
- * @typedef {{attributions: (Array.<ol.Attribution>|undefined),
+ * @typedef {{attributions: (ol.AttributionLike|undefined),
  *     crossOrigin: (null|string|undefined),
  *     hidpi: (boolean|undefined),
  *     logo: (string|olx.LogoOptions|undefined),
@@ -5508,7 +5569,7 @@ olx.source.ImageArcGISRestOptions;
 
 /**
  * Attributions.
- * @type {Array.<ol.Attribution>|undefined}
+ * @type {ol.AttributionLike|undefined}
  * @api
  */
 olx.source.ImageArcGISRestOptions.prototype.attributions;
@@ -7215,7 +7276,9 @@ olx.source.CartoDBOptions.prototype.account;
  *     url: !string,
  *     tierSizeCalculation: (string|undefined),
  *     size: ol.Size,
- *     transition: (number|undefined)}}
+ *     extent: (ol.Extent|undefined),
+ *     transition: (number|undefined),
+ *     tileSize: (number|undefined)}}
  */
 olx.source.ZoomifyOptions;
 
@@ -7307,12 +7370,32 @@ olx.source.ZoomifyOptions.prototype.size;
 
 
 /**
+ * Extent for the TileGrid that is created. Default sets the TileGrid in the
+ * fourth quadrant, meaning extent is `[0, -height, width, 0]`. To change the
+ * extent to the first quadrant (the default for OpenLayers 2) set the extent
+ * as `[0, 0, width, height]`.
+ * @type {ol.Extent|undefined}
+ * @api
+ */
+olx.source.ZoomifyOptions.prototype.extent;
+
+
+/**
  * Duration of the opacity transition for rendering.  To disable the opacity
  * transition, pass `transition: 0`.
  * @type {number|undefined}
  * @api
  */
 olx.source.ZoomifyOptions.prototype.transition;
+
+
+/**
+ * Tile size. Same tile size is used for all zoom levels. Default value is
+ * `OpenLayers.DEFAULT_TILE_SIZE`.
+ * @type {number|undefined}
+ * @api
+ */
+olx.source.ZoomifyOptions.prototype.tileSize;
 
 
 /**
@@ -7783,7 +7866,10 @@ olx.style.StrokeOptions.prototype.width;
  *     textAlign: (string|undefined),
  *     textBaseline: (string|undefined),
  *     fill: (ol.style.Fill|undefined),
- *     stroke: (ol.style.Stroke|undefined)}}
+ *     stroke: (ol.style.Stroke|undefined),
+ *     backgroundFill: (ol.style.Fill|undefined),
+ *     backgroundStroke: (ol.style.Stroke|undefined),
+ *     padding: (Array.<number>|undefined)}}
  */
 olx.style.TextOptions;
 
@@ -7910,6 +7996,34 @@ olx.style.TextOptions.prototype.fill;
  * @api
  */
 olx.style.TextOptions.prototype.stroke;
+
+
+/**
+ * Fill style for the text background when `placement` is `'point'`. Default is
+ * no fill.
+ * @type {ol.style.Fill|undefined}
+ * @api
+ */
+olx.style.TextOptions.prototype.backgroundFill;
+
+
+/**
+ * Stroke style for the text background  when `placement` is `'point'`. Default
+ * is no stroke.
+ * @type {ol.style.Stroke|undefined}
+ * @api
+ */
+olx.style.TextOptions.prototype.backgroundStroke;
+
+
+/**
+ * Padding in pixels around the text for decluttering and background. The order
+ * of values in the array is `[top, right, bottom, left]`. Default is
+ * `[0, 0, 0, 0]`.
+ * @type {Array.<number>|undefined}
+ * @api
+ */
+olx.style.TextOptions.prototype.padding;
 
 
 /**
@@ -8334,7 +8448,6 @@ olx.view.FitOptions.prototype.callback;
 
 /**
  * @typedef {{animate: boolean,
- *     attributions: Object.<string, ol.Attribution>,
  *     coordinateToPixelTransform: ol.Transform,
  *     extent: (null|ol.Extent),
  *     focus: ol.Coordinate,
@@ -8382,7 +8495,8 @@ olx.FrameState.prototype.viewState;
  * @typedef {{center: ol.Coordinate,
  *     projection: ol.proj.Projection,
  *     resolution: number,
- *     rotation: number}}
+ *     rotation: number,
+ *     zoom: number}}
  */
 olx.ViewState;
 
@@ -8413,6 +8527,14 @@ olx.ViewState.prototype.resolution;
  * @api
  */
 olx.ViewState.prototype.rotation;
+
+
+/**
+ * The current zoom level.
+ * @type {number}
+ * @api
+ */
+olx.ViewState.prototype.zoom;
 
 
 /**
